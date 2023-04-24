@@ -9,9 +9,19 @@ import SwiftUI
 
 @main
 struct MotivApp: App {
+
+    @StateObject var HOMEviewModel: HomeViewModel = HomeViewModel()
+    @StateObject var TDLviewModel: TDLvm = TDLvm()
+    @StateObject var CALviewModel: CALvm = CALvm()
+    @StateObject var timeDateHelper: TimeDateHelper = TimeDateHelper()
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            HomeView()
+                .environmentObject(HOMEviewModel)
+                .environmentObject(TDLviewModel)
+                .environmentObject(CALviewModel)
+                .environmentObject(timeDateHelper)
         }
     }
 }

@@ -8,17 +8,21 @@
 
 /* Begin PBXBuildFile section */
 		1D765D5E29F70D490009F125 /* MotivApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765D5D29F70D490009F125 /* MotivApp.swift */; };
-		1D765D6029F70D490009F125 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765D5F29F70D490009F125 /* ContentView.swift */; };
 		1D765D6229F70D4B0009F125 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1D765D6129F70D4B0009F125 /* Assets.xcassets */; };
 		1D765D6529F70D4B0009F125 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1D765D6429F70D4B0009F125 /* Preview Assets.xcassets */; };
+		1D765D6C29F714480009F125 /* AppsNavigatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765D6B29F714480009F125 /* AppsNavigatorView.swift */; };
+		1D765D6F29F714A90009F125 /* Calendar-CAL in Resources */ = {isa = PBXBuildFile; fileRef = 1D765D6D29F714A90009F125 /* Calendar-CAL */; };
+		1D765D7029F714A90009F125 /* Home in Resources */ = {isa = PBXBuildFile; fileRef = 1D765D6E29F714A90009F125 /* Home */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		1D765D5A29F70D490009F125 /* Motiv.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Motiv.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1D765D5D29F70D490009F125 /* MotivApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotivApp.swift; sourceTree = "<group>"; };
-		1D765D5F29F70D490009F125 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		1D765D6129F70D4B0009F125 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1D765D6429F70D4B0009F125 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		1D765D6B29F714480009F125 /* AppsNavigatorView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AppsNavigatorView.swift; path = "../../../motiv prerelease/motiv-prerelease/motiv-prerelease/AppsNavigatorView.swift"; sourceTree = "<group>"; };
+		1D765D6D29F714A90009F125 /* Calendar-CAL */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "Calendar-CAL"; sourceTree = "<group>"; };
+		1D765D6E29F714A90009F125 /* Home */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Home; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,7 +56,9 @@
 			isa = PBXGroup;
 			children = (
 				1D765D5D29F70D490009F125 /* MotivApp.swift */,
-				1D765D5F29F70D490009F125 /* ContentView.swift */,
+				1D765D6B29F714480009F125 /* AppsNavigatorView.swift */,
+				1D765D6E29F714A90009F125 /* Home */,
+				1D765D6D29F714A90009F125 /* Calendar-CAL */,
 				1D765D6129F70D4B0009F125 /* Assets.xcassets */,
 				1D765D6329F70D4B0009F125 /* Preview Content */,
 			);
@@ -126,7 +132,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				1D765D6529F70D4B0009F125 /* Preview Assets.xcassets in Resources */,
+				1D765D7029F714A90009F125 /* Home in Resources */,
 				1D765D6229F70D4B0009F125 /* Assets.xcassets in Resources */,
+				1D765D6F29F714A90009F125 /* Calendar-CAL in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -137,7 +145,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1D765D6029F70D490009F125 /* ContentView.swift in Sources */,
+				1D765D6C29F714480009F125 /* AppsNavigatorView.swift in Sources */,
 				1D765D5E29F70D490009F125 /* MotivApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
