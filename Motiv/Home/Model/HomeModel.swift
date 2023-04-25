@@ -36,9 +36,11 @@ struct HomeModel : Codable{
     //MARK: - HomeModel Methods
     init(){
         self.apps = []
-//        apps.append(Module(name: "ToDo's", appImage: "checklist", view: AnyView(TDLv())))
+        apps.append(Module(name: "ToDo's", appImage: "checklist", view: AnyView(TDLv())))
         apps.append(Module(name: "Calendar", appImage: "calendar", view: AnyView(CALv())))
+        apps.append(Module(name: "FlashCards", appImage: "rectangle.stack", view: AnyView(FLCv())))
         self.navBubbleAppShortcuts = apps
+        apps.append(Module(name: "Recipe Box", appImage: "list.bullet.rectangle", view: AnyView(RBXv())))
     }
     
     func getApps() -> [Module]{

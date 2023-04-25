@@ -24,6 +24,9 @@
 		1D765D9429F861960009F125 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765D9329F861960009F125 /* HomeViewModel.swift */; };
 		1D765D9629F861F60009F125 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765D9529F861F60009F125 /* HomeView.swift */; };
 		1D765D9829F862810009F125 /* HomeNavBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765D9729F862810009F125 /* HomeNavBubble.swift */; };
+		1D765D9C29F86A240009F125 /* TDLv.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765D9B29F86A240009F125 /* TDLv.swift */; };
+		1D765DA029F86AAE0009F125 /* FLCv.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765D9F29F86AAE0009F125 /* FLCv.swift */; };
+		1D765DA429F86B260009F125 /* RBXv.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765DA329F86B260009F125 /* RBXv.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -45,6 +48,9 @@
 		1D765D9329F861960009F125 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		1D765D9529F861F60009F125 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		1D765D9729F862810009F125 /* HomeNavBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeNavBubble.swift; sourceTree = "<group>"; };
+		1D765D9B29F86A240009F125 /* TDLv.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDLv.swift; sourceTree = "<group>"; };
+		1D765D9F29F86AAE0009F125 /* FLCv.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FLCv.swift; sourceTree = "<group>"; };
+		1D765DA329F86B260009F125 /* RBXv.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RBXv.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,8 +83,11 @@
 		1D765D5C29F70D490009F125 /* Motiv */ = {
 			isa = PBXGroup;
 			children = (
-				1D765D7B29F8249E0009F125 /* Calendar - CAL */,
 				1D765D7729F824750009F125 /* Home */,
+				1D765D7B29F8249E0009F125 /* Calendar - CAL */,
+				1D765D9929F869D80009F125 /* ToDoLists - TDL */,
+				1D765D9D29F86A660009F125 /* FlashCards - FLC */,
+				1D765DA129F86ADC0009F125 /* RecipeBox - RBX */,
 				1D765D5D29F70D490009F125 /* MotivApp.swift */,
 				1D765D6B29F714480009F125 /* AppsNavigatorView.swift */,
 				1D765D8329F85D590009F125 /* TimeDateHelper.swift */,
@@ -170,6 +179,54 @@
 			path = Model;
 			sourceTree = "<group>";
 		};
+		1D765D9929F869D80009F125 /* ToDoLists - TDL */ = {
+			isa = PBXGroup;
+			children = (
+				1D765D9A29F86A130009F125 /* View */,
+			);
+			path = "ToDoLists - TDL";
+			sourceTree = "<group>";
+		};
+		1D765D9A29F86A130009F125 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				1D765D9B29F86A240009F125 /* TDLv.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		1D765D9D29F86A660009F125 /* FlashCards - FLC */ = {
+			isa = PBXGroup;
+			children = (
+				1D765D9E29F86A9D0009F125 /* View */,
+			);
+			path = "FlashCards - FLC";
+			sourceTree = "<group>";
+		};
+		1D765D9E29F86A9D0009F125 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				1D765D9F29F86AAE0009F125 /* FLCv.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		1D765DA129F86ADC0009F125 /* RecipeBox - RBX */ = {
+			isa = PBXGroup;
+			children = (
+				1D765DA229F86B160009F125 /* View */,
+			);
+			path = "RecipeBox - RBX";
+			sourceTree = "<group>";
+		};
+		1D765DA229F86B160009F125 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				1D765DA329F86B260009F125 /* RBXv.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -245,16 +302,19 @@
 				1D765D8C29F85FB00009F125 /* CALvDay.swift in Sources */,
 				1D765D9829F862810009F125 /* HomeNavBubble.swift in Sources */,
 				1D765D6C29F714480009F125 /* AppsNavigatorView.swift in Sources */,
+				1D765DA429F86B260009F125 /* RBXv.swift in Sources */,
 				1D765D9029F8607F0009F125 /* CALvConflicts.swift in Sources */,
 				1D765D8229F85C2D0009F125 /* CALvm.swift in Sources */,
 				1D765D8A29F85F400009F125 /* CALvWeek.swift in Sources */,
 				1D765D8E29F860380009F125 /* CALvEventInteraction.swift in Sources */,
 				1D765D5E29F70D490009F125 /* MotivApp.swift in Sources */,
 				1D765D9429F861960009F125 /* HomeViewModel.swift in Sources */,
+				1D765DA029F86AAE0009F125 /* FLCv.swift in Sources */,
 				1D765D9229F861070009F125 /* HomeModel.swift in Sources */,
 				1D765D8829F85E630009F125 /* CALvMonth.swift in Sources */,
 				1D765D8029F85B160009F125 /* CALm.swift in Sources */,
 				1D765D8629F85DE80009F125 /* CALv.swift in Sources */,
+				1D765D9C29F86A240009F125 /* TDLv.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
