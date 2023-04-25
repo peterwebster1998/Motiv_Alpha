@@ -1,10 +1,15 @@
-//
-//  CALvm.swift
-//  motiv-prerelease
-//  --> moved to Motiv on 4/24/23
-//
-//  Created by Peter Webster on 10/19/22.
-//
+/*
+ CALvm.swift
+ Motiv
+ 
+ Created by Peter Webster on 4/25/23.
+ //
+ //  CALvm.swift
+ //  motiv-prerelease
+ //
+ //  Created by Peter Webster on 10/19/22.
+ //
+ */
 
 import SwiftUI
 
@@ -31,7 +36,7 @@ class CALvm: ObservableObject {
     @Published var conflictsUpdated: Bool
     @Published var refreshWindows: Bool
     @Published var editSeries: Bool
-
+    
     // MARK: - Init
     
     init (){
@@ -87,10 +92,10 @@ class CALvm: ObservableObject {
     func getDaysEvents(_ day: String) -> [CALm.Event] {
         model.getDaysEvents(day)
     }
-    
-    func getDaysTasks(_ day: String) -> [TDLm.ToDoList.Task]{
-        model.getDaysTasks(day)
-    }
+//
+//    func getDaysTasks(_ day: String) -> [TDLm.ToDoList.Task]{
+//        model.getDaysTasks(day)
+//    }
     
     func checkForConflict(day: String, event: CALm.Event) -> Bool {
         let conflict = model.checkForConflict(day: day, event: event)
@@ -113,9 +118,9 @@ class CALvm: ObservableObject {
         return model.isConflict(event)
     }
     
-    func getTasks(_ event: CALm.Event) -> TDLm.ToDoList? {
-        return model.getTasks(event)
-    }
+//    func getTasks(_ event: CALm.Event) -> TDLm.ToDoList? {
+//        return model.getTasks(event)
+//    }
     // MARK: - Intent(s)
     func addEventToDay(day: String, event: CALm.Event) -> Bool{
         if !checkForConflict(day: day, event: event){
@@ -160,7 +165,7 @@ class CALvm: ObservableObject {
     func editEventSeries(event: CALm.Event, name: String, description: String, duration: Int, repetition: CALm.Repeat, time: Date) -> Bool{
         // Conflict Check
         let tempTDH = TimeDateHelper()
-        let newEvent = CALm.Event(dateKey: tempTDH.dateString(time), startTime: time, durationMins: duration, eventName: name, description: description, repetition: repetition, id: event.getID(), eventTasks: getTasks(event), seriesID: event.getSeriesID())
+        let newEvent = CALm.Event(dateKey: tempTDH.dateString(time), startTime: time, durationMins: duration, eventName: name, description: description, repetition: repetition, id: event.getID(),/* eventTasks: getTasks(event),*/ seriesID: event.getSeriesID())
         let conflict = checkForConflict(day: tempTDH.dateString(time), event: newEvent)
         if !conflict {
             model.editEventSeries(oldEvent: event, newEvent: newEvent)
@@ -173,20 +178,20 @@ class CALvm: ObservableObject {
             return false
         }
     }
-    func addTaskToEvent(event: CALm.Event, task: TDLm.ToDoList.Task){
-        model.addTaskToEvent(event: event, task: task)
-        autosave()
-    }
-    
-    func toggleEventsTaskState(event: CALm.Event, task: TDLm.ToDoList.Task){
-        model.toggleEventsTaskState(event: event, task: task)
-        autosave()
-    }
-    
-    func deleteTaskInEvent(event: CALm.Event, task: TDLm.ToDoList.Task){
-        model.deleteTaskInEvent(event: event, task: task)
-        autosave()
-    }
+//    func addTaskToEvent(event: CALm.Event, task: TDLm.ToDoList.Task){
+//        model.addTaskToEvent(event: event, task: task)
+//        autosave()
+//    }
+//    
+//    func toggleEventsTaskState(event: CALm.Event, task: TDLm.ToDoList.Task){
+//        model.toggleEventsTaskState(event: event, task: task)
+//        autosave()
+//    }
+//    
+//    func deleteTaskInEvent(event: CALm.Event, task: TDLm.ToDoList.Task){
+//        model.deleteTaskInEvent(event: event, task: task)
+//        autosave()
+//    }
     
     func addConflict(_ event: CALm.Event){
         model.addConflict(event)

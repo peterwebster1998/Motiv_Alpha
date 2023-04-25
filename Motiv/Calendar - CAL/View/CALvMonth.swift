@@ -1,10 +1,16 @@
-//
-//  CALvMonth.swift
-//  motiv-prerelease
-//  --> moved to Motiv on 4/24/23
-//
-//  Created by Peter Webster on 10/26/22.
-//
+/*
+  CALvMonth.swift
+  Motiv
+
+  Created by Peter Webster on 4/25/23.
+
+ //
+ //  CALvMonth.swift
+ //  motiv-prerelease
+ //
+ //  Created by Peter Webster on 10/26/22.
+ //
+*/
 
 import SwiftUI
 
@@ -12,11 +18,11 @@ struct MonthView: View {
     
     @EnvironmentObject var timeDateHelper: TimeDateHelper
     @EnvironmentObject var viewModel: CALvm
-        
+    
 //    init(){
 //        print("Init MonthView")
 //    }
-
+    
     var body: some View {
         ScrollView{
             ScrollViewReader{ proxy in
@@ -33,7 +39,7 @@ struct MonthView: View {
                     timeDateHelper.scrollToToday = false
                     timeDateHelper.isRefresh = false
                     viewModel.startUp = false
-                    }
+                }
                 .onChange(of: timeDateHelper.isRefresh){value in
                     if !value { return }
                     let month = timeDateHelper.getFirstOfMonth(timeDateHelper.dateInView)
@@ -41,7 +47,7 @@ struct MonthView: View {
                     timeDateHelper.isRefresh = false
                     print("Refreshing, scrolling to: \(month)")
                     timeDateHelper.refreshed = true
-                    }
+                }
                 .onAppear {
                     let month = timeDateHelper.getFirstOfMonth(timeDateHelper.dateInView)
                     proxy.scrollTo(month, anchor: .top)
@@ -79,10 +85,10 @@ struct cell: View {
             }
         } else {
             ZStack {
-            Capsule(style: .continuous)
-                .strokeBorder(Color.gray)
-                .aspectRatio(0.618, contentMode: .fill)
-            Text(timeDateHelper.dayNoString(dayInMonth))
+                Capsule(style: .continuous)
+                    .strokeBorder(Color.gray)
+                    .aspectRatio(0.618, contentMode: .fill)
+                Text(timeDateHelper.dayNoString(dayInMonth))
             }
         }
     }
@@ -90,10 +96,10 @@ struct cell: View {
 
 struct emptyCell: View {
     var body: some View {
-    Capsule(style: .continuous)
-        .stroke(Color.gray)
-        .aspectRatio(0.618, contentMode: .fill)
-        .opacity(0.33)
+        Capsule(style: .continuous)
+            .stroke(Color.gray)
+            .aspectRatio(0.618, contentMode: .fill)
+            .opacity(0.33)
     }
 }
 
@@ -115,7 +121,7 @@ struct monthGrid: View {
     init(month: [Date]){
         self.month = month
     }
-
+    
     var body: some View {
         LazyVGrid(columns: dayColumns, spacing: 20){
             //align first day with appropriate doy of week label
@@ -157,7 +163,7 @@ struct monthGrid: View {
                     .onTapGesture {
                         timeDateHelper.setDateInView(day)
                         viewModel.setViewContext("d")
-                }
+                    }
             }
             
             //fill out the rest of the row with empty cells
@@ -202,27 +208,27 @@ struct monthLabel: View {
     let month: Date
     
     var body: some View {
-            Text(timeDateHelper.monthStrFromDate(month))
+        Text(timeDateHelper.monthStrFromDate(month))
             .font(.title)
             .multilineTextAlignment(.leading)
             .padding(.horizontal)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
-                        GeometryReader { geo in
-                            Rectangle()
-                                .opacity(0)
-                                .preference(key: MonthLabelYOffsetPreferenceKey.self, value: {
-                                    let value = geo.frame(in: .global).maxY
-                                    if value < 0.5 * UIScreen.main.bounds.size.height && value > 0 {
+                GeometryReader { geo in
+                    Rectangle()
+                        .opacity(0)
+                        .preference(key: MonthLabelYOffsetPreferenceKey.self, value: {
+                            let value = geo.frame(in: .global).maxY
+                            if value < 0.5 * UIScreen.main.bounds.size.height && value > 0 {
 //                                        if timeDateHelper.isRefresh && !viewModel.startUp{
 //                                            let _ = print("break - refresh: \(month)")
 //                                        }
-                                        return true
-                                    } else {
-                                        return false
-                                    }
-                                }())
-                        })
+                                return true
+                            } else {
+                                return false
+                            }
+                        }())
+                })
             .onPreferenceChange(MonthLabelYOffsetPreferenceKey.self) { value in
 //                if value {
 //                    print("break")
@@ -230,7 +236,7 @@ struct monthLabel: View {
                 if value && !timeDateHelper.isRefresh && !viewModel.contextSwitch{
                     timeDateHelper.setDateInView(month)
                 }
-        }
+            }
     }
 }
 

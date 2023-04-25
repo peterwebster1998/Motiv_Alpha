@@ -1,11 +1,16 @@
-//
-//  TimeDateHelper.swift
-//  motiv-prerelease
-//  --> moved to Motiv on 4/24/23
-//
-//  Created by Peter Webster on 10/27/22.
-//
+/*
+  TimeDateHelper.swift
+  Motiv
 
+  Created by Peter Webster on 4/25/23.
+
+ //
+ //  TimeDateHelper.swift
+ //  motiv-prerelease
+ //
+ //  Created by Peter Webster on 10/27/22.
+ //
+ */
 import Foundation
 
 class TimeDateHelper: ObservableObject {
@@ -46,7 +51,7 @@ class TimeDateHelper: ObservableObject {
     
     func today(){
         scrollToToday = true
-//        isRefresh = true
+        //        isRefresh = true
         setDateInView(Date())
     }
     
@@ -80,7 +85,7 @@ class TimeDateHelper: ObservableObject {
         let hrMin = getTimeOfDayHrsMins(time).split(separator: ":")
         let hr = Float(hrMin[0])!
         let min = Float(hrMin[1].prefix(2))!
-//        print("\thrMin: \(hrMin), hr: \(hr), min: \(min)")
+        //        print("\thrMin: \(hrMin), hr: \(hr), min: \(min)")
         var out = hr + (min/60)
         out = pm ? out+12 : out
         if hr == 12 {
@@ -119,10 +124,10 @@ class TimeDateHelper: ObservableObject {
     func setDateInView(_ day: Date){
         self.dateInView = day
         print("+++++++++\(day) is now in view")
-//        if approachingTemporalHorizon() {
-//            self.isRefresh = true
-//            adjustTemporalRange()
-//        }
+        //        if approachingTemporalHorizon() {
+        //            self.isRefresh = true
+        //            adjustTemporalRange()
+        //        }
     }
     
     func approachingTemporalHorizon() -> Bool {
@@ -146,7 +151,7 @@ class TimeDateHelper: ObservableObject {
             if dateInView < calendar.date(byAdding: .month, value: 6, to: temporalHorizons[0])! {
                 removeSixMonthsFuture()
                 print("\tRemoved 6 months future: \(temporalHorizons)")
-
+                
             } else if dateInView > calendar.date(byAdding: .month, value: -6, to: temporalHorizons[1])!{
                 removeSixMonthsPast()
                 print("\tRemoved 6 months past: \(temporalHorizons)")
@@ -174,7 +179,7 @@ class TimeDateHelper: ObservableObject {
     
     func addMonthPast(){
         var idxDate = calendar.date(byAdding: .month, value: -1, to: temporalRange[0][0])!
-//        idxDate += 60 * 60
+        //        idxDate += 60 * 60
         var month = [Date]()
         while idxDate < temporalRange[0][0] {
             month.append(idxDate)
@@ -237,3 +242,4 @@ class TimeDateHelper: ObservableObject {
         }
     }
 }
+

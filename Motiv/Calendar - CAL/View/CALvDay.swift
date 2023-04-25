@@ -1,10 +1,17 @@
-//
-//  CALvDay.swift
-//  motiv-prerelease
-//  --> moved to Motiv on 4/24/23
-//
-//  Created by Peter Webster on 10/26/22.
-//
+/*
+  CALvDay.swift
+  Motiv
+
+  Created by Peter Webster on 4/25/23.
+
+
+ //
+ //  CALvDay.swift
+ //  motiv-prerelease
+ //
+ //  Created by Peter Webster on 10/26/22.
+ //
+*/
 
 import SwiftUI
 
@@ -76,7 +83,7 @@ struct AddEventButton: View {
                     Circle()
                         .frame(width: buttonSize, height: buttonSize, alignment: .center)
                         .foregroundColor(Color.white)
-                    )
+                )
         }
     }
 }
@@ -99,7 +106,7 @@ struct TimeOfDayView: View {
                     timeIndicatorView(geo: geo)
                 }
             )
-                
+            
             VStack(spacing:0){
                 ForEach(hoursInDay, id: \.self){hr in
                     VStack(spacing:0){
@@ -161,7 +168,7 @@ struct timeIndicatorArrow: Shape {
         path.addLine(to: CGPoint(x: 0.8*rect.maxX, y: rect.midY * 0.98))
         path.addLine(to: CGPoint(x: 0.8*rect.maxX, y: rect.minY))
         path.addLine(to: CGPoint(x: rect.maxX, y: rect.midY))
-
+        
         return path
     }
 }
@@ -245,7 +252,7 @@ struct EventTileDayView: View {
             .frame(width: geo.frame(in: .local).maxX, height: height)
             .border(.black, width: 0.75)
             .overlay (
-            Text(event.getName()).foregroundColor(Color.black)
+                Text(event.getName()).foregroundColor(Color.black)
             )
             .foregroundColor(Color.blue)
             .position(x: geo.frame(in: .local).midX, y: y + (height / 2))

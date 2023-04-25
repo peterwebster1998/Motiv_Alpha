@@ -1,10 +1,16 @@
-//
-//  HomeView.swift
-//  motiv-prerelease
-//  --> moved to Motiv on 4/24/23
-//
-//  Created by Peter Webster on 4/11/23.
-//
+/*
+  HomeView.swift
+  Motiv
+
+  Created by Peter Webster on 4/25/23.
+
+ //
+ //  HomeView.swift
+ //  motiv-prerelease
+ //
+ //  Created by Peter Webster on 4/11/23.
+ //
+*/
 
 import SwiftUI
 
@@ -32,13 +38,13 @@ struct AppSelectButton: View {
     @EnvironmentObject var viewModel: HomeViewModel
     
     var body: some View {
-                Button{
-                    viewModel.appSelect = true
-                } label: {
-                    Image(systemName: "square.grid.3x3.fill")
-                        .padding()
-                        .font(.title)
-                }.foregroundColor(.black)
+        Button{
+            viewModel.appSelect = true
+        } label: {
+            Image(systemName: "square.grid.3x3.fill")
+                .padding()
+                .font(.title)
+        }.foregroundColor(.black)
     }
 }
 
@@ -57,7 +63,7 @@ struct ModuleView: View {
 
 struct CompositeHomeView: View{
     @EnvironmentObject var calVM: CALvm
-    @EnvironmentObject var tdlVM: TDLvm
+//    @EnvironmentObject var tdlVM: TDLvm
     @EnvironmentObject var viewModel: HomeViewModel
     @EnvironmentObject var tdh: TimeDateHelper
     
@@ -70,7 +76,7 @@ struct CompositeHomeView: View{
                     CalendarComponentView().frame(width: geo.size.width, height: geo.size.height * 0.55, alignment: .center)
                     Divider()
                     Divider()
-                    ToDoComponentView().frame(width: geo.size.width, height: geo.size.height * 0.45, alignment: .center)
+//                    ToDoComponentView().frame(width: geo.size.width, height: geo.size.height * 0.45, alignment: .center)
                 }
             }
         }
@@ -113,25 +119,25 @@ struct CalendarComponentView: View {
     }
 }
 
-struct ToDoComponentView: View {
-    @EnvironmentObject var tdh : TimeDateHelper
-    @EnvironmentObject var tdlVM: TDLvm
-    
-    var body: some View {
-        VStack{
-            HStack{
-                Text("Todays To Dos:").font(.title).padding()
-                Spacer()
-            }.background(.gray).border(.black)
-            ScrollView {
-                ForEach(tdlVM.getTodaysToDos(), id: \.self) { element in
-                    TasksView(content: element)
-                    Divider()
-                }
-            }
-        }
-    }
-}
+//struct ToDoComponentView: View {
+//    @EnvironmentObject var tdh : TimeDateHelper
+//    @EnvironmentObject var tdlVM: TDLvm
+//
+//    var body: some View {
+//        VStack{
+//            HStack{
+//                Text("Todays To Dos:").font(.title).padding()
+//                Spacer()
+//            }.background(.gray).border(.black)
+//            ScrollView {
+//                ForEach(tdlVM.getTodaysToDos(), id: \.self) { element in
+//                    TasksView(content: element)
+//                    Divider()
+//                }
+//            }
+//        }
+//    }
+//}
 
 struct HomeView_Previews: PreviewProvider {
     static var previews: some View {

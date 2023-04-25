@@ -1,10 +1,16 @@
-//
-//  HomeNavBubble.swift
-//  motiv-prerelease
-//  --> moved to Motiv on 4/24/23
-//
-//  Created by Peter Webster on 4/13/23.
-//
+/*
+  HomeNavBubble.swift
+  Motiv
+
+  Created by Peter Webster on 4/25/23.
+
+ //
+ //  HomeNavBubble.swift
+ //  motiv-prerelease
+ //
+ //  Created by Peter Webster on 4/13/23.
+ //
+*/
 
 import SwiftUI
 
@@ -25,7 +31,7 @@ struct HomeNavBubble: View {
             }
             CentralButton()
                 .frame(width: buttonSize)
-//                .animation(Animation.spring(), value: dragOffset)
+            //                .animation(Animation.spring(), value: dragOffset)
         }
         .position(x: x + dragOffset.width, y: y + dragOffset.height)
         .gesture(
@@ -61,9 +67,9 @@ struct CentralButton: View {
             .onTapGesture {
                 viewModel.currentActiveModule = nil
             }
-            
+        
     }
-
+    
 }
 
 extension CGSize {
@@ -96,7 +102,7 @@ struct SurroundingNavView: View {
     @State var holdOffsetValue: CGSize = .zero
     @State var makingNavSelection: Bool = false
     @State var dragIterations: Int = 0
-
+    
     var body: some View {
         ZStack{
             Donut(holeSize: buttonSize * 1.2)
@@ -107,10 +113,10 @@ struct SurroundingNavView: View {
         }.frame(width: size, height: size)
             .offset((makingNavSelection) ? (holdOffsetValue - dragOffset): .zero)
             .onChange(of: dragOffset){value in
-                    deltaOffset = value - lastOffset
-                    deltaDeltaOffset = lastDeltaOffset - deltaOffset
-                    print("deltaOffset: \(deltaOffset.magnitude)")
-                    print("deltadeltaOffset: \(deltaDeltaOffset.magnitude)")
+                deltaOffset = value - lastOffset
+                deltaDeltaOffset = lastDeltaOffset - deltaOffset
+                print("deltaOffset: \(deltaOffset.magnitude)")
+                print("deltadeltaOffset: \(deltaDeltaOffset.magnitude)")
                 if dragIterations > 5{
                     if deltaDeltaOffset.magnitude > 5 && !makingNavSelection{
                         makingNavSelection = true
@@ -129,18 +135,18 @@ struct SurroundingNavView: View {
 struct Donut: Shape {
     var holeSize: CGFloat
     
-        func path(in rect: CGRect) -> Path {
-            let outerRadius = min(rect.width, rect.height) / 2
-            let innerRadius = holeSize / 2
-            let center = CGPoint(x: rect.midX, y: rect.midY)
-            
-            var path = Path()
-            path.addArc(center: center, radius: outerRadius, startAngle: .zero, endAngle: .degrees(360), clockwise: true)
-            path.addArc(center: center, radius: innerRadius, startAngle: .zero, endAngle: .degrees(360), clockwise: false)
-            path.closeSubpath()
-            
-            return path
-        }
+    func path(in rect: CGRect) -> Path {
+        let outerRadius = min(rect.width, rect.height) / 2
+        let innerRadius = holeSize / 2
+        let center = CGPoint(x: rect.midX, y: rect.midY)
+        
+        var path = Path()
+        path.addArc(center: center, radius: outerRadius, startAngle: .zero, endAngle: .degrees(360), clockwise: true)
+        path.addArc(center: center, radius: innerRadius, startAngle: .zero, endAngle: .degrees(360), clockwise: false)
+        path.closeSubpath()
+        
+        return path
+    }
 }
 
 struct DonutNavTiles: View {
@@ -152,7 +158,7 @@ struct DonutNavTiles: View {
     @Binding var moduleSelection: HomeModel.Module?
     @State var noSegments: Int = 0
     @State var appShortcuts: [HomeModel.Module] = []
-
+    
     var body: some View {
         GeometryReader{ geo in
             ForEach(appShortcuts, id: \.self){ app in
@@ -208,8 +214,8 @@ struct DonutNavTiles: View {
     }
     
     func calculateSegIdx(offset: CGSize) -> Int {
-//        print("=======================================")
-//        print("offset: \(offset)")
+        //        print("=======================================")
+        //        print("offset: \(offset)")
         var direction: Angle = Angle.radians(atan(Double(offset.height/offset.width)))
         if offset.width < 0 {
             direction = .radians(direction.radians + .pi)
@@ -219,9 +225,9 @@ struct DonutNavTiles: View {
         proportionRotated = (proportionRotated < 0) ? 1.0+proportionRotated : proportionRotated
         var segIdx: Double = (proportionRotated * Double(noSegments)) - Double((noSegments/2))
         segIdx = (segIdx < 0) ? Double(noSegments) + segIdx : segIdx
-//        print("direction: \(direction.radians), proportionRotated: \(proportionRotated)")
-//        print("segIdx: \(segIdx)")
-//        print("+++++++++++++++++++++++++++++++++++++++")
+        //        print("direction: \(direction.radians), proportionRotated: \(proportionRotated)")
+        //        print("segIdx: \(segIdx)")
+        //        print("+++++++++++++++++++++++++++++++++++++++")
         return Int(segIdx)
     }
 }
@@ -230,7 +236,7 @@ struct DonutSegment: Shape {
     var holeSize: CGFloat
     var noSegments: Int
     var idx: Int
-        
+    
     func path(in rect: CGRect) -> Path {
         let outerRadius = min(rect.width, rect.height) / 2
         let innerRadius = holeSize / 2
@@ -246,7 +252,7 @@ struct DonutSegment: Shape {
         let innerResult = getStartAndEndFromCurve(center: center, radius: innerRadius, startAngle: startAngle, endAngle: endAngle)
         let innerCurveStart: CGPoint = innerResult.0
         let innerCurveEnd: CGPoint = innerResult.1
-       
+        
         var path = Path()
         path.addArc(center: center, radius: outerRadius, startAngle: startAngle, endAngle: endAngle, clockwise: false)
         path.addArc(center: center, radius: innerRadius, startAngle: endAngle, endAngle: startAngle, clockwise: true)
@@ -255,7 +261,7 @@ struct DonutSegment: Shape {
         path.move(to: outerCurveEnd)
         path.addLine(to: innerCurveEnd)
         path.closeSubpath()
-    
+        
         return path
     }
     
@@ -269,7 +275,7 @@ struct DonutSegment: Shape {
         let endHoriz = cos(endAngle.radians)
         let endVert = sin(endAngle.radians)
         end = CGPoint(x: center.x + (radius*endHoriz), y: center.y + (radius*endVert))
-
+        
         return (start, end)
     }
     

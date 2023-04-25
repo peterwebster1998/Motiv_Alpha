@@ -1,10 +1,16 @@
-//
-//  CALv.swift
-//  motiv-prerelease
-//  --> moved to Motiv on 4/24/23
-//
-//  Created by Peter Webster on 10/19/22.
-//
+/*
+  CALv.swift
+  Motiv
+
+  Created by Peter Webster on 4/25/23.
+
+ //
+ //  CALv.swift
+ //  motiv-prerelease
+ //
+ //  Created by Peter Webster on 10/19/22.
+ //
+*/
 
 import SwiftUI
 
@@ -20,13 +26,13 @@ struct CALv: View {
             switch viewModel.viewType {
             case .Month:
                 MonthView()
-//                let _ = print("MONTH VIEW - [\(timeDateHelper.dateString(timeDateHelper.temporalHorizons[0])) - \(timeDateHelper.dateString(timeDateHelper.temporalHorizons[1]))]")
+                //                let _ = print("MONTH VIEW - [\(timeDateHelper.dateString(timeDateHelper.temporalHorizons[0])) - \(timeDateHelper.dateString(timeDateHelper.temporalHorizons[1]))]")
             case .Week:
                 WeekView()
-//                let _ = print("WEEK VIEW")
+                //                let _ = print("WEEK VIEW")
             case .Day:
                 DayView()
-//                let _ = print("DAY VIEW")
+                //                let _ = print("DAY VIEW")
             }
         }.onAppear {
             timeDateHelper.today()
@@ -36,15 +42,15 @@ struct CALv: View {
         }
         /*
          Month View:
-            - Scroll vertically continuously between months
-            - Show each day, when tapped switch to Day View context
+         - Scroll vertically continuously between months
+         - Show each day, when tapped switch to Day View context
          Week View
-            - Scroll horizontally to view all 7 days together vertically stacked
-            - Set Origin to current time of day? Maybe
+         - Scroll horizontally to view all 7 days together vertically stacked
+         - Set Origin to current time of day? Maybe
          Day View
-            - Scroll vertically to view all events for that day, including scheduled sleep hours
-            - Default Origin should also be current time
-            - Based on model, events should be shown for the 1.5 hrs previous to current time and 3.5 hrs afterwards for a 5 hr window
+         - Scroll vertically to view all events for that day, including scheduled sleep hours
+         - Default Origin should also be current time
+         - Based on model, events should be shown for the 1.5 hrs previous to current time and 3.5 hrs afterwards for a 5 hr window
          */
     }
 }
@@ -56,7 +62,7 @@ struct CALBanner: View {
     @EnvironmentObject var homeVM: HomeViewModel
     @State var currentDate: Date
     @State private var pickerDate: Date = Date()
-//    @State private var showPicker: Bool = false
+    //    @State private var showPicker: Bool = false
     
     var body: some View {
         VStack{
@@ -68,13 +74,13 @@ struct CALBanner: View {
                             DatePicker("Date", selection: $pickerDate, displayedComponents: [.date])
                                 .labelsHidden()
                                 .opacity(0.02)
-                            )
+                        )
                     default:
                         Text(timeDateHelper.monthYearStr(currentDate)).padding().font(.largeTitle).frame(maxWidth: .infinity).overlay(
                             DatePicker("Date", selection: $pickerDate, displayedComponents: [.date])
                                 .labelsHidden()
                                 .opacity(0.02)
-                            )
+                        )
                     }
                 }
                 HStack{
@@ -104,7 +110,7 @@ struct CALBanner: View {
             currentDate = value
         }
         .onChange(of: pickerDate){ value in
-//            showPicker.toggle()
+            //            showPicker.toggle()
             timeDateHelper.setDateInView(value)
             timeDateHelper.isRefresh = true
         }
@@ -182,3 +188,4 @@ struct CALv_Previews: PreviewProvider {
         CALv()
     }
 }
+

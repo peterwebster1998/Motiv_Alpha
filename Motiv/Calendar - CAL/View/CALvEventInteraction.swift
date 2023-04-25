@@ -1,10 +1,16 @@
-//
-//  CALvEventInterraction.swift
-//  motiv-prerelease
-//  --> moved to Motiv on 4/24/23
-//
-//  Created by Peter Webster on 1/26/23.
-//
+/*
+  CALvEventInteraction.swift
+  Motiv
+
+  Created by Peter Webster on 4/25/23.
+
+ //
+ //  CALvEventInterraction.swift
+ //  motiv-prerelease
+ //
+ //  Created by Peter Webster on 1/26/23.
+ //
+*/
 
 import SwiftUI
 
@@ -26,7 +32,7 @@ struct CreateEventView: View {
     @State private var pickerTime: String = ""
     @State private var pickerHour: String = ""
     @State private var pickerMin: String = ""
-
+    
     @State private var pickerMonth: String = ""
     @State private var pickerDay: Int = 0
     @State private var pickerYear: Int = 2020
@@ -38,7 +44,7 @@ struct CreateEventView: View {
     @State private var yearSelect : Bool = false
     @State private var timeSelect : Bool = false
     @State private var repeatSelect : Bool = false
-
+    
     var body: some View {
         VStack {
             Group {
@@ -62,7 +68,7 @@ struct CreateEventView: View {
             Group {
                 Divider()
                 Text("Description").frame(maxWidth: .infinity, alignment: .leading).font(.title2).padding(.horizontal)
-                TextEditor(text: $description).frame(maxWidth: UIScreen.screenWidth, maxHeight: 150, alignment: .topLeading)
+                TextEditor(text: $description).frame(maxWidth: 400, maxHeight: 150, alignment: .topLeading)
             }
             Group{
                 Divider()
@@ -79,9 +85,9 @@ struct CreateEventView: View {
                         VStack{
                             HStack{
                                 Picker("Hour", selection: $pickerHour){
-                                        ForEach(hoursOfDay, id: \.self){
-                                            Text($0)
-                                        }
+                                    ForEach(hoursOfDay, id: \.self){
+                                        Text($0)
+                                    }
                                 }.pickerStyle(WheelPickerStyle())
                                 Text(":")
                                 Picker("Minute", selection: $pickerMin){
@@ -110,7 +116,7 @@ struct CreateEventView: View {
                         }
                     }
                     
-
+                    
                     Spacer()
                     Text(pickerMonth == "" ? "Month" : pickerMonth).padding().font(.title).overlay(
                         RoundedRectangle(cornerRadius: 15)
@@ -128,12 +134,12 @@ struct CreateEventView: View {
                             Spacer()
                             Button {
                                 monthSelect = false
-//                                if pickerMonth != ""{
-//                                    let cal = timeDateHelper.calendar
-//                                    let numDaysinMonth = cal.range(of: .day, in: .month, for: cal.date(from: DateComponents(year: pickerYear, month: monthsOfYear.firstIndex(of: pickerMonth)!+1))!)!.upperBound - 1
-//                                    daysOfMonth = 1...numDaysinMonth
-////                                    print("\(pickerMonth) has \(numDaysinMonth) days")
-//                                }
+                                //                                if pickerMonth != ""{
+                                //                                    let cal = timeDateHelper.calendar
+                                //                                    let numDaysinMonth = cal.range(of: .day, in: .month, for: cal.date(from: DateComponents(year: pickerYear, month: monthsOfYear.firstIndex(of: pickerMonth)!+1))!)!.upperBound - 1
+                                //                                    daysOfMonth = 1...numDaysinMonth
+                                ////                                    print("\(pickerMonth) has \(numDaysinMonth) days")
+                                //                                }
                             } label: {
                                 Text("Done")
                             }
@@ -162,7 +168,7 @@ struct CreateEventView: View {
                             }
                         }
                     }
-
+                    
                     Spacer()
                     Text(String(pickerYear)).padding().font(.title).overlay(
                         RoundedRectangle(cornerRadius: 15)
@@ -189,7 +195,7 @@ struct CreateEventView: View {
                 }.foregroundColor(Color.black)
                 Divider()
                 Group{
-                Text("Duration").frame(maxWidth: .infinity, alignment: .leading).font(.title2).padding(.horizontal)
+                    Text("Duration").frame(maxWidth: .infinity, alignment: .leading).font(.title2).padding(.horizontal)
                     HStack{
                         Button {
                             duration -= 15
@@ -347,62 +353,62 @@ struct eventInterractionSheet: View {
                 Text("Tasks:").font(.title).padding()
                 Spacer()
             }
-            ZStack{
-                RoundedRectangle(cornerRadius: 5).stroke(lineWidth: 0.2).frame(maxWidth: UIScreen.screenWidth*0.85)
-                ScrollView{
-                    let eventTasks = viewModel.getTasks(event)
-                    if eventTasks != nil {
-                        ForEach(eventTasks!.getTasks(), id: \.self){ task in
-                            HStack{
-                                Button  {
-                                    //Toggle Task State
-                                    print("Task State Toggled - \(task.taskTitle)")
-                                    viewModel.toggleEventsTaskState(event: event, task: task)
-                                } label: {
-                                    if task.complete {
-                                        Image(systemName: "checkmark.square").padding(.horizontal)
-                                    } else {
-                                        Image(systemName: "square").padding(.horizontal)
-                                    }
-                                }.padding(.horizontal)
-                                if task.complete {
-                                    Text(task.taskTitle).strikethrough()
-                                } else {
-                                    Text(task.taskTitle)
-                                }
-                                Spacer()
-                            }.padding()
-                        }
-                        Button {
-                            //Add task to event
-                            print("Add additional tasks")
-                            viewModel.createTask = true
-                        } label: {
-                            Text("+ Add New Task")
-                        }.padding()
-                    } else {
-                        Button {
-                            //Add task to event
-                            print("Add first task")
-                            viewModel.createTask = true
-                        } label: {
-                            Text("+ Add First Task")
-                        }.padding()
-                    }
-                }.foregroundColor(Color.black).font(.title2)
-            }
-            Spacer()
-        }.sheet(isPresented: $viewModel.createTask) {
-            //Create task view
-            AddTaskFormView(event: event)
+//            ZStack{
+//                RoundedRectangle(cornerRadius: 5).stroke(lineWidth: 0.2).frame(maxWidth: UIScreen.screenWidth*0.85)
+//                ScrollView{
+//                    let eventTasks = viewModel.getTasks(event)
+//                    if eventTasks != nil {
+//                        ForEach(eventTasks!.getTasks(), id: \.self){ task in
+//                            HStack{
+//                                Button  {
+//                                    //Toggle Task State
+//                                    print("Task State Toggled - \(task.taskTitle)")
+//                                    viewModel.toggleEventsTaskState(event: event, task: task)
+//                                } label: {
+//                                    if task.complete {
+//                                        Image(systemName: "checkmark.square").padding(.horizontal)
+//                                    } else {
+//                                        Image(systemName: "square").padding(.horizontal)
+//                                    }
+//                                }.padding(.horizontal)
+//                                if task.complete {
+//                                    Text(task.taskTitle).strikethrough()
+//                                } else {
+//                                    Text(task.taskTitle)
+//                                }
+//                                Spacer()
+//                            }.padding()
+//                        }
+//                        Button {
+//                            //Add task to event
+//                            print("Add additional tasks")
+//                            viewModel.createTask = true
+//                        } label: {
+//                            Text("+ Add New Task")
+//                        }.padding()
+//                    } else {
+//                        Button {
+//                            //Add task to event
+//                            print("Add first task")
+//                            viewModel.createTask = true
+//                        } label: {
+//                            Text("+ Add First Task")
+//                        }.padding()
+//                    }
+//                }.foregroundColor(Color.black).font(.title2)
+//            }
+//            Spacer()
+//        }.sheet(isPresented: $viewModel.createTask) {
+//            //Create task view
+//            AddTaskFormView(event: event)
         }.alert(isPresented:$viewModel.deleteMode){
             Alert(
                 title: Text("Are you sure you want to delete: \("'")\(event.getName())\("'")?"),
                 message: Text("This action cannot be undone"),
                 primaryButton: .destructive(Text("Delete"), action: {
-                viewModel.deleteMode = false
-                viewModel.deleteEvent(event)
-                eventBinding = nil
+                    viewModel.deleteMode = false
+                    viewModel.deleteEvent(event)
+                    eventBinding = nil
                 }),
                 secondaryButton: .cancel({
                     viewModel.deleteMode = false
@@ -475,20 +481,20 @@ struct AddTaskFormView: View {
             TextField("Name", text: $nameToPass)
             Divider()
             Text("Description").frame(maxWidth: .infinity, alignment: .leading).font(.title2).padding()
-            TextEditor(text: $description).frame(maxWidth: UIScreen.screenWidth, maxHeight: 150, alignment: .topLeading)
+            TextEditor(text: $description).frame(maxWidth: 400, maxHeight: 150, alignment: .topLeading)
             Divider()
             Spacer()
             Button {
-                if nameToPass != ""{
-                    let task : TDLm.ToDoList.Task
-                    let taskNo = event.getTasks()?.tasks.count ?? 0
-                    if description != "" {
-                        task = TDLm.ToDoList.Task(taskTitle: nameToPass, taskNo: taskNo, description: description)
-                    } else {
-                        task = TDLm.ToDoList.Task(taskTitle: nameToPass, taskNo: taskNo)
-                    }
-                    viewModel.addTaskToEvent(event: event, task: task)
-                }
+//                if nameToPass != ""{
+//                    let task : TDLm.ToDoList.Task
+//                    let taskNo = event.getTasks()?.tasks.count ?? 0
+//                    if description != "" {
+//                        task = TDLm.ToDoList.Task(taskTitle: nameToPass, taskNo: taskNo, description: description)
+//                    } else {
+//                        task = TDLm.ToDoList.Task(taskTitle: nameToPass, taskNo: taskNo)
+//                    }
+//                    viewModel.addTaskToEvent(event: event, task: task)
+//                }
                 viewModel.createTask = false
             } label: {
                 ZStack{
@@ -604,27 +610,27 @@ struct EditEventSheet: View {
                     Text("Tasks:").font(.title).padding()
                     Spacer()
                 }
-                ZStack{
-                    RoundedRectangle(cornerRadius: 5).stroke(lineWidth: 0.2).frame(maxWidth: UIScreen.screenWidth*0.85)
-                    ScrollView{
-                        let eventTasks = viewModel.getTasks(event)
-                        if eventTasks != nil {
-                            ForEach(eventTasks!.getTasks(), id: \.self){ task in
-                                HStack{
-                                    Button  {
-                                        //Deleting Task
-                                        print("Deleting Task - \(task.taskTitle)")
-                                        viewModel.deleteTaskInEvent(event: event, task: task)
-                                    } label: {
-                                        Image(systemName: "trash").padding(.horizontal)
-                                    }.padding(.horizontal)
-                                    Text(task.taskTitle)
-                                    Spacer()
-                                }.padding()
-                            }
-                        }
-                    }.foregroundColor(Color.black).font(.title2)
-                }
+//                ZStack{
+//                    RoundedRectangle(cornerRadius: 5).stroke(lineWidth: 0.2).frame(maxWidth: UIScreen.screenWidth*0.85)
+//                    ScrollView{
+//                        let eventTasks = viewModel.getTasks(event)
+//                        if eventTasks != nil {
+//                            ForEach(eventTasks!.getTasks(), id: \.self){ task in
+//                                HStack{
+//                                    Button  {
+//                                        //Deleting Task
+//                                        print("Deleting Task - \(task.taskTitle)")
+//                                        viewModel.deleteTaskInEvent(event: event, task: task)
+//                                    } label: {
+//                                        Image(systemName: "trash").padding(.horizontal)
+//                                    }.padding(.horizontal)
+//                                    Text(task.taskTitle)
+//                                    Spacer()
+//                                }.padding()
+//                            }
+//                        }
+//                    }.foregroundColor(Color.black).font(.title2)
+//                }
             }
             Group{
                 Spacer()
@@ -633,13 +639,13 @@ struct EditEventSheet: View {
                     if !viewModel.editSeries{
                         let success = viewModel.editEvent(event: event, name: eventName, description: description, duration: duration, repetition: repetition, time: startTime)
                         if success {
-                            eventBinding = CALm.Event(dateKey: timeDateHelper.dateString(startTime), startTime: startTime, durationMins: duration, eventName: eventName, description: description, repetition: repetition, eventTasks: viewModel.getTasks(event), seriesID: event.getSeriesID())
+                            eventBinding = CALm.Event(dateKey: timeDateHelper.dateString(startTime), startTime: startTime, durationMins: duration, eventName: eventName, description: description, repetition: repetition,/* eventTasks: viewModel.getTasks(event),*/ seriesID: event.getSeriesID())
                             viewModel.editMode = false
                         }
                     } else {
                         let success = viewModel.editEventSeries(event: event, name: eventName, description: description, duration: duration, repetition: repetition, time: startTime)
                         if success {
-                            eventBinding = CALm.Event(dateKey: timeDateHelper.dateString(startTime), startTime: startTime, durationMins: duration, eventName: eventName, description: description, repetition: repetition, eventTasks: viewModel.getTasks(event), seriesID: event.getSeriesID())
+                            eventBinding = CALm.Event(dateKey: timeDateHelper.dateString(startTime), startTime: startTime, durationMins: duration, eventName: eventName, description: description, repetition: repetition,/* eventTasks: viewModel.getTasks(event),*/ seriesID: event.getSeriesID())
                             viewModel.editSeries = false
                             viewModel.editMode = false
                         }

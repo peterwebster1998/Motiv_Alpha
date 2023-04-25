@@ -1,10 +1,14 @@
-//
+/*
+  CALm.swift
+  Motiv
+
+  Created by Peter Webster on 4/25/23.
+
 //  CALm.swift
 //  motiv-prerelease
-//  --> moved to Motiv on 4/24/23
 //
 //  Created by Peter Webster on 10/19/22.
-//
+*/
 
 import Foundation
 import SwiftUI
@@ -13,7 +17,7 @@ struct CALm : Codable{
     private var eventsDict: [String: [Event]]
     private var conflicts: [String: [Event]]
     private var eventSeries: [EventSeries]
-    private var dailyTasks: [String: [TDLm.ToDoList.Task]]
+//    private var dailyTasks: [String: [TDLm.ToDoList.Task]]
     
     enum Repeat : String, Identifiable, CaseIterable, Codable{
         case Never = "Never"
@@ -49,7 +53,7 @@ struct CALm : Codable{
         eventsDict = [:]
         conflicts = [:]
         eventSeries = []
-        dailyTasks = [:]
+//        dailyTasks = [:]
     }
     
     func getDaysEvents(_ day: String) -> [Event]{
@@ -74,18 +78,18 @@ struct CALm : Codable{
         return out
     }
     
-    func getDaysTasks(_ day: String) -> [TDLm.ToDoList.Task]{
-        return dailyTasks[day] ?? []
-    }
-    
-    func getTasks(_ event: CALm.Event) -> TDLm.ToDoList? {
-        let daysEvents = getDaysEvents(event.getDateKey())
-        if daysEvents.contains(where: {$0.getName() == event.getName()}){
-            return daysEvents.first(where: {$0.getName() == event.getName()})!.getTasks()
-        } else {
-            return nil
-        }
-    }
+//    func getDaysTasks(_ day: String) -> [TDLm.ToDoList.Task]{
+//        return dailyTasks[day] ?? []
+//    }
+//
+//    func getTasks(_ event: CALm.Event) -> TDLm.ToDoList? {
+//        let daysEvents = getDaysEvents(event.getDateKey())
+//        if daysEvents.contains(where: {$0.getName() == event.getName()}){
+//            return daysEvents.first(where: {$0.getName() == event.getName()})!.getTasks()
+//        } else {
+//            return nil
+//        }
+//    }
     
     func isEvent(_ event: Event) -> Bool {
         let value = eventsDict[event.getDateKey()]?.contains(where: {event.id == $0.id}) ?? false
@@ -229,22 +233,24 @@ struct CALm : Codable{
             if(event.getDateKey() == newDateKey){
                 let eventIdx = eventsDict[event.getDateKey()]!.firstIndex(where: {$0.id == event.id})!
                 eventsDict[event.getDateKey()]![eventIdx].editEvent(name: name, description: description, duration: duration, repetition: repetition, time: time)
-            } else {
-                let tasks = getTasks(event)
-                let newEvent = Event(dateKey: newDateKey, startTime: time, durationMins: duration, eventName: name, description: description, repetition: repetition, eventTasks: tasks, seriesID: event.getSeriesID())
-                deleteEvent(event)
-                addEventToDay(day: newDateKey, event: newEvent)
             }
+//            else {
+//                let tasks = getTasks(event)
+//                let newEvent = Event(dateKey: newDateKey, startTime: time, durationMins: duration, eventName: name, description: description, repetition: repetition, eventTasks: tasks, seriesID: event.getSeriesID())
+//                deleteEvent(event)
+//                addEventToDay(day: newDateKey, event: newEvent)
+//            }
         } else if isConflict(event){
             if(event.getDateKey() == newDateKey){
                 let eventIdx = conflicts[event.getDateKey()]!.firstIndex(where: {$0.id == event.id})!
                 conflicts[event.getDateKey()]![eventIdx].editEvent(name: name, description: description, duration: duration, repetition: repetition, time: time)
-            } else {
-                let tasks = getTasks(event)
-                let newEvent = Event(dateKey: newDateKey, startTime: time, durationMins: duration, eventName: name, description: description, repetition: repetition, eventTasks: tasks, seriesID: event.getSeriesID())
-                deleteConflict(event)
-                addConflict(newEvent)
             }
+//            else {
+//                let tasks = getTasks(event)
+//                let newEvent = Event(dateKey: newDateKey, startTime: time, durationMins: duration, eventName: name, description: description, repetition: repetition, eventTasks: tasks, seriesID: event.getSeriesID())
+//                deleteConflict(event)
+//                addConflict(newEvent)
+//            }
         } else {
             print("Error: Edit Request Cannot Find Event")
         }
@@ -292,38 +298,38 @@ struct CALm : Codable{
         }
     }
     
-    mutating func addTaskToEvent(event: Event, task: TDLm.ToDoList.Task){
-        let eventIdx = eventsDict[event.getDateKey()]!.firstIndex(where: {$0 == event})!
-        eventsDict[event.getDateKey()]![eventIdx].addTask(task)
-        if event.getSeriesID() != nil {
-            let idx = eventSeries.firstIndex(where: {$0.getID() == event.getSeriesID()})!
-            var newEvent = event
-            newEvent.addTask(task)
-            eventSeries[idx].modifyInstance(oldEvent: event, newEvent: newEvent)
-        }
-    }
-    
-    mutating func toggleEventsTaskState(event: Event, task: TDLm.ToDoList.Task){
-        let eventIdx = eventsDict[event.getDateKey()]!.firstIndex(where: {$0 == event})!
-        eventsDict[event.getDateKey()]![eventIdx].toggleTaskState(task)
-        if event.getSeriesID() != nil {
-            let idx = eventSeries.firstIndex(where: {$0.getID() == event.getSeriesID()})!
-            var newEvent = event
-            newEvent.toggleTaskState(task)
-            eventSeries[idx].modifyInstance(oldEvent: event, newEvent: newEvent)
-        }
-    }
-    
-    mutating func deleteTaskInEvent(event: Event, task: TDLm.ToDoList.Task){
-        let eventIdx = eventsDict[event.getDateKey()]!.firstIndex(where: {$0 == event})!
-        eventsDict[event.getDateKey()]![eventIdx].deleteTask(task)
-        if event.getSeriesID() != nil {
-            let idx = eventSeries.firstIndex(where: {$0.getID() == event.getSeriesID()})!
-            var newEvent = event
-            newEvent.deleteTask(task)
-            eventSeries[idx].modifyInstance(oldEvent: event, newEvent: newEvent)
-        }
-    }
+//    mutating func addTaskToEvent(event: Event, task: TDLm.ToDoList.Task){
+//        let eventIdx = eventsDict[event.getDateKey()]!.firstIndex(where: {$0 == event})!
+//        eventsDict[event.getDateKey()]![eventIdx].addTask(task)
+//        if event.getSeriesID() != nil {
+//            let idx = eventSeries.firstIndex(where: {$0.getID() == event.getSeriesID()})!
+//            var newEvent = event
+//            newEvent.addTask(task)
+//            eventSeries[idx].modifyInstance(oldEvent: event, newEvent: newEvent)
+//        }
+//    }
+//
+//    mutating func toggleEventsTaskState(event: Event, task: TDLm.ToDoList.Task){
+//        let eventIdx = eventsDict[event.getDateKey()]!.firstIndex(where: {$0 == event})!
+//        eventsDict[event.getDateKey()]![eventIdx].toggleTaskState(task)
+//        if event.getSeriesID() != nil {
+//            let idx = eventSeries.firstIndex(where: {$0.getID() == event.getSeriesID()})!
+//            var newEvent = event
+//            newEvent.toggleTaskState(task)
+//            eventSeries[idx].modifyInstance(oldEvent: event, newEvent: newEvent)
+//        }
+//    }
+//
+//    mutating func deleteTaskInEvent(event: Event, task: TDLm.ToDoList.Task){
+//        let eventIdx = eventsDict[event.getDateKey()]!.firstIndex(where: {$0 == event})!
+//        eventsDict[event.getDateKey()]![eventIdx].deleteTask(task)
+//        if event.getSeriesID() != nil {
+//            let idx = eventSeries.firstIndex(where: {$0.getID() == event.getSeriesID()})!
+//            var newEvent = event
+//            newEvent.deleteTask(task)
+//            eventSeries[idx].modifyInstance(oldEvent: event, newEvent: newEvent)
+//        }
+//    }
     //MARK: - CALm.EventSeries
     struct EventSeries: Codable {
         private var series: [Event]
@@ -410,12 +416,12 @@ struct CALm : Codable{
                     break
                 }
                 
-                let tasks = event.getTasks()
-                if tasks != nil {
-                    nextEvent = Event(dateKey: tdh.dateString(startTime), startTime: startTime, durationMins: event.getDuration(), eventName: event.getName(), description: event.getDescription(), repetition: Repeat(rawValue: event.getRepetition())!, eventTasks: tasks!, seriesID: seriesID)
-                } else {
+//                let tasks = event.getTasks()
+//                if tasks != nil {
+//                    nextEvent = Event(dateKey: tdh.dateString(startTime), startTime: startTime, durationMins: event.getDuration(), eventName: event.getName(), description: event.getDescription(), repetition: Repeat(rawValue: event.getRepetition())!, eventTasks: tasks!, seriesID: seriesID)
+//                } else {
                     nextEvent = Event(dateKey: tdh.dateString(startTime), startTime: startTime, durationMins: event.getDuration(), eventName: event.getName(), description: event.getDescription(), repetition: Repeat(rawValue: event.getRepetition())!, seriesID: seriesID)
-                }
+//                }
                 series.append(nextEvent)
             }
         }
@@ -471,7 +477,7 @@ struct CALm : Codable{
         private var startTime: Date
         private var durationMins: Int
         private var eventName: String
-        private var eventTasks: TDLm.ToDoList?
+//        private var eventTasks: TDLm.ToDoList?
         private var description: String
         private var repetition: Repeat
         private var overNighter: Bool
@@ -479,14 +485,14 @@ struct CALm : Codable{
         private var seriesID: UUID?
         
         //MARK: - Init
-        init(dateKey: String, startTime: Date, durationMins: Int, eventName: String, description: String, repetition: Repeat, id: UUID? = nil, eventTasks: TDLm.ToDoList? = nil, seriesID: UUID? = nil){
+        init(dateKey: String, startTime: Date, durationMins: Int, eventName: String, description: String, repetition: Repeat, id: UUID? = nil,/* eventTasks: TDLm.ToDoList? = nil,*/ seriesID: UUID? = nil){
             self.dateKey = dateKey
             self.startTime = startTime
             self.durationMins = durationMins
             self.eventName = eventName
             self.description = description
             self.repetition = repetition
-            self.eventTasks = eventTasks
+//            self.eventTasks = eventTasks
             self.id = (id == nil) ? UUID() : id!
             self.seriesID = seriesID
             
@@ -501,7 +507,7 @@ struct CALm : Codable{
         //MARK: - Protocol Stubs
         //Hashable Stub
         static func == (lhs: CALm.Event, rhs: CALm.Event) -> Bool {
-            if (lhs.dateKey == rhs.dateKey) && (lhs.startTime == rhs.startTime) && (lhs.durationMins == rhs.durationMins) && (lhs.eventName == rhs.eventName) && (lhs.eventTasks == rhs.eventTasks) && (lhs.description == rhs.description) && (lhs.repetition == rhs.repetition) && (lhs.id == rhs.id){
+            if (lhs.dateKey == rhs.dateKey) && (lhs.startTime == rhs.startTime) && (lhs.durationMins == rhs.durationMins) && (lhs.eventName == rhs.eventName) /*&& (lhs.eventTasks == rhs.eventTasks) */&& (lhs.description == rhs.description) && (lhs.repetition == rhs.repetition) && (lhs.id == rhs.id){
                 return true
             } else {
                 return false
@@ -532,9 +538,9 @@ struct CALm : Codable{
             return dateKey
         }
         
-        func getTasks() -> TDLm.ToDoList? {
-            return eventTasks
-        }
+//        func getTasks() -> TDLm.ToDoList? {
+//            return eventTasks
+//        }
         
         func getID() -> UUID {
             return id
@@ -552,24 +558,25 @@ struct CALm : Codable{
         mutating func setDuration(_ duration: Int){
             self.durationMins = duration
         }
-        mutating func addTask(_ task: TDLm.ToDoList.Task){
-            if eventTasks == nil{
-                eventTasks = TDLm.ToDoList(name: dateKey + " " + eventName, listNo: 0)
-            }
-            eventTasks!.addTask(task)
-        }
         
-        mutating func toggleTaskState(_ task: TDLm.ToDoList.Task){
-            if eventTasks != nil {
-                eventTasks!.toggleTaskCompletion(IDarr: [0, task.id])
-            }
-        }
-        
-        mutating func deleteTask(_ task: TDLm.ToDoList.Task){
-            if eventTasks != nil {
-                eventTasks!.deleteTask(task.id)
-            }
-        }
+//        mutating func addTask(_ task: TDLm.ToDoList.Task){
+//            if eventTasks == nil{
+//                eventTasks = TDLm.ToDoList(name: dateKey + " " + eventName, listNo: 0)
+//            }
+//            eventTasks!.addTask(task)
+//        }
+//        
+//        mutating func toggleTaskState(_ task: TDLm.ToDoList.Task){
+//            if eventTasks != nil {
+//                eventTasks!.toggleTaskCompletion(IDarr: [0, task.id])
+//            }
+//        }
+//        
+//        mutating func deleteTask(_ task: TDLm.ToDoList.Task){
+//            if eventTasks != nil {
+//                eventTasks!.deleteTask(task.id)
+//            }
+//        }
         
         mutating func editEvent(name: String, description: String, duration: Int, repetition: Repeat, time: Date){
             self.eventName = name

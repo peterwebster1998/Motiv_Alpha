@@ -1,10 +1,16 @@
-//
-//  CALvWeek.swift
-//  motiv-prerelease
-//  --> moved to Motiv on 4/24/23
-//
-//  Created by Peter Webster on 10/26/22.
-//
+/*
+  CALvWeek.swift
+  Motiv
+
+  Created by Peter Webster on 4/25/23.
+
+ //
+ //  CALvWeek.swift
+ //  motiv-prerelease
+ //
+ //  Created by Peter Webster on 10/26/22.
+ //
+*/
 
 import SwiftUI
 
@@ -19,7 +25,7 @@ struct WeekView: View {
     @EnvironmentObject var timeDateHelper: TimeDateHelper
     @EnvironmentObject var viewModel: CALvm
     @State var datesInView: [Date] = []
-
+    
     var body: some View {
         GeometryReader{ geo in
             ZStack{
@@ -41,19 +47,19 @@ struct WeekView: View {
                 }
             }
         }.frame(maxWidth: .infinity)
-        .onAppear{
-            datesInView.append(timeDateHelper.dateInView)
-            for num in 1...6{
-                datesInView.append(timeDateHelper.calendar.date(byAdding: .day, value: num, to: timeDateHelper.dateInView)!)
+            .onAppear{
+                datesInView.append(timeDateHelper.dateInView)
+                for num in 1...6{
+                    datesInView.append(timeDateHelper.calendar.date(byAdding: .day, value: num, to: timeDateHelper.dateInView)!)
+                }
+            }.onChange(of: timeDateHelper.dateInView){day in
+                datesInView = [day]
+                for num in 1...6 {
+                    datesInView.append(timeDateHelper.calendar.date(byAdding: .day, value: num, to: timeDateHelper.dateInView)!)
+                }
+            }.sheet(isPresented: $viewModel.createEvent){
+                CreateEventView()
             }
-        }.onChange(of: timeDateHelper.dateInView){day in
-            datesInView = [day]
-            for num in 1...6 {
-                datesInView.append(timeDateHelper.calendar.date(byAdding: .day, value: num, to: timeDateHelper.dateInView)!)
-            }
-        }.sheet(isPresented: $viewModel.createEvent){
-            CreateEventView()
-        }
     }
 }
 
@@ -64,7 +70,7 @@ struct DateBar: View {
     @Binding var datesInView: [Date]
     @GestureState var dragGestureState: CGSize = .zero
     @State var dragOffsetY: CGFloat = .zero
-
+    
     var body: some View{
         HStack(spacing: 0){
             VStack(spacing: 0){
@@ -75,18 +81,18 @@ struct DateBar: View {
                     Rectangle()
                         .opacity(0.9)
                         .overlay(
-                        Text(dateStr)
-                            .foregroundColor(
-                                (timeDateHelper.dateString(date) != timeDateHelper.dateString(Date())) ? Color.black : Color.white
-                            )
-                            .multilineTextAlignment(.center)
-                    )
+                            Text(dateStr)
+                                .foregroundColor(
+                                    (timeDateHelper.dateString(date) != timeDateHelper.dateString(Date())) ? Color.black : Color.white
+                                )
+                                .multilineTextAlignment(.center)
+                        )
                 }
             }
         }.frame(maxWidth: geo.size.width * dateBarWidthProportion, maxHeight: geo.size.height * scheduleViewHeightProportion)
-        .position(x: geo.size.width * (dateBarWidthProportion/2), y: geo.size.height * ((scheduleViewHeightProportion/2)+timeBarHeightProportion))
-        .foregroundColor(Color.gray)
-        .gesture(customVerticalDragGesture)
+            .position(x: geo.size.width * (dateBarWidthProportion/2), y: geo.size.height * ((scheduleViewHeightProportion/2)+timeBarHeightProportion))
+            .foregroundColor(Color.gray)
+            .gesture(customVerticalDragGesture)
     }
     
     var customVerticalDragGesture: some Gesture{
@@ -232,7 +238,7 @@ struct timeCursorArrow: Shape{
         path.addLine(to: CGPoint(x: rect.midX * 0.98, y: 0.8*rect.maxY))
         path.addLine(to: CGPoint(x: rect.minX, y: 0.8*rect.maxY))
         path.addLine(to: CGPoint(x: rect.midX, y: rect.maxY))
-
+        
         return path
     }
 }
@@ -275,10 +281,10 @@ struct WeeksScheduledEvents: View {
     let geo: GeometryProxy
     @Binding var datesInView: [Date]
     @State var eventSelected: CALm.Event?
-
+    
     var body: some View {
         let dayHeight: CGFloat = geo.size.height/7
-//        let timeBarHeight : CGFloat = timeBarHeightProportion * geo.size.height
+        //        let timeBarHeight : CGFloat = timeBarHeightProportion * geo.size.height
         ForEach(datesInView, id: \.self){ day in
             let daysEvents: [CALm.Event] = viewModel.getDaysEvents(timeDateHelper.dateString(day))
             let y: CGFloat = ((CGFloat(datesInView.firstIndex(of: day)!)+0.5) * dayHeight)
@@ -290,9 +296,9 @@ struct WeeksScheduledEvents: View {
             }
         }
         .sheet(item: $eventSelected) { event in
-                   eventInterractionSheet(eventBinding: $eventSelected)
+            eventInterractionSheet(eventBinding: $eventSelected)
         }
-
+        
         
         if datesInView.contains(where: {timeDateHelper.calendar.isDate($0, inSameDayAs: Date())}){
             CurrentDayTimeBar(geo: geo, datesInView: $datesInView)
@@ -334,7 +340,7 @@ struct EventTileWeekView: View {
     let y : CGFloat
     
     var body: some View{
-//        let _ = print("width: \(width), height: \(height), x: \(x), y: \(y)")
+        //        let _ = print("width: \(width), height: \(height), x: \(x), y: \(y)")
         Rectangle().overlay(Text(event.getName()).foregroundColor(.black))
             .frame(width: width, height: height)
             .border(.black, width: 1)
@@ -366,10 +372,10 @@ struct CurrentDayTimeBar: View {
         let y: CGFloat = ((geo.size.height / 7) * (CGFloat(idx)+0.5))
         return AnyView(
             TimeRNBar()
-            .frame(maxWidth: 15, maxHeight: ((geo.size.height / 7)*1.01))
-            .position(x: x, y: y)
-            .foregroundColor(.black)
-            .opacity(0.9)
+                .frame(maxWidth: 15, maxHeight: ((geo.size.height / 7)*1.01))
+                .position(x: x, y: y)
+                .foregroundColor(.black)
+                .opacity(0.9)
         )
     }
 }
@@ -388,7 +394,8 @@ struct TimeRNBar: Shape {
         path.addLine(to: CGPoint(x: rect.midX * 0.9, y: rect.minY + (rect.height * 0.85)))
         path.addLine(to: CGPoint(x: rect.midX * 0.9, y: rect.minY + (rect.height * 0.15)))
         path.addLine(to: CGPoint(x: rect.minX, y: rect.minY))
-
+        
         return path
     }
 }
+

@@ -1,10 +1,16 @@
-//
-//  HomeViewModel.swift
-//  motiv-prerelease
-//  --> moved to Motiv on 4/24/23
-//
-//  Created by Peter Webster on 4/11/23.
-//
+/*
+  HomeViewModel.swift
+  Motiv
+
+  Created by Peter Webster on 4/25/23.
+
+ //
+ //  HomeViewModel.swift
+ //  motiv-prerelease
+ //
+ //  Created by Peter Webster on 4/11/23.
+ //
+*/
 
 import SwiftUI
 

@@ -1,10 +1,16 @@
-//
-//  CALvConflicts.swift
-//  motiv-prerelease
-//  --> moved to Motiv on 4/24/23
-//
-//  Created by Peter Webster on 3/1/23.
-//
+/*
+  CALvConflicts.swift
+  Motiv
+
+  Created by Peter Webster on 4/25/23.
+
+ //
+ //  CALvConflicts.swift
+ //  motiv-prerelease
+ //
+ //  Created by Peter Webster on 3/1/23.
+ //
+*/
 
 import SwiftUI
 
@@ -37,8 +43,8 @@ struct ConflictView: View {
                                     selection = true
                                 }
                             Divider()
-                            }
                         }
+                    }
                 }
             } else {
                 Spacer()
@@ -103,7 +109,7 @@ struct DaysConflictsTile: View {
     
     var body: some View {
         HStack{
-//            let _ = print(conflicts)
+            //            let _ = print(conflicts)
             Text(conflicts.first!.getDateKey()).padding().font(.title)
             Spacer()
             Text(String(conflicts.count)).padding().font(.title)
@@ -302,11 +308,11 @@ struct EventTileView: View {
                                         print("deleting event")
                                     }
                                     viewModel.conflictResolved = true
-
+                                    
                                 }
-                        } label: {
-                            Image(systemName: "rectangle.arrowtriangle.2.inward").foregroundColor(.black).font(.body).padding(2)
-                        }
+                            } label: {
+                                Image(systemName: "rectangle.arrowtriangle.2.inward").foregroundColor(.black).font(.body).padding(2)
+                            }
                             Spacer()
                             VStack{
                                 Button{
@@ -340,32 +346,32 @@ struct EventTileView: View {
                     }
                 }
             }
-            
-            
+        
+        
     }
     
     var gestureFunc : some Gesture {
         let dragFunc = DragGesture(minimumDistance: 0, coordinateSpace: .global)
-                .onChanged{ value in
-                    let verticalDrag = value.translation.height
-                    let height = geo.size.height
-                    let quarterHrHeight = height / (24*4)
-                    offsetY = CGFloat(Int(verticalDrag / quarterHrHeight)) * quarterHrHeight
+            .onChanged{ value in
+                let verticalDrag = value.translation.height
+                let height = geo.size.height
+                let quarterHrHeight = height / (24*4)
+                offsetY = CGFloat(Int(verticalDrag / quarterHrHeight)) * quarterHrHeight
+            }
+            .onEnded{value in
+                y += offsetY
+                offsetY = .zero
+                let success = updateEvent()
+                if !success {
+                    print("Error Event Not Updated")
+                } else {
+                    print("Event Updated: \(event)")
                 }
-                .onEnded{value in
-                    y += offsetY
-                    offsetY = .zero
-                    let success = updateEvent()
-                    if !success {
-                        print("Error Event Not Updated")
-                    } else {
-                        print("Event Updated: \(event)")
-                    }
-                }
+            }
         let tapFunc = TapGesture()
             .onEnded { _ in
-            selected.toggle()
-        }
+                selected.toggle()
+            }
         
         let gestureFunc = dragFunc.sequenced(before: tapFunc)
         return gestureFunc
@@ -375,7 +381,7 @@ struct EventTileView: View {
         let height = geo.size.height
         let timeHeightProportion = abs(y/height) * 24
         var hr = CGFloat(Int(timeHeightProportion))
-//        hr = (hr < 23) ? hr+1 : hr // +1 because the first hour of the day is 00
+        //        hr = (hr < 23) ? hr+1 : hr // +1 because the first hour of the day is 00
         var min = (timeHeightProportion - hr)*60
         min = (min <= 60) ? min : min-60 // covers edge case of hr being 11pm and therefore minute count being calculated with adjusted hr value instead of true hr value
         let durationInt = Int((duration/height) * 24*60)
@@ -430,20 +436,20 @@ struct ConflictTileView: View {
     
     var body: some View{
         EventTileView(geo: geo, color: .red, event: event, duration: $duration, y: $y, x: $x, offsetY: $offsetY)
-            if nextToAvailableTimeWindow {
-                Button{
-                    print("Attempting to resolve conflict, adding event: \(event)")
-                    let success = viewModel.addEventToDay(day: timeDateHelper.dateString(timeDateHelper.dateInView), event: event)
-                    print("Success: \(success)")
-                    if success {
-                        viewModel.deleteConflict(event)
-                        viewModel.conflictResolved = true
-                    }
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .foregroundColor(.black)
-                        .font(.title)
-                }.position(x: geo.size.width * 3/7, y: y + offsetY + duration/2)
+        if nextToAvailableTimeWindow {
+            Button{
+                print("Attempting to resolve conflict, adding event: \(event)")
+                let success = viewModel.addEventToDay(day: timeDateHelper.dateString(timeDateHelper.dateInView), event: event)
+                print("Success: \(success)")
+                if success {
+                    viewModel.deleteConflict(event)
+                    viewModel.conflictResolved = true
+                }
+            } label: {
+                Image(systemName: "chevron.left")
+                    .foregroundColor(.black)
+                    .font(.title)
+            }.position(x: geo.size.width * 3/7, y: y + offsetY + duration/2)
             
         }
     }
@@ -456,7 +462,7 @@ struct AvailableTimeWindowView: View {
     @Binding var conflicts: [CALm.Event]
     @Binding var windows: [[CGFloat]]
     @State private var minDurationOfConflict: Int = 0
-
+    
     var body: some View {
         ForEach(windows.indices, id: \.self){ idx in
             let item = windows[idx]
@@ -533,7 +539,7 @@ struct AvailableTimeWindowView: View {
         for event in conflicts {
             minDuration = (event.getDuration() < minDuration) ? event.getDuration() : minDuration
         }
-//        print("minDurationOfConflict: \(minDuration)")
+        //        print("minDurationOfConflict: \(minDuration)")
         return minDuration
     }
 }
@@ -543,7 +549,7 @@ struct TimeWindows: View {
     let duration: CGFloat
     let x: CGFloat
     let width: CGFloat
-  
+    
     var body: some View {
         Rectangle()
             .frame(width: width, height: duration)

@@ -1,10 +1,16 @@
-//
-//  HomeModel.swift
-//  motiv-prerelease
-//  --> moved to Motiv on 4/24/23
-//
-//  Created by Peter Webster on 4/11/23.
-//
+/*
+  HomeModel.swift
+  Motiv
+
+  Created by Peter Webster on 4/25/23.
+
+ //
+ //  HomeModel.swift
+ //  motiv-prerelease
+ //
+ //  Created by Peter Webster on 4/11/23.
+ //
+*/
 
 import Foundation
 import SwiftUI
@@ -30,7 +36,7 @@ struct HomeModel : Codable{
     //MARK: - HomeModel Methods
     init(){
         self.apps = []
-        apps.append(Module(name: "ToDo's", appImage: "checklist", view: AnyView(TDLv())))
+//        apps.append(Module(name: "ToDo's", appImage: "checklist", view: AnyView(TDLv())))
         apps.append(Module(name: "Calendar", appImage: "calendar", view: AnyView(CALv())))
         self.navBubbleAppShortcuts = apps
     }
@@ -87,26 +93,26 @@ struct HomeModel : Codable{
         
         //Mark: - Persistence
         enum CodingKeys: CodingKey {
-                case name, appImage, viewStruct
+            case name, appImage, viewStruct
         }
         
         func encode(to encoder: Encoder) throws {
-                var container = encoder.container(keyedBy: CodingKeys.self)
-                try container.encode(name, forKey: .name)
-                try container.encode(appImage, forKey: .appImage)
-                let data = try NSKeyedArchiver.archivedData(withRootObject: viewStruct, requiringSecureCoding: false)
-                try container.encode(data, forKey: .viewStruct)
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(name, forKey: .name)
+            try container.encode(appImage, forKey: .appImage)
+            let data = try NSKeyedArchiver.archivedData(withRootObject: viewStruct, requiringSecureCoding: false)
+            try container.encode(data, forKey: .viewStruct)
+        }
+        
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            name = try container.decode(String.self, forKey: .name)
+            appImage = try container.decode(String.self, forKey: .appImage)
+            let data = try container.decode(Data.self, forKey: .viewStruct)
+            guard let view = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? AnyView else {
+                throw DecodingError.dataCorruptedError(forKey: .viewStruct, in: container, debugDescription: "View data is corrupted")
             }
-            
-            init(from decoder: Decoder) throws {
-                let container = try decoder.container(keyedBy: CodingKeys.self)
-                name = try container.decode(String.self, forKey: .name)
-                appImage = try container.decode(String.self, forKey: .appImage)
-                let data = try container.decode(Data.self, forKey: .viewStruct)
-                guard let view = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? AnyView else {
-                    throw DecodingError.dataCorruptedError(forKey: .viewStruct, in: container, debugDescription: "View data is corrupted")
-                }
-                viewStruct = view
-            }
+            viewStruct = view
+        }
     }
 }

@@ -11,8 +11,19 @@
 		1D765D6229F70D4B0009F125 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1D765D6129F70D4B0009F125 /* Assets.xcassets */; };
 		1D765D6529F70D4B0009F125 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1D765D6429F70D4B0009F125 /* Preview Assets.xcassets */; };
 		1D765D6C29F714480009F125 /* AppsNavigatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765D6B29F714480009F125 /* AppsNavigatorView.swift */; };
-		1D765D6F29F714A90009F125 /* Calendar-CAL in Resources */ = {isa = PBXBuildFile; fileRef = 1D765D6D29F714A90009F125 /* Calendar-CAL */; };
-		1D765D7029F714A90009F125 /* Home in Resources */ = {isa = PBXBuildFile; fileRef = 1D765D6E29F714A90009F125 /* Home */; };
+		1D765D8029F85B160009F125 /* CALm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765D7F29F85B160009F125 /* CALm.swift */; };
+		1D765D8229F85C2D0009F125 /* CALvm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765D8129F85C2D0009F125 /* CALvm.swift */; };
+		1D765D8429F85D590009F125 /* TimeDateHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765D8329F85D590009F125 /* TimeDateHelper.swift */; };
+		1D765D8629F85DE80009F125 /* CALv.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765D8529F85DE80009F125 /* CALv.swift */; };
+		1D765D8829F85E630009F125 /* CALvMonth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765D8729F85E630009F125 /* CALvMonth.swift */; };
+		1D765D8A29F85F400009F125 /* CALvWeek.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765D8929F85F400009F125 /* CALvWeek.swift */; };
+		1D765D8C29F85FB00009F125 /* CALvDay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765D8B29F85FB00009F125 /* CALvDay.swift */; };
+		1D765D8E29F860380009F125 /* CALvEventInteraction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765D8D29F860380009F125 /* CALvEventInteraction.swift */; };
+		1D765D9029F8607F0009F125 /* CALvConflicts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765D8F29F8607F0009F125 /* CALvConflicts.swift */; };
+		1D765D9229F861070009F125 /* HomeModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765D9129F861070009F125 /* HomeModel.swift */; };
+		1D765D9429F861960009F125 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765D9329F861960009F125 /* HomeViewModel.swift */; };
+		1D765D9629F861F60009F125 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765D9529F861F60009F125 /* HomeView.swift */; };
+		1D765D9829F862810009F125 /* HomeNavBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765D9729F862810009F125 /* HomeNavBubble.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,8 +32,19 @@
 		1D765D6129F70D4B0009F125 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1D765D6429F70D4B0009F125 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		1D765D6B29F714480009F125 /* AppsNavigatorView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AppsNavigatorView.swift; path = "../../../motiv prerelease/motiv-prerelease/motiv-prerelease/AppsNavigatorView.swift"; sourceTree = "<group>"; };
-		1D765D6D29F714A90009F125 /* Calendar-CAL */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "Calendar-CAL"; sourceTree = "<group>"; };
-		1D765D6E29F714A90009F125 /* Home */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Home; sourceTree = "<group>"; };
+		1D765D7F29F85B160009F125 /* CALm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALm.swift; sourceTree = "<group>"; };
+		1D765D8129F85C2D0009F125 /* CALvm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALvm.swift; sourceTree = "<group>"; };
+		1D765D8329F85D590009F125 /* TimeDateHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeDateHelper.swift; sourceTree = "<group>"; };
+		1D765D8529F85DE80009F125 /* CALv.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALv.swift; sourceTree = "<group>"; };
+		1D765D8729F85E630009F125 /* CALvMonth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALvMonth.swift; sourceTree = "<group>"; };
+		1D765D8929F85F400009F125 /* CALvWeek.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALvWeek.swift; sourceTree = "<group>"; };
+		1D765D8B29F85FB00009F125 /* CALvDay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALvDay.swift; sourceTree = "<group>"; };
+		1D765D8D29F860380009F125 /* CALvEventInteraction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALvEventInteraction.swift; sourceTree = "<group>"; };
+		1D765D8F29F8607F0009F125 /* CALvConflicts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALvConflicts.swift; sourceTree = "<group>"; };
+		1D765D9129F861070009F125 /* HomeModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeModel.swift; sourceTree = "<group>"; };
+		1D765D9329F861960009F125 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
+		1D765D9529F861F60009F125 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		1D765D9729F862810009F125 /* HomeNavBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeNavBubble.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,10 +77,11 @@
 		1D765D5C29F70D490009F125 /* Motiv */ = {
 			isa = PBXGroup;
 			children = (
+				1D765D7B29F8249E0009F125 /* Calendar - CAL */,
+				1D765D7729F824750009F125 /* Home */,
 				1D765D5D29F70D490009F125 /* MotivApp.swift */,
 				1D765D6B29F714480009F125 /* AppsNavigatorView.swift */,
-				1D765D6E29F714A90009F125 /* Home */,
-				1D765D6D29F714A90009F125 /* Calendar-CAL */,
+				1D765D8329F85D590009F125 /* TimeDateHelper.swift */,
 				1D765D6129F70D4B0009F125 /* Assets.xcassets */,
 				1D765D6329F70D4B0009F125 /* Preview Content */,
 			);
@@ -71,6 +94,80 @@
 				1D765D6429F70D4B0009F125 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		1D765D7729F824750009F125 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				1D765D7A29F824940009F125 /* Model */,
+				1D765D7929F8248A0009F125 /* ViewModel */,
+				1D765D7829F8247F0009F125 /* View */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		1D765D7829F8247F0009F125 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				1D765D9529F861F60009F125 /* HomeView.swift */,
+				1D765D9729F862810009F125 /* HomeNavBubble.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		1D765D7929F8248A0009F125 /* ViewModel */ = {
+			isa = PBXGroup;
+			children = (
+				1D765D9329F861960009F125 /* HomeViewModel.swift */,
+			);
+			path = ViewModel;
+			sourceTree = "<group>";
+		};
+		1D765D7A29F824940009F125 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				1D765D9129F861070009F125 /* HomeModel.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		1D765D7B29F8249E0009F125 /* Calendar - CAL */ = {
+			isa = PBXGroup;
+			children = (
+				1D765D7E29F824C60009F125 /* Model */,
+				1D765D7D29F824BF0009F125 /* ViewModel */,
+				1D765D7C29F824B90009F125 /* View */,
+			);
+			path = "Calendar - CAL";
+			sourceTree = "<group>";
+		};
+		1D765D7C29F824B90009F125 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				1D765D8529F85DE80009F125 /* CALv.swift */,
+				1D765D8729F85E630009F125 /* CALvMonth.swift */,
+				1D765D8929F85F400009F125 /* CALvWeek.swift */,
+				1D765D8B29F85FB00009F125 /* CALvDay.swift */,
+				1D765D8D29F860380009F125 /* CALvEventInteraction.swift */,
+				1D765D8F29F8607F0009F125 /* CALvConflicts.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		1D765D7D29F824BF0009F125 /* ViewModel */ = {
+			isa = PBXGroup;
+			children = (
+				1D765D8129F85C2D0009F125 /* CALvm.swift */,
+			);
+			path = ViewModel;
+			sourceTree = "<group>";
+		};
+		1D765D7E29F824C60009F125 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				1D765D7F29F85B160009F125 /* CALm.swift */,
+			);
+			path = Model;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -132,9 +229,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1D765D6529F70D4B0009F125 /* Preview Assets.xcassets in Resources */,
-				1D765D7029F714A90009F125 /* Home in Resources */,
 				1D765D6229F70D4B0009F125 /* Assets.xcassets in Resources */,
-				1D765D6F29F714A90009F125 /* Calendar-CAL in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -145,8 +240,21 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1D765D8429F85D590009F125 /* TimeDateHelper.swift in Sources */,
+				1D765D9629F861F60009F125 /* HomeView.swift in Sources */,
+				1D765D8C29F85FB00009F125 /* CALvDay.swift in Sources */,
+				1D765D9829F862810009F125 /* HomeNavBubble.swift in Sources */,
 				1D765D6C29F714480009F125 /* AppsNavigatorView.swift in Sources */,
+				1D765D9029F8607F0009F125 /* CALvConflicts.swift in Sources */,
+				1D765D8229F85C2D0009F125 /* CALvm.swift in Sources */,
+				1D765D8A29F85F400009F125 /* CALvWeek.swift in Sources */,
+				1D765D8E29F860380009F125 /* CALvEventInteraction.swift in Sources */,
 				1D765D5E29F70D490009F125 /* MotivApp.swift in Sources */,
+				1D765D9429F861960009F125 /* HomeViewModel.swift in Sources */,
+				1D765D9229F861070009F125 /* HomeModel.swift in Sources */,
+				1D765D8829F85E630009F125 /* CALvMonth.swift in Sources */,
+				1D765D8029F85B160009F125 /* CALm.swift in Sources */,
+				1D765D8629F85DE80009F125 /* CALv.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
