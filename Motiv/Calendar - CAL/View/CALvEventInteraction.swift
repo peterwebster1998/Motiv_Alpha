@@ -18,6 +18,8 @@ import SwiftUI
 internal let hoursOfDay = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"]
 internal let minuteIntervals = ["00", "15", "30", "45"]
 internal let monthsOfYear = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+internal let screenWidth = UIScreen.main.bounds.size.width
+internal let screenHeight = UIScreen.main.bounds.size.height
 
 struct CreateEventView: View {
     @EnvironmentObject var timeDateHelper: TimeDateHelper
@@ -68,7 +70,7 @@ struct CreateEventView: View {
             Group {
                 Divider()
                 Text("Description").frame(maxWidth: .infinity, alignment: .leading).font(.title2).padding(.horizontal)
-                TextEditor(text: $description).frame(maxWidth: 400, maxHeight: 150, alignment: .topLeading)
+                TextEditor(text: $description).frame(maxWidth: screenWidth * 0.9, maxHeight: 150, alignment: .topLeading)
             }
             Group{
                 Divider()
@@ -481,7 +483,7 @@ struct AddTaskFormView: View {
             TextField("Name", text: $nameToPass)
             Divider()
             Text("Description").frame(maxWidth: .infinity, alignment: .leading).font(.title2).padding()
-            TextEditor(text: $description).frame(maxWidth: 400, maxHeight: 150, alignment: .topLeading)
+            TextEditor(text: $description).frame(maxWidth: screenWidth * 0.9, maxHeight: 150, alignment: .topLeading)
             Divider()
             Spacer()
             Button {

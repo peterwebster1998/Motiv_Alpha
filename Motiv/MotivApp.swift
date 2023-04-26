@@ -11,7 +11,7 @@ import SwiftUI
 struct MotivApp: App {
 
     @StateObject var HOMEviewModel: HomeViewModel = HomeViewModel()
-//    @StateObject var TDLviewModel: TDLvm = TDLvm()
+    @StateObject var TDLviewModel: TDLvm = TDLvm()
     @StateObject var CALviewModel: CALvm = CALvm()
     @StateObject var timeDateHelper: TimeDateHelper = TimeDateHelper()
 
@@ -19,7 +19,7 @@ struct MotivApp: App {
         WindowGroup {
             HomeView()
                 .environmentObject(HOMEviewModel)
-//                .environmentObject(TDLviewModel)
+                .environmentObject(TDLviewModel)
                 .environmentObject(CALviewModel)
                 .environmentObject(timeDateHelper)
         }

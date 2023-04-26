@@ -7,22 +7,39 @@
 
 import Foundation
 
-struct TDLm {
+struct TDLm : Codable{
     private var taskDict : [UUID: Task]
     private var tasksListDict : [String: [Task]]
     private var subtaskDict: [UUID: [Task]]
     
+    // MARK: - Persistence
+    func json() throws -> Data {
+        return try JSONEncoder().encode(self)
+    }
+    
+    init(json: Data) throws {
+        self = try JSONDecoder().decode(TDLm.self, from: json)
+    }
+    
+    init(url: URL) throws {
+        let data = try Data(contentsOf: url)
+        self = try TDLm(json: data)
+    }
+    // MARK: - TDLm Methods
     init(){
         self.taskDict = [:]
         self.tasksListDict = [:]
         self.subtaskDict = [:]
+        
+        self.tasksListDict["General To Dos"] = []
+        self.tasksListDict["Bucket List"] = []
     }
     
     func getTask(_ ID: UUID) -> Task? {
         return taskDict[ID]
     }
     
-    func getSubTasks(_ ID: UUID) -> [Task] {
+    func getSubtasks(_ ID: UUID) -> [Task] {
         return subtaskDict[ID] ?? []
     }
     
@@ -138,8 +155,8 @@ struct TDLm {
             return true
         }
     }
-    
-    struct Task {
+    // MARK: - TDLm.Task
+    struct Task: Codable {
         private let id: UUID
         private let key: String
         private var name: String
@@ -149,6 +166,7 @@ struct TDLm {
         private var hasSubtasks: Bool
         private var deadline: Date?
         
+        // MARK: - Init
         init(key: String, name: String, description: String?, parentTaskID: UUID?, deadline: Date?){
             self.id = UUID()
             self.key = key
@@ -160,6 +178,7 @@ struct TDLm {
             self.deadline = deadline
         }
         
+        // MARK: - Getters
         func getID() -> UUID {
             return self.id
         }
@@ -196,6 +215,7 @@ struct TDLm {
             return self.deadline
         }
         
+        // MARK: - Setters
         mutating func setDeadline(_ time: Date?){
             self.deadline = time
         }

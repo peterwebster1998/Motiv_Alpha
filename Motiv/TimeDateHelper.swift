@@ -80,6 +80,12 @@ class TimeDateHelper: ObservableObject {
         return String(str[..<str.index(str.startIndex, offsetBy: 2)])
     }
     
+    func isDate(_ str: String) -> Bool {
+        dateFormatter.dateFormat = "dd LLL yyyy"
+        let out = dateFormatter.date(from: str)
+        return (out == nil) ? false : true
+    }
+    
     func getTimeAsHrsFloat(_ time: Date) -> Float {
         let pm: Bool = (getAMPM(time) == "PM") ? true : false
         let hrMin = getTimeOfDayHrsMins(time).split(separator: ":")

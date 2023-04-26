@@ -28,6 +28,7 @@
 		1D765DA029F86AAE0009F125 /* FLCv.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765D9F29F86AAE0009F125 /* FLCv.swift */; };
 		1D765DA429F86B260009F125 /* RBXv.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765DA329F86B260009F125 /* RBXv.swift */; };
 		1D765DA829F86EFE0009F125 /* TDLm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765DA729F86EFE0009F125 /* TDLm.swift */; };
+		1D781ED329F9A7BF00DCD178 /* TDLvm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D781ED229F9A7BF00DCD178 /* TDLvm.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -53,6 +54,7 @@
 		1D765D9F29F86AAE0009F125 /* FLCv.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FLCv.swift; sourceTree = "<group>"; };
 		1D765DA329F86B260009F125 /* RBXv.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RBXv.swift; sourceTree = "<group>"; };
 		1D765DA729F86EFE0009F125 /* TDLm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDLm.swift; sourceTree = "<group>"; };
+		1D781ED229F9A7BF00DCD178 /* TDLvm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDLvm.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -242,6 +244,7 @@
 		1D765DA629F86EE40009F125 /* ViewModel */ = {
 			isa = PBXGroup;
 			children = (
+				1D781ED229F9A7BF00DCD178 /* TDLvm.swift */,
 			);
 			path = ViewModel;
 			sourceTree = "<group>";
@@ -329,6 +332,7 @@
 				1D765D8E29F860380009F125 /* CALvEventInteraction.swift in Sources */,
 				1D765D5E29F70D490009F125 /* MotivApp.swift in Sources */,
 				1D765D9429F861960009F125 /* HomeViewModel.swift in Sources */,
+				1D781ED329F9A7BF00DCD178 /* TDLvm.swift in Sources */,
 				1D765DA029F86AAE0009F125 /* FLCv.swift in Sources */,
 				1D765D9229F861070009F125 /* HomeModel.swift in Sources */,
 				1D765D8829F85E630009F125 /* CALvMonth.swift in Sources */,
@@ -391,7 +395,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -445,7 +449,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -475,7 +479,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.peterwebster.Motiv;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -504,7 +508,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.peterwebster.Motiv;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

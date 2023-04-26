@@ -15,7 +15,7 @@ import SwiftUI
 
 class CALvm: ObservableObject {
     
-    enum viewContext {
+    enum CALviewTypes {
         case Month
         case Week
         case Day
@@ -24,7 +24,7 @@ class CALvm: ObservableObject {
     // MARK: - Variables
     
     @Published private var model: CALm
-    @Published private(set) var viewType: viewContext
+    @Published private(set) var viewType: CALviewTypes
     @Published var contextSwitch: Bool
     @Published var startUp: Bool
     @Published var deleteMode: Bool
@@ -47,7 +47,7 @@ class CALvm: ObservableObject {
             model = CALm()
         }
         
-        self.viewType = viewContext.Month
+        self.viewType = CALviewTypes.Month
         self.contextSwitch = false
         self.startUp = true
         self.createEvent = false
@@ -79,13 +79,13 @@ class CALvm: ObservableObject {
     func setViewContext(_ input: String){
         switch input {
         case "m":
-            viewType = viewContext.Month
+            viewType = CALviewTypes.Month
         case "w":
-            viewType = viewContext.Week
+            viewType = CALviewTypes.Week
         case "d":
-            viewType = viewContext.Day
+            viewType = CALviewTypes.Day
         default:
-            viewType = viewContext.Day
+            viewType = CALviewTypes.Day
         }
     }
     
