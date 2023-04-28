@@ -51,6 +51,12 @@ struct TDLm : Codable{
         return tasksListDict.keys.sorted()
     }
     
+    mutating func addList(_ str: String){
+        if tasksListDict[str] == nil{
+            tasksListDict[str] = []
+        }
+    }
+    
     mutating func addTask(key: String, name: String, description: String?, parentTaskID: UUID?, deadline: Date?){
         var task = Task(key: key, name: name, description: description, parentTaskID: parentTaskID, deadline: deadline)
         

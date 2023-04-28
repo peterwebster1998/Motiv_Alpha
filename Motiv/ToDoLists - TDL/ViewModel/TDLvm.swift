@@ -13,11 +13,31 @@ class TDLvm: ObservableObject {
         case ToDoLists
         case ToDosByDay
         case AllToDos
+        case List
         case Task
+        
+        func toString() -> String {
+            switch self {
+            case .ToDoLists:
+                return "lists"
+            case .ToDosByDay:
+                return "byDay"
+            case .AllToDos:
+                return "all"
+            case .List:
+                return "list"
+            case .Task:
+                return "task"
+            }
+        }
     }
     // MARK: - Variables
     @Published private var model: TDLm
     @Published private(set) var viewContext: TDLviewTypes
+    @Published var previousViewContext: String?
+    @Published var selectedList: String?
+    @Published var selectedTask: TDLm.Task?
+    @Published var createMode: Bool
     
     // MARK: - Init
     init (){
@@ -29,8 +49,29 @@ class TDLvm: ObservableObject {
         }
         
         self.viewContext = TDLviewTypes.ToDoLists
+        self.createMode = false
     }
     // MARK: - ViewModel Getters & Setters
+    func getViewContext() -> TDLviewTypes{
+        return self.viewContext
+    }
+    
+    func setViewContext(_ input: String){
+        switch input {
+        case "task":
+            viewContext = .Task
+        case "all":
+            viewContext = .AllToDos
+        case "byDay":
+            viewContext = .ToDosByDay
+        case "lists":
+            viewContext = .ToDoLists
+        case "list":
+            viewContext = .List
+        default:
+            viewContext = .ToDoLists
+        }
+    }
     func getTask(_ ID: UUID) -> TDLm.Task? {
         return model.getTask(ID)
     }
@@ -58,15 +99,58 @@ class TDLvm: ObservableObject {
     
     func addTask(key: String, name: String, description: String?, parentTaskID: UUID?, deadline: Date?){
         model.addTask(key: key, name: name, description: description, parentTaskID: parentTaskID, deadline: deadline)
+        autosave()
     }
     
     func deleteTask(_ ID: UUID){
         let result = model.deleteTask(ID)
         print((result) ? "delete successful" : "delete unsuccessful")
+        autosave()
     }
     
     func updateTask(_ task: TDLm.Task){
         model.updateTask(task)
+        autosave()
+    }
+    
+    func addList(_ str: String){
+        model.addList(str)
+        autosave()
+    }
+    
+    func getCompletionStatus(_ str: String) -> String {
+        switch viewContext {
+        case .List:
+            let task = model.getTaskList(selectedList!).first(where: {$0.getName() == str})
+            if task == nil {
+                return ""
+            }
+            let subs = model.getSubtasks(task!.getID())
+            let count = subs.count
+            var completed = 0
+            if count != 0 {
+                for i in subs{
+                    if i.getCompleted(){
+                        completed += 1
+                    }
+                }
+                return "\(completed)/\(count)"
+            } else {
+                return ""
+            }
+        case .Task:
+            return (selectedTask!.getCompleted()) ? "Complete!" : "Incomplete"
+        default:
+            let list = model.getTaskList(str)
+            let count = list.count
+            var completed = 0
+            for i in list{
+                if i.getCompleted(){
+                    completed += 1
+                }
+            }
+            return "\(completed)/\(count)"
+        }
     }
     
     // MARK: - Persistence

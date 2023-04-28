@@ -29,6 +29,7 @@
 		1D765DA429F86B260009F125 /* RBXv.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765DA329F86B260009F125 /* RBXv.swift */; };
 		1D765DA829F86EFE0009F125 /* TDLm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765DA729F86EFE0009F125 /* TDLm.swift */; };
 		1D781ED329F9A7BF00DCD178 /* TDLvm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D781ED229F9A7BF00DCD178 /* TDLvm.swift */; };
+		1D781ED529FC232100DCD178 /* TDLvOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D781ED429FC232100DCD178 /* TDLvOperation.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -55,6 +56,7 @@
 		1D765DA329F86B260009F125 /* RBXv.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RBXv.swift; sourceTree = "<group>"; };
 		1D765DA729F86EFE0009F125 /* TDLm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDLm.swift; sourceTree = "<group>"; };
 		1D781ED229F9A7BF00DCD178 /* TDLvm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDLvm.swift; sourceTree = "<group>"; };
+		1D781ED429FC232100DCD178 /* TDLvOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDLvOperation.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -197,6 +199,7 @@
 			isa = PBXGroup;
 			children = (
 				1D765D9B29F86A240009F125 /* TDLv.swift */,
+				1D781ED429FC232100DCD178 /* TDLvOperation.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -327,6 +330,7 @@
 				1D765D6C29F714480009F125 /* AppsNavigatorView.swift in Sources */,
 				1D765DA429F86B260009F125 /* RBXv.swift in Sources */,
 				1D765D9029F8607F0009F125 /* CALvConflicts.swift in Sources */,
+				1D781ED529FC232100DCD178 /* TDLvOperation.swift in Sources */,
 				1D765D8229F85C2D0009F125 /* CALvm.swift in Sources */,
 				1D765D8A29F85F400009F125 /* CALvWeek.swift in Sources */,
 				1D765D8E29F860380009F125 /* CALvEventInteraction.swift in Sources */,
@@ -395,7 +399,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -449,7 +453,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
