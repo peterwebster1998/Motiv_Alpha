@@ -31,7 +31,7 @@ struct TDLBanner: View {
     var body: some View{
         VStack(spacing: 0){
             ZStack {
-                Text(bannerText)
+                Text(bannerText).padding().frame(maxWidth: UIScreen.main.bounds.width * 0.75)
                 HStack {
                     Button{
                         switch viewModel.viewContext{
@@ -67,21 +67,24 @@ struct TDLBanner: View {
                     }
                 }
             }.foregroundColor(.black).font(.largeTitle)
-                .onChange(of: viewModel.viewContext){ val in
-                    switch viewModel.viewContext {
-                    case .ToDoLists:
-                        bannerText = "To Do Lists"
-                    case .ToDosByDay:
-                        bannerText = "Day's To Dos"
-                    case .AllToDos:
-                        bannerText = "All To Dos"
-                    case .List:
-                        bannerText = viewModel.selectedList!
-                    case .Task:
-                        bannerText = "TaskName Placeholder"
-                    }
-                }
             DividerLine(screenProportion: 0.6)
+        }.onChange(of: viewModel.viewContext){ val in
+            switch viewModel.viewContext {
+            case .ToDoLists:
+                bannerText = "To Do Lists"
+            case .ToDosByDay:
+                bannerText = "Day's To Dos"
+            case .AllToDos:
+                bannerText = "All To Dos"
+            case .List:
+                bannerText = viewModel.selectedList!
+            case .Task:
+                bannerText = viewModel.selectedTask!.getName()
+            }
+        }.onChange(of: viewModel.selectedTask){value in
+            if viewModel.viewContext == .Task && value != nil{
+                bannerText = value!.getName()
+            }
         }
     }
 }
@@ -94,7 +97,7 @@ struct TDLBody: View {
     var body: some View {
         switch viewModel.viewContext {
         case .Task:
-            TDLTaskView()
+            TDLTaskView(task: viewModel.selectedTask!)
         default:
             TDLListView(lists: $lists)
                 .task{
@@ -182,11 +185,22 @@ struct TDLListView: View {
 struct ElementTile: View {
     @EnvironmentObject var viewModel: TDLvm
     let title: String
+    @State var task: TDLm.Task? = nil
     
     var body: some View {
         ZStack{
             RoundedRectangle(cornerRadius: 5).foregroundColor(.clear)
             HStack{
+                if viewModel.viewContext == .List || viewModel.viewContext == .Task{
+                    if task != nil {
+                        Button{
+                            task!.toggleCompletion()
+                            viewModel.updateTask(task!)
+                        } label: {
+                            Image(systemName: (task!.getCompleted()) ? "checkmark.square" : "square")
+                        }.padding()
+                    }
+                }
                 Text(title)
                     .padding()
                 Spacer()
@@ -195,6 +209,12 @@ struct ElementTile: View {
             }.frame(maxWidth: .infinity)
                 .foregroundColor(.black)
                 .font(.title)
+        }.task{
+            if viewModel.viewContext == .List {
+                task = viewModel.getTaskList(viewModel.selectedList!).first(where: {$0.getName() == title})
+            } else if viewModel.viewContext == .Task {
+                task = viewModel.getSubtasks(viewModel.selectedTask!.getID()).first(where: {$0.getName() == title})
+            }
         }
     }
 }
@@ -211,8 +231,45 @@ struct DividerLine: View {
 
 struct TDLTaskView: View {
     @EnvironmentObject var viewModel: TDLvm
+    @EnvironmentObject var tdh: TimeDateHelper
+    @State var task: TDLm.Task
     
     var body: some View {
-        EmptyView()
+        VStack{
+            if task.getDescription() != ""{
+                Text("Description").frame(maxWidth: .infinity, alignment: .leading).padding().font(.title2)
+                Text(task.getDescription()).font(.subheadline).multilineTextAlignment(.leading).padding(.horizontal)
+                DividerLine(screenProportion: 0.8, lineWidth: 2)
+            }
+            if task.getDeadline() != nil {
+                Text("Deadline: \(tdh.dateString(task.getDeadline()!))").frame(maxWidth: .infinity, alignment: .leading).padding().font(.title2)
+                DividerLine(screenProportion: 0.8, lineWidth: 2)
+            }
+            Text("Subtasks:").frame(maxWidth: .infinity, alignment: .leading).padding().font(.title)
+            RoundedRectangle(cornerRadius: 5)
+                .foregroundColor(.clear)
+                .border(.black, width: 2)
+                .frame(maxWidth: UIScreen.main.bounds.width * 0.8)
+                .overlay(
+                    VStack{
+                        if task.isParentTask() {
+                            ForEach(viewModel.getSubtasks(task.getID()), id: \.self){ sub in
+                                ElementTile(title: sub.getName())
+                                    .onTapGesture {
+                                        viewModel.selectedTask = sub
+                                    }
+                                DividerLine(screenProportion: 0.64, lineWidth: 2)
+                            }
+                        } else {
+                            Text("This task currently does not have any subtasks").padding()
+                        }
+                        Spacer()
+                    }
+            )
+        }.onChange(of: viewModel.selectedTask){ value in
+            if value != nil {
+                task = value!
+            }
+        }
     }
 }

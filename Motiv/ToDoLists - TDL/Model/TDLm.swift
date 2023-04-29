@@ -73,10 +73,12 @@ struct TDLm : Codable{
         //Add corrected task to relevant dicts
         taskDict[task.getID()] = task
         
-        if tasksListDict[key] == nil {
-            tasksListDict[key] = []
+        if parentTaskID == nil {
+            if tasksListDict[key] == nil {
+                tasksListDict[key] = []
+            }
+            tasksListDict[key]!.append(task)
         }
-        tasksListDict[key]!.append(task)
         
         if parentTaskID != nil {
             if subtaskDict[parentTaskID!] == nil {
@@ -94,9 +96,11 @@ struct TDLm : Codable{
         let key = task.getKey()
         taskDict[ID] = task
         
-        let idx = tasksListDict[key]!.firstIndex(where: {$0.getID() == ID})!
-        tasksListDict[key]!.insert(task, at: idx)
-        tasksListDict[key]!.remove(at: idx+1)
+        if !task.isSubtask() {
+            let idx = tasksListDict[key]!.firstIndex(where: {$0.getID() == ID})!
+            tasksListDict[key]!.insert(task, at: idx)
+            tasksListDict[key]!.remove(at: idx+1)
+        }
         
         if task.isSubtask() {
             let parentID = task.getParentTaskID()!
@@ -105,7 +109,7 @@ struct TDLm : Codable{
             subtaskDict[parentID]!.remove(at: idxx+1)
         }
         
-        if task.containsSubtasks() && task.getDeadline() != nil {
+        if task.isParentTask() && task.getDeadline() != nil {
             //Adjust deadlines of subtasks appropriately
             let deadline = task.getDeadline()!
             for sub in subtaskDict[ID]! {
@@ -128,19 +132,21 @@ struct TDLm : Codable{
             let task = taskDict[ID]!
             taskDict.removeValue(forKey: ID)
             
-            //Remove from task list
-            let taskList = tasksListDict[task.getKey()]
-            if taskList != nil {
-                let idx = taskList!.firstIndex(where: {$0.getID() == ID})!
-                if taskList!.count > 1 {
-                    tasksListDict[task.getKey()]!.remove(at: idx)
-                } else {
-                    tasksListDict.removeValue(forKey: task.getKey())
+            //Remove from task list if not subtask
+            if !task.isSubtask() {
+                let taskList = tasksListDict[task.getKey()]
+                if taskList != nil {
+                    let idx = taskList!.firstIndex(where: {$0.getID() == ID})!
+                    if taskList!.count > 1 {
+                        tasksListDict[task.getKey()]!.remove(at: idx)
+                    } else {
+                        tasksListDict.removeValue(forKey: task.getKey())
+                    }
                 }
             }
             
             //Remove Subtasks
-            if task.containsSubtasks(){
+            if task.isParentTask(){
                 let subTasks = subtaskDict[ID]!
                 for sub in subTasks{
                     let outcome = deleteTask(sub.getID())
@@ -162,7 +168,7 @@ struct TDLm : Codable{
         }
     }
     // MARK: - TDLm.Task
-    struct Task: Codable {
+    struct Task: Codable, Hashable {
         private let id: UUID
         private let key: String
         private var name: String
@@ -209,14 +215,13 @@ struct TDLm : Codable{
             return self.parentTaskID
         }
         
-        func containsSubtasks() -> Bool {
-            return self.hasSubtasks
-        }
-        
         func isSubtask() -> Bool {
             return (self.parentTaskID == nil) ? false : true
         }
         
+        func isParentTask() -> Bool {
+            return self.hasSubtasks
+        }
         func getDeadline() -> Date? {
             return self.deadline
         }
@@ -228,6 +233,10 @@ struct TDLm : Codable{
         
         mutating func setHasSubtasks(_ val: Bool){
             self.hasSubtasks = val
+        }
+        
+        mutating func toggleCompletion(){
+            self.completed.toggle()
         }
         
     }

@@ -99,6 +99,9 @@ class TDLvm: ObservableObject {
     
     func addTask(key: String, name: String, description: String?, parentTaskID: UUID?, deadline: Date?){
         model.addTask(key: key, name: name, description: description, parentTaskID: parentTaskID, deadline: deadline)
+        if parentTaskID != nil {
+            selectedTask = model.getTask(parentTaskID!)
+        }
         autosave()
     }
     
@@ -127,28 +130,35 @@ class TDLvm: ObservableObject {
             }
             let subs = model.getSubtasks(task!.getID())
             let count = subs.count
-            var completed = 0
             if count != 0 {
-                for i in subs{
-                    if i.getCompleted(){
-                        completed += 1
-                    }
-                }
+                let completed = subs.filter({$0.getCompleted()}).count
                 return "\(completed)/\(count)"
             } else {
                 return ""
             }
         case .Task:
-            return (selectedTask!.getCompleted()) ? "Complete!" : "Incomplete"
+            let task = selectedTask
+            let subs = model.getSubtasks(task!.getID())
+            if subs.first(where: {$0.getName() == str}) != nil {
+                let subTask = subs.first(where: {$0.getName() == str})!
+                if subTask.isParentTask(){
+                    let sublist = getSubtasks(subTask.getID())
+                    return "\(sublist.filter({$0.getCompleted()}).count)/\(sublist.count)"
+                } else {
+                    return ""
+                }
+            }
+            let count = subs.count
+            if count != 0 {
+                let completed = subs.filter({$0.getCompleted()}).count
+                return "\(completed)/\(count)"
+            } else {
+                return ""
+            }
         default:
             let list = model.getTaskList(str)
             let count = list.count
-            var completed = 0
-            for i in list{
-                if i.getCompleted(){
-                    completed += 1
-                }
-            }
+            let completed = list.filter({$0.getCompleted()}).count
             return "\(completed)/\(count)"
         }
     }
