@@ -76,7 +76,7 @@ struct CompositeHomeView: View{
                     CalendarComponentView().frame(width: geo.size.width, height: geo.size.height * 0.55, alignment: .center)
                     Divider()
                     Divider()
-//                    ToDoComponentView().frame(width: geo.size.width, height: geo.size.height * 0.45, alignment: .center)
+                    ToDoComponentView().frame(width: geo.size.width, height: geo.size.height * 0.45, alignment: .center)
                 }
             }
         }
@@ -111,33 +111,50 @@ struct CalendarComponentView: View {
                         var hour: Int = Int(time[0])!
                         hour = (hour == 12) ? hour-12 : hour
                         hour = (tdh.getAMPM(Date()) == "PM") ? hour+12: hour
-                        let currentTime : String = String(hour) + ":00"
-                        scrollProxy.scrollTo(currentTime, anchor: .top)
+                        let currentTime: String = ((hour < 10) ? ("0"+String(hour)) : String(hour)) + ":00"
+                        print("Scrolling to \(currentTime)")
+                        scrollProxy.scrollTo((hour > 18) ? "18:00" : currentTime, anchor: .top)
                     }
             }
         }
     }
 }
 
-//struct ToDoComponentView: View {
-//    @EnvironmentObject var tdh : TimeDateHelper
-//    @EnvironmentObject var tdlVM: TDLvm
-//
-//    var body: some View {
-//        VStack{
-//            HStack{
-//                Text("Todays To Dos:").font(.title).padding()
-//                Spacer()
-//            }.background(.gray).border(.black)
-//            ScrollView {
-//                ForEach(tdlVM.getTodaysToDos(), id: \.self) { element in
-//                    TasksView(content: element)
-//                    Divider()
-//                }
-//            }
-//        }
-//    }
-//}
+struct ToDoComponentView: View {
+    @EnvironmentObject var tdh : TimeDateHelper
+    @EnvironmentObject var tdlVM: TDLvm
+
+    var body: some View {
+        VStack{
+            HStack{
+                Text("Todays To Dos:").font(.title).padding()
+                Spacer()
+            }.background(.gray).border(.black)
+            ScrollView {
+                ForEach(tdlVM.getTodaysToDos(), id: \.self) { element in
+                    ZStack{
+                        RoundedRectangle(cornerRadius: 15).foregroundColor(.white)
+                        HStack{
+                            Button{
+                                var task = element
+                                task.toggleCompletion()
+                                tdlVM.updateTask(task)
+                            } label: {
+                                Image(systemName: (element.getCompleted()) ? "checkmark.square" : "square")
+                            }.padding()
+                            Text(element.getName())
+                                .padding()
+                            Spacer()
+                        }.frame(maxWidth: .infinity)
+                            .foregroundColor(.black)
+                            .font(.title)
+                    }
+                    DividerLine().foregroundColor(.gray)
+                }
+            }
+        }
+    }
+}
 
 struct HomeView_Previews: PreviewProvider {
     static var previews: some View {

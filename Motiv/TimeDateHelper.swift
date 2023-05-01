@@ -86,6 +86,9 @@ class TimeDateHelper: ObservableObject {
         return (out == nil) ? false : true
     }
     
+    func isToday(_ date: Date) -> Bool {
+        return (dateString(Date()) == dateString(date))
+    }
     func getTimeAsHrsFloat(_ time: Date) -> Float {
         let pm: Bool = (getAMPM(time) == "PM") ? true : false
         let hrMin = getTimeOfDayHrsMins(time).split(separator: ":")

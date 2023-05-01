@@ -51,10 +51,58 @@ struct TDLm : Codable{
         return tasksListDict.keys.sorted()
     }
     
+    func getTodaysToDos() -> [Task]{
+        let tdh = TimeDateHelper()
+        var taskList = getTaskList(tdh.dateString(Date()))
+        taskList.append(contentsOf: getTaskList("General To Dos"))
+        return taskList
+    }
+    
     mutating func addList(_ str: String){
         if tasksListDict[str] == nil{
             tasksListDict[str] = []
         }
+    }
+    
+    mutating func deleteList(_ str: String){
+        if tasksListDict[str] != nil {
+            let taskList = tasksListDict[str]!
+            for t in taskList {
+                let out = deleteTask(t.getID())
+                if !out { print("Failed to delete task: \(t.getName())")}
+            }
+            tasksListDict.removeValue(forKey: str)
+            print("Deleted List: \(str)")
+        }
+    }
+    
+    mutating func editListName(_ newName: String, listname: String){
+        let list = tasksListDict[listname]!
+        for i in list {
+            addTask(key: newName, name: i.getName(), description: (i.getDescription() == "") ? nil : i.getDescription(), parentTaskID: i.getParentTaskID(), deadline: i.getDeadline())
+            if i.isParentTask() {
+                var subs = subtaskDict[i.getID()]!
+                var idx = 0
+                var newParentIDidx: [Int] = []
+                var parentID = [tasksListDict[newName]!.first(where: {$0.getName() == i.getName()})!.getID()]
+                while idx != subs.count {
+                    if newParentIDidx.count != 0 {
+                        if idx == newParentIDidx[0]{
+                            newParentIDidx.removeFirst()
+                            parentID.removeFirst()
+                        }
+                    }
+                    addTask(key: newName, name: subs[idx].getName(), description: (subs[idx].getDescription() == "") ? nil : subs[idx].getDescription(), parentTaskID: parentID[0], deadline: subs[idx].getDeadline())
+                    if subs[idx].isParentTask() {
+                        newParentIDidx.append(subs.count)
+                        subs.append(contentsOf: subtaskDict[subs[idx].getID()]!)
+                        parentID.append(subtaskDict[parentID[0]]!.first(where: {$0.getName() == subs[idx].getName()})!.getID())
+                    }
+                    idx += 1
+                }
+            }
+        }
+        deleteList(listname)
     }
     
     mutating func addTask(key: String, name: String, description: String?, parentTaskID: UUID?, deadline: Date?){
@@ -130,20 +178,6 @@ struct TDLm : Codable{
         } else {
             //Solo Task
             let task = taskDict[ID]!
-            taskDict.removeValue(forKey: ID)
-            
-            //Remove from task list if not subtask
-            if !task.isSubtask() {
-                let taskList = tasksListDict[task.getKey()]
-                if taskList != nil {
-                    let idx = taskList!.firstIndex(where: {$0.getID() == ID})!
-                    if taskList!.count > 1 {
-                        tasksListDict[task.getKey()]!.remove(at: idx)
-                    } else {
-                        tasksListDict.removeValue(forKey: task.getKey())
-                    }
-                }
-            }
             
             //Remove Subtasks
             if task.isParentTask(){
@@ -156,17 +190,38 @@ struct TDLm : Codable{
                 }
             }
             
-            //Remove self as subtask
-            if task.isSubtask() {
-                let idx = subtaskDict[task.getParentTaskID()!]!.firstIndex(where: {$0.getID() == ID})!
-                subtaskDict[task.getParentTaskID()!]!.remove(at: idx)
-                if subtaskDict[task.getParentTaskID()!]!.count == 0 {
-                    subtaskDict.removeValue(forKey: task.getParentTaskID()!)
+            //Remove from task list if not subtask
+            if !task.isSubtask() {
+                let taskList = tasksListDict[task.getKey()]
+                if taskList != nil {
+                    let idx = taskList!.firstIndex(where: {$0.getID() == ID})!
+                    if taskList!.count > 1 {
+                        tasksListDict[task.getKey()]!.remove(at: idx)
+                    } else {
+                        tasksListDict.removeValue(forKey: task.getKey())
+                    }
+                }
+            } else {
+                //Remove self as subtask
+                if task.isSubtask() {
+                    let idx = subtaskDict[task.getParentTaskID()!]!.firstIndex(where: {$0.getID() == ID})!
+                    subtaskDict[task.getParentTaskID()!]!.remove(at: idx)
+                    if subtaskDict[task.getParentTaskID()!]!.count == 0 {
+                        var parentTask = taskDict[task.getParentTaskID()!]!
+                        parentTask.setHasSubtasks(false)
+                        updateTask(parentTask)
+                        subtaskDict.removeValue(forKey: task.getParentTaskID()!)
+                    }
                 }
             }
+            
+            taskDict.removeValue(forKey: ID)
+            print("\tDeleted Task: \(task.getName())")
+            
             return true
         }
     }
+    
     // MARK: - TDLm.Task
     struct Task: Codable, Hashable {
         private let id: UUID
@@ -227,6 +282,18 @@ struct TDLm : Codable{
         }
         
         // MARK: - Setters
+        mutating func setName(_ str: String){
+            if str != "" {
+                self.name = str
+            }
+        }
+        mutating func setDescription(_ str: String){
+            if str == "" {
+                self.description = nil
+            } else {
+                self.description = str
+            }
+        }
         mutating func setDeadline(_ time: Date?){
             self.deadline = time
         }

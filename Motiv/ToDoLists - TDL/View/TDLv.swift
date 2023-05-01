@@ -18,6 +18,12 @@ struct TDLv: View {
             }
             if viewModel.createMode{
                 TDLCreateView()
+            } else if viewModel.editMode && viewModel.viewContext == .ToDoLists{
+                TDLEditListView()
+            } else if viewModel.pressAndHold{
+                TDLPressAndHoldView()
+            } else if viewModel.editMode && viewModel.viewContext == .Task{
+                TDLEditTaskView()
             }
         }
     }
@@ -31,7 +37,14 @@ struct TDLBanner: View {
     var body: some View{
         VStack(spacing: 0){
             ZStack {
-                Text(bannerText).padding().frame(maxWidth: UIScreen.main.bounds.width * 0.75)
+                Text(bannerText).padding().frame(maxWidth: UIScreen.main.bounds.width * 0.75).multilineTextAlignment(.center)
+                    .onLongPressGesture(minimumDuration: 1, maximumDistance: 20){
+                        if viewModel.viewContext == .Task{
+                            viewModel.taskElementToEdit = "Name"
+                            viewModel.editMode = true
+                        }
+                }
+
                 HStack {
                     Button{
                         switch viewModel.viewContext{
@@ -109,6 +122,12 @@ struct TDLBody: View {
                 .onChange(of: viewModel.createMode){ _ in
                     generateListsVals()
                 }
+                .onChange(of: viewModel.deleteMode){ _ in
+                    generateListsVals()
+                }
+                .onChange(of: viewModel.editMode){ _ in
+                    generateListsVals()
+                }
         }
     }
     
@@ -161,18 +180,6 @@ struct TDLListView: View {
         ScrollView{
             ForEach(lists, id: \.self){ list in
                 ElementTile(title: list)
-                    .onTapGesture {
-                        switch viewModel.viewContext {
-                        case .List:
-                            viewModel.selectedTask = viewModel.getTaskList(viewModel.selectedList!).first(where: {$0.getName() == list})
-                            viewModel.setViewContext("task")
-                        default:
-                            viewModel.selectedList = list
-                            viewModel.previousViewContext = viewModel.viewContext.toString()
-                            viewModel.setViewContext("list")
-                            
-                        }
-                    }
                 DividerLine().foregroundColor(.gray)
             }
             if lists.count == 0 {
@@ -189,7 +196,7 @@ struct ElementTile: View {
     
     var body: some View {
         ZStack{
-            RoundedRectangle(cornerRadius: 5).foregroundColor(.clear)
+            RoundedRectangle(cornerRadius: 15).foregroundColor(.white)
             HStack{
                 if viewModel.viewContext == .List || viewModel.viewContext == .Task{
                     if task != nil {
@@ -209,13 +216,45 @@ struct ElementTile: View {
             }.frame(maxWidth: .infinity)
                 .foregroundColor(.black)
                 .font(.title)
-        }.task{
+        }.onTapGesture {
+            if !viewModel.pressAndHold{
+                switch viewModel.viewContext {
+                case .Task:
+                    viewModel.selectedTask = viewModel.getSubtasks(viewModel.selectedTask!.getID()).first(where: {$0.getName() == title})
+                case .List:
+                    viewModel.selectedTask = viewModel.getTaskList(viewModel.selectedList!).first(where: {$0.getName() == title})
+                    viewModel.setViewContext("task")
+                default:
+                    viewModel.selectedList = title
+                    viewModel.previousViewContext = viewModel.viewContext.toString()
+                    viewModel.setViewContext("list")
+                }
+            }
+        }
+        .gesture(pressAndHoldToEditAndDelete)
+        .task{
             if viewModel.viewContext == .List {
                 task = viewModel.getTaskList(viewModel.selectedList!).first(where: {$0.getName() == title})
             } else if viewModel.viewContext == .Task {
                 task = viewModel.getSubtasks(viewModel.selectedTask!.getID()).first(where: {$0.getName() == title})
             }
         }
+    }
+    
+    var pressAndHoldToEditAndDelete: some Gesture{
+        let gesture = LongPressGesture(minimumDuration: 1, maximumDistance: 30).onEnded{ _ in
+            if viewModel.viewContext == .List {
+                viewModel.selectedTask = task
+            } else if viewModel.viewContext != .Task {
+                viewModel.selectedList = title
+            } else {
+                viewModel.selectedTask = task
+            }
+            viewModel.pressAndHold = true
+            viewModel.editDeleteTitle = title
+            print("Pressed and held!")
+        }
+        return gesture
     }
 }
 
@@ -234,38 +273,57 @@ struct TDLTaskView: View {
     @EnvironmentObject var tdh: TimeDateHelper
     @State var task: TDLm.Task
     
+    
     var body: some View {
         VStack{
             if task.getDescription() != ""{
-                Text("Description").frame(maxWidth: .infinity, alignment: .leading).padding().font(.title2)
-                Text(task.getDescription()).font(.subheadline).multilineTextAlignment(.leading).padding(.horizontal)
+                Group{
+                    Text("Description").frame(maxWidth: .infinity, alignment: .leading).padding().font(.title2)
+                    Text(task.getDescription()).font(.subheadline).multilineTextAlignment(.leading).padding(.horizontal)
+                }.onLongPressGesture(minimumDuration: 1, maximumDistance: 20){
+                    viewModel.taskElementToEdit = "Description"
+                    viewModel.editMode = true
+                    print("Edit mode!")
+                }
                 DividerLine(screenProportion: 0.8, lineWidth: 2)
             }
             if task.getDeadline() != nil {
-                Text("Deadline: \(tdh.dateString(task.getDeadline()!))").frame(maxWidth: .infinity, alignment: .leading).padding().font(.title2)
+                HStack{
+                    Text("Deadline: ").padding()
+                    Spacer()
+                    Spacer()
+                    Text((tdh.isToday(task.getDeadline()!)) ? tdh.getTimeOfDayHrsMins(task.getDeadline()!) : tdh.dateString(task.getDeadline()!)).padding()
+                    Spacer()
+                }.font(.title2).onLongPressGesture(minimumDuration: 1, maximumDistance: 20){
+                    viewModel.taskElementToEdit = "Deadline"
+                    viewModel.editMode = true
+                }
                 DividerLine(screenProportion: 0.8, lineWidth: 2)
             }
             Text("Subtasks:").frame(maxWidth: .infinity, alignment: .leading).padding().font(.title)
-            RoundedRectangle(cornerRadius: 5)
-                .foregroundColor(.clear)
-                .border(.black, width: 2)
-                .frame(maxWidth: UIScreen.main.bounds.width * 0.8)
-                .overlay(
-                    VStack{
-                        if task.isParentTask() {
-                            ForEach(viewModel.getSubtasks(task.getID()), id: \.self){ sub in
-                                ElementTile(title: sub.getName())
-                                    .onTapGesture {
-                                        viewModel.selectedTask = sub
-                                    }
-                                DividerLine(screenProportion: 0.64, lineWidth: 2)
-                            }
-                        } else {
-                            Text("This task currently does not have any subtasks").padding()
+            
+            ScrollView{
+                VStack{
+                    if task.isParentTask() {
+                        ForEach(viewModel.getSubtasks(task.getID()), id: \.self){ sub in
+                            ElementTile(title: sub.getName())
+                                .onTapGesture {
+                                    viewModel.selectedTask = sub
+                                }
+                            DividerLine(screenProportion: 0.64, lineWidth: 2)
                         }
-                        Spacer()
+                    } else {
+                        Text("This task currently does not have any subtasks").padding()
                     }
-            )
+                    Spacer()
+                }.overlay(
+                    RoundedRectangle(cornerRadius: 5)
+                        .stroke(Color.black, lineWidth: 2)
+                        .foregroundColor(.clear)
+                )
+                .frame(maxWidth: UIScreen.main.bounds.width * 0.8)
+                .padding()
+            }
         }.onChange(of: viewModel.selectedTask){ value in
             if value != nil {
                 task = value!

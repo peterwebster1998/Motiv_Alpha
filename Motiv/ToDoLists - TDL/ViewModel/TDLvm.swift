@@ -38,6 +38,11 @@ class TDLvm: ObservableObject {
     @Published var selectedList: String?
     @Published var selectedTask: TDLm.Task?
     @Published var createMode: Bool
+    @Published var pressAndHold: Bool
+    @Published var editDeleteTitle: String?
+    @Published var editMode: Bool
+    @Published var deleteMode: Bool
+    @Published var taskElementToEdit: String?
     
     // MARK: - Init
     init (){
@@ -50,6 +55,9 @@ class TDLvm: ObservableObject {
         
         self.viewContext = TDLviewTypes.ToDoLists
         self.createMode = false
+        self.pressAndHold = false
+        self.editMode = false
+        self.deleteMode = false
     }
     // MARK: - ViewModel Getters & Setters
     func getViewContext() -> TDLviewTypes{
@@ -121,6 +129,16 @@ class TDLvm: ObservableObject {
         autosave()
     }
     
+    func deleteList(_ str: String){
+        model.deleteList(str)
+        autosave()
+    }
+    
+    func editListName(_ str: String){
+        model.editListName(str, listname: selectedList!)
+        autosave()
+    }
+    
     func getCompletionStatus(_ str: String) -> String {
         switch viewContext {
         case .List:
@@ -161,6 +179,10 @@ class TDLvm: ObservableObject {
             let completed = list.filter({$0.getCompleted()}).count
             return "\(completed)/\(count)"
         }
+    }
+    
+    func getTodaysToDos() -> [TDLm.Task]{
+         return model.getTodaysToDos()
     }
     
     // MARK: - Persistence
