@@ -128,6 +128,15 @@ struct TDLm : Codable{
             tasksListDict[key]!.append(task)
         }
         
+        if deadline != nil {
+            let tdh = TimeDateHelper()
+            let dateKey = tdh.dateString(task.getDeadline()!)
+            if tasksListDict[dateKey] == nil {
+                tasksListDict[dateKey] = []
+            }
+            tasksListDict[dateKey]!.append(task)
+        }
+        
         if parentTaskID != nil {
             if subtaskDict[parentTaskID!] == nil {
                 subtaskDict[parentTaskID!] = []
@@ -142,24 +151,68 @@ struct TDLm : Codable{
     mutating func updateTask(_ task: Task){
         let ID = task.getID()
         let key = task.getKey()
-        taskDict[ID] = task
+        let oldTask = taskDict[ID]!
+        var newTask = task
+        let tdh = TimeDateHelper()
         
-        if !task.isSubtask() {
-            let idx = tasksListDict[key]!.firstIndex(where: {$0.getID() == ID})!
-            tasksListDict[key]!.insert(task, at: idx)
-            tasksListDict[key]!.remove(at: idx+1)
+        if oldTask.getDeadline() != nil {
+            let deadline = oldTask.getDeadline()!
+            let dateKey = tdh.dateString(deadline)
+            let idx = tasksListDict[dateKey]!.firstIndex(where: {$0.getID() == ID})!
+            if newTask.getDeadline() != nil {
+                if dateKey != tdh.dateString(newTask.getDeadline()!) {
+                    tasksListDict[dateKey]!.remove(at: idx)
+                    if tasksListDict[dateKey]!.count == 0 {
+                        tasksListDict.removeValue(forKey: dateKey)
+                    }
+                    var newDateKey = tdh.dateString(newTask.getDeadline()!)
+                    if newTask.isSubtask() && taskDict[newTask.getParentTaskID()!]!.getDeadline() != nil {
+                        if newTask.getDeadline()! > taskDict[newTask.getParentTaskID()!]!.getDeadline()! {
+                            newDateKey = tdh.dateString(taskDict[newTask.getParentTaskID()!]!.getDeadline()!)
+                            newTask.setDeadline(taskDict[newTask.getParentTaskID()!]!.getDeadline())
+                        }
+                    }
+                    if tasksListDict[newDateKey] == nil {
+                        tasksListDict[newDateKey] = []
+                    }
+                    tasksListDict[newDateKey]!.append(newTask)
+                } else {
+                    tasksListDict[dateKey]!.insert(newTask, at: idx)
+                    tasksListDict[dateKey]!.remove(at: idx+1)
+                }
+            } else {
+                tasksListDict[dateKey]!.remove(at: idx)
+                if tasksListDict[dateKey]!.count == 0 {
+                    tasksListDict.removeValue(forKey: dateKey)
+                }
+            }
+        } else {
+            if newTask.getDeadline() != nil {
+                let newDateKey = tdh.dateString(newTask.getDeadline()!)
+                if tasksListDict[newDateKey] == nil {
+                    tasksListDict[newDateKey] = []
+                }
+                tasksListDict[newDateKey]!.append(newTask)
+                
+            }
         }
         
-        if task.isSubtask() {
-            let parentID = task.getParentTaskID()!
+        taskDict[ID] = newTask
+        
+        if !newTask.isSubtask() {
+            let idx = tasksListDict[key]!.firstIndex(where: {$0.getID() == ID})!
+            tasksListDict[key]!.insert(newTask, at: idx)
+            tasksListDict[key]!.remove(at: idx+1)
+        } else {
+            let parentID = newTask.getParentTaskID()!
             let idxx = subtaskDict[parentID]!.firstIndex(where: {$0.getID() == ID})!
-            subtaskDict[parentID]!.insert(task, at: idxx)
+            subtaskDict[parentID]!.insert(newTask, at: idxx)
             subtaskDict[parentID]!.remove(at: idxx+1)
         }
         
-        if task.isParentTask() && task.getDeadline() != nil {
+        if newTask.isParentTask() && newTask.getDeadline() != nil {
             //Adjust deadlines of subtasks appropriately
-            let deadline = task.getDeadline()!
+            let deadline = newTask.getDeadline()!
             for sub in subtaskDict[ID]! {
                 if sub.getDeadline() != nil{
                     if deadline < sub.getDeadline()!{
@@ -212,6 +265,16 @@ struct TDLm : Codable{
                         updateTask(parentTask)
                         subtaskDict.removeValue(forKey: task.getParentTaskID()!)
                     }
+                }
+            }
+            
+            if task.getDeadline() != nil {
+                let tdh = TimeDateHelper()
+                let dateKey = tdh.dateString(task.getDeadline()!)
+                let idx = tasksListDict[dateKey]!.firstIndex(where: {$0.getID() == ID})!
+                tasksListDict[dateKey]!.remove(at: idx)
+                if tasksListDict[dateKey]!.count == 0{
+                    tasksListDict.removeValue(forKey: dateKey)
                 }
             }
             

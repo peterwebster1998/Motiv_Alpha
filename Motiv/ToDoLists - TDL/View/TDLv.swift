@@ -9,13 +9,12 @@ import SwiftUI
 
 struct TDLv: View {
     @EnvironmentObject var viewModel: TDLvm
+    @State var height: CGFloat = UIScreen.main.bounds.height * 0.1
     
     var body: some View {
         ZStack{
-            VStack{
-                TDLBanner()
-                TDLBody()
-            }
+            TDLBody().frame(maxWidth: .infinity, maxHeight: UIScreen.main.bounds.height * 0.9).position(x: UIScreen.main.bounds.midX, y: UIScreen.main.bounds.height * 0.55)
+            TDLBanner(height: $height).position(x: UIScreen.main.bounds.midX, y: height/2)
             if viewModel.createMode{
                 TDLCreateView()
             } else if viewModel.editMode && viewModel.viewContext == .ToDoLists{
@@ -25,62 +24,18 @@ struct TDLv: View {
             } else if viewModel.editMode && viewModel.viewContext == .Task{
                 TDLEditTaskView()
             }
-        }
+        }.onAppear{viewModel.setViewContext("lists")}
     }
 }
 
 struct TDLBanner: View {
     @EnvironmentObject var viewModel: TDLvm
-    @EnvironmentObject var homeVM: HomeViewModel
     @State var bannerText: String = "To Do Lists"
+    @Binding var height: CGFloat
     
     var body: some View{
         VStack(spacing: 0){
-            ZStack {
-                Text(bannerText).padding().frame(maxWidth: UIScreen.main.bounds.width * 0.75).multilineTextAlignment(.center)
-                    .onLongPressGesture(minimumDuration: 1, maximumDistance: 20){
-                        if viewModel.viewContext == .Task{
-                            viewModel.taskElementToEdit = "Name"
-                            viewModel.editMode = true
-                        }
-                }
-
-                HStack {
-                    Button{
-                        switch viewModel.viewContext{
-                        case .Task:
-                            if viewModel.selectedTask!.isSubtask(){
-                                viewModel.selectedTask = viewModel.getTask(viewModel.selectedTask!.getParentTaskID()!)
-                            } else {
-                                viewModel.selectedTask = nil
-                                viewModel.setViewContext("list")
-                            }
-                        case .List:
-                            viewModel.selectedList = nil
-                            viewModel.setViewContext(viewModel.previousViewContext!)
-                            viewModel.previousViewContext = nil
-                        default:
-                            homeVM.appSelect = true
-                        }
-                    } label: {
-                        switch viewModel.viewContext{
-                        case .Task:
-                            Image(systemName: "chevron.left").padding()
-                        case .List:
-                            Image(systemName: "chevron.left").padding()
-                        default:
-                            Image(systemName: "square.grid.3x3.fill").padding()
-                        }
-                    }
-                    Spacer()
-                    Button{
-                        viewModel.createMode = true
-                    } label: {
-                        Image(systemName: "plus").padding()
-                    }
-                }
-            }.foregroundColor(.black).font(.largeTitle)
-            DividerLine(screenProportion: 0.6)
+            BannerTile(bannerText: $bannerText, height: $height).font(.largeTitle)
         }.onChange(of: viewModel.viewContext){ val in
             switch viewModel.viewContext {
             case .ToDoLists:
@@ -99,6 +54,134 @@ struct TDLBanner: View {
                 bannerText = value!.getName()
             }
         }
+    }
+}
+
+struct BannerTile: View {
+    @EnvironmentObject var viewModel: TDLvm
+    @EnvironmentObject var homeVM: HomeViewModel
+    @Binding var bannerText: String
+    @Binding var height: CGFloat
+    @State var tapped: Bool = false
+    @State var otherOptions: [String] = []
+    let animationDuration: Double = 0.25
+    @State var opacity: Double = 0
+    
+    var body: some View {
+        Rectangle().foregroundColor(.white)
+            .frame(maxWidth: UIScreen.main.bounds.width , maxHeight: height)
+            .animation(.easeInOut(duration: animationDuration), value: height)
+            .overlay(
+                VStack{
+                    ZStack{
+                        bannerButtons
+                        Text(bannerText).padding().multilineTextAlignment(.center)
+                            .onTapGesture {
+                                if viewModel.viewContext != .Task && viewModel.viewContext != .List{
+                                    if !tapped {
+                                        setOtherOptions()
+                                        tapped = true
+                                        height = height * 3
+                                        height = min(height, UIScreen.main.bounds.height * 0.3)
+                                    } else {
+                                        setViewContext(bannerText)
+                                    }
+                                }
+                            }
+                    }
+                    DividerLine(screenProportion: 0.64, lineWidth: 2)
+                    if tapped {
+                        Text(otherOptions[0]).padding()
+                            .opacity(opacity)
+                            .animation(.easeInOut(duration: animationDuration).delay(animationDuration * 0.25), value: opacity)
+                            .onTapGesture {
+                                setViewContext(otherOptions[0])
+                            }
+                        DividerLine(screenProportion: 0.64, lineWidth: 2)
+                            .opacity(opacity)
+                            .animation(.easeInOut(duration: animationDuration).delay(animationDuration * 0.5), value: opacity)
+                        Text(otherOptions[1]).padding()
+                            .opacity(opacity)
+                            .animation(.easeInOut(duration: animationDuration).delay(animationDuration * 0.75), value: opacity)
+                            .onTapGesture {
+                                setViewContext(otherOptions[1])
+                            }
+                        DividerLine(screenProportion: 0.64, lineWidth: 2)
+                            .opacity(opacity)
+                            .animation(.easeInOut(duration: animationDuration).delay(animationDuration), value: opacity)
+                    }
+                }.foregroundColor(.black)
+            )
+            .onLongPressGesture(minimumDuration: 1, maximumDistance: 20){
+                if viewModel.viewContext == .Task{
+                    viewModel.taskElementToEdit = "Name"
+                    viewModel.editMode = true
+                }
+            }.onChange(of: height){ _ in
+               opacity = (height >= UIScreen.main.bounds.height * 0.2) ? 1 : 0
+            }
+    }
+    
+    var bannerButtons: some View {
+        HStack {
+            Button{
+                switch viewModel.viewContext{
+                case .Task:
+                    if viewModel.selectedTask!.isSubtask(){
+                        viewModel.selectedTask = viewModel.getTask(viewModel.selectedTask!.getParentTaskID()!)
+                    } else {
+                        viewModel.selectedTask = nil
+                        viewModel.setViewContext("list")
+                    }
+                case .List:
+                    viewModel.selectedList = nil
+                    viewModel.setViewContext(viewModel.previousViewContext!)
+                    viewModel.previousViewContext = nil
+                default:
+                    homeVM.appSelect = true
+                }
+            } label: {
+                switch viewModel.viewContext{
+                case .Task:
+                    Image(systemName: "chevron.left").padding()
+                case .List:
+                    Image(systemName: "chevron.left").padding()
+                default:
+                    Image(systemName: "square.grid.3x3.fill").padding()
+                }
+            }
+            Spacer()
+            Button{
+                viewModel.createMode = true
+            } label: {
+                Image(systemName: "plus").padding()
+            }
+        }
+    }
+    
+    func setOtherOptions(){
+        if viewModel.viewContext == .ToDoLists {
+            otherOptions = []
+            otherOptions.append(contentsOf: ["Day's To Dos", "All To Dos"])
+        } else if viewModel.viewContext == .ToDosByDay {
+            otherOptions = []
+            otherOptions.append(contentsOf: ["To Do Lists", "All To Dos"])
+        } else {
+            otherOptions = []
+            otherOptions.append(contentsOf: ["To Do Lists", "Day's To Dos"])
+        }
+    }
+    
+    func setViewContext(_ str: String){
+        if str == "To Do Lists"{
+            viewModel.setViewContext("lists")
+        } else if str == "Day's To Dos" {
+            viewModel.setViewContext("byDay")
+        } else if str == "All To Dos" {
+            viewModel.setViewContext("all")
+        }
+        tapped = false
+        height = height / 3
     }
 }
 
@@ -320,6 +403,7 @@ struct TDLTaskView: View {
                     RoundedRectangle(cornerRadius: 5)
                         .stroke(Color.black, lineWidth: 2)
                         .foregroundColor(.clear)
+                        .frame(width: UIScreen.main.bounds.width * 0.8, alignment: .center)
                 )
                 .frame(maxWidth: UIScreen.main.bounds.width * 0.8)
                 .padding()
