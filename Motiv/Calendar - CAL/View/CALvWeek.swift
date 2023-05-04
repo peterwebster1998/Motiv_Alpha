@@ -183,7 +183,7 @@ struct TimeBar: View{
         ZStack{
             HStack(spacing: 0){
                 ForEach(hoursOfDay, id: \.self){ hour in
-                    HourTile(geo: geo, hour: hour).id(hour)
+                    WeekHourTile(geo: geo, hour: hour).id(hour)
                 }
             }
             if datesInView.contains(where: {timeDateHelper.calendar.isDate($0, inSameDayAs: Date())}){
@@ -195,14 +195,47 @@ struct TimeBar: View{
     
 }
 
-struct HourTile: View {
+struct WeekHourTile: View {
     let geo: GeometryProxy
     let hour: String
     
     var body: some View {
         Rectangle().frame(width: geo.size.width / hoursPerScreenWidth, height: geo.size.height * timeBarHeightProportion).foregroundColor(.white).overlay(
-            Text(hour + ":00")
+            ZStack{
+                Text(hour + ":00")
+                WeekHourScaleLines()
+            }.foregroundColor(.black)
         )
+    }
+}
+
+struct WeekHourScaleLines: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        
+        path.move(to: CGPoint(x: rect.maxX, y: rect.maxY * 0.7))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY * 0.7))
+        path.addLine(to: CGPoint(x: rect.maxX * 0.01, y: rect.maxY * 0.7))
+        path.addLine(to: CGPoint(x: rect.maxX * 0.01, y: rect.maxY * 0.97))
+        path.addLine(to: CGPoint(x: rect.maxX * 0.24, y: rect.maxY * 0.97))
+        path.addLine(to: CGPoint(x: rect.maxX * 0.24, y: rect.maxY * 0.9))
+        path.addLine(to: CGPoint(x: rect.maxX * 0.26, y: rect.maxY * 0.9))
+        path.addLine(to: CGPoint(x: rect.maxX * 0.26, y: rect.maxY * 0.97))
+        path.addLine(to: CGPoint(x: rect.maxX * 0.49, y: rect.maxY * 0.97))
+        path.addLine(to: CGPoint(x: rect.maxX * 0.49, y: rect.maxY * 0.8))
+        path.addLine(to: CGPoint(x: rect.maxX * 0.51, y: rect.maxY * 0.8))
+        path.addLine(to: CGPoint(x: rect.maxX * 0.51, y: rect.maxY * 0.97))
+        path.addLine(to: CGPoint(x: rect.maxX * 0.74, y: rect.maxY * 0.97))
+        path.addLine(to: CGPoint(x: rect.maxX * 0.74, y: rect.maxY * 0.9))
+        path.addLine(to: CGPoint(x: rect.maxX * 0.76, y: rect.maxY * 0.9))
+        path.addLine(to: CGPoint(x: rect.maxX * 0.76, y: rect.maxY * 0.97))
+        path.addLine(to: CGPoint(x: rect.maxX * 0.99, y: rect.maxY * 0.97))
+        path.addLine(to: CGPoint(x: rect.maxX * 0.99, y: rect.maxY * 0.7))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY * 0.7))
+
+        return path
     }
 }
 
@@ -215,11 +248,8 @@ struct TimeBarCursor: View {
         let time: [Substring] = timeDateHelper.getTimeOfDayHrsMins(Date()).split(separator: ":")
         var hr: CGFloat = CGFloat(Int(time[0])!)
         let min: CGFloat = CGFloat(Int(time[1])!)
-        if timeDateHelper.getAMPM(Date()) == "PM" && (hr != 12) {
-            hr += 12
-        } else if hr == 12 {
-            hr -= 12
-        }
+        hr = (hr == 12) ? 0: hr
+        hr = (timeDateHelper.getAMPM(Date()) == "PM") ? hr+12 : hr
         let x: CGFloat = (day/24)*(hr+(min/60))
         return timeCursorArrow().frame(maxWidth: 10, maxHeight: .infinity).position(x: x, y: geo.size.height * (timeBarHeightProportion/2)).foregroundColor(.black)
     }
@@ -256,7 +286,7 @@ struct ScheduledEventsHorizontalView: View{
                 WeeksScheduledEvents(geo: newGeo, datesInView: $datesInView)
             }
         }.frame(width: geo.size.width * (24/hoursPerScreenWidth), height: geo.size.height * scheduleViewHeightProportion)
-        let _ = print("====== width: \(geo.size.width * (24/hoursPerScreenWidth)), height: \(geo.size.height * scheduleViewHeightProportion)")
+//        let _ = print("====== width: \(geo.size.width * (24/hoursPerScreenWidth)), height: \(geo.size.height * scheduleViewHeightProportion)")
     }
 }
 
@@ -280,25 +310,19 @@ struct WeeksScheduledEvents: View {
     @EnvironmentObject var viewModel: CALvm
     let geo: GeometryProxy
     @Binding var datesInView: [Date]
-    @State var eventSelected: CALm.Event?
     
     var body: some View {
         let dayHeight: CGFloat = geo.size.height/7
-        //        let timeBarHeight : CGFloat = timeBarHeightProportion * geo.size.height
         ForEach(datesInView, id: \.self){ day in
             let daysEvents: [CALm.Event] = viewModel.getDaysEvents(timeDateHelper.dateString(day))
             let y: CGFloat = ((CGFloat(datesInView.firstIndex(of: day)!)+0.5) * dayHeight)
             Group{
                 ForEach(daysEvents, id: \.self){ event in
                     let data = calculateXandDuration(event: event, day: day)
-                    EventTileWeekView(geo: geo, event: event, eventSelected: $eventSelected, width: data[1], height: dayHeight, x:data[0], y: y)
+                    EventTileWeekView(geo: geo, event: event, width: data[1], height: dayHeight, x:data[0], y: y)
                 }
             }
         }
-        .sheet(item: $eventSelected) { event in
-            eventInterractionSheet(eventBinding: $eventSelected)
-        }
-        
         
         if datesInView.contains(where: {timeDateHelper.calendar.isDate($0, inSameDayAs: Date())}){
             CurrentDayTimeBar(geo: geo, datesInView: $datesInView)
@@ -331,24 +355,24 @@ struct WeeksScheduledEvents: View {
 }
 
 struct EventTileWeekView: View {
+    @EnvironmentObject var viewModel: CALvm
     let geo : GeometryProxy
     let event: CALm.Event
-    @Binding var eventSelected: CALm.Event?
     let width: CGFloat
     let height: CGFloat
     let x : CGFloat
     let y : CGFloat
     
     var body: some View{
-        //        let _ = print("width: \(width), height: \(height), x: \(x), y: \(y)")
-        Rectangle().overlay(Text(event.getName()).foregroundColor(.black))
+        EventTile()
+            .overlay(Text(event.getName()).multilineTextAlignment(.center).foregroundColor(.black).padding())
             .frame(width: width, height: height)
-            .border(.black, width: 1)
-            .background(Color.red)
             .position(x: x, y: y)
-            .foregroundColor(.blue)
+            .foregroundColor(.green)
             .onTapGesture {
-                eventSelected = event
+                viewModel.eventSelected = event
+                viewModel.lastContext = "w"
+                viewModel.setViewContext("e")
             }
     }
 }

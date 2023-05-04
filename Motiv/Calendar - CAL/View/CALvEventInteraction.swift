@@ -299,36 +299,18 @@ struct CreateEventView: View {
     }
 }
 
-struct eventInterractionSheet: View {
-    
+struct EventView: View {
     @EnvironmentObject var timeDateHelper: TimeDateHelper
     @EnvironmentObject var viewModel: CALvm
-    @Binding var eventBinding : CALm.Event?
     @State private var event: CALm.Event = CALm.Event(dateKey: "0000", startTime: Date(), durationMins: 0, eventName: "Placeholder Event", description: "", repetition: .Never)
     
     var body: some View {
         VStack{
-            ZStack{
-                HStack{
-                    Button {
-                        eventBinding = nil
-                    } label: {
-                        Image(systemName: "chevron.left").foregroundColor(Color.black).font(.title)
-                    }
-                    Spacer()
-                    Menu {
-                        dropDownMenu
-                    } label: {
-                        Image(systemName: "slider.horizontal.3").padding().foregroundColor(Color.black)
-                    }
-                }
-                Text(event.getName()).font(.largeTitle)
-            }.padding()
             Divider()
             HStack{
                 Spacer()
                 Group{
-                    Text(timeDateHelper.dateString(event.getStartTime())).frame(alignment: .center)
+                    Text(event.getDateKey()).frame(alignment: .center)
                     Text("\(timeDateHelper.getTimeOfDayHrsMins(event.getStartTime())) \(timeDateHelper.getAMPM(event.getStartTime()))")
                 }
                 Spacer()
@@ -355,54 +337,8 @@ struct eventInterractionSheet: View {
                 Text("Tasks:").font(.title).padding()
                 Spacer()
             }
-//            ZStack{
-//                RoundedRectangle(cornerRadius: 5).stroke(lineWidth: 0.2).frame(maxWidth: UIScreen.screenWidth*0.85)
-//                ScrollView{
-//                    let eventTasks = viewModel.getTasks(event)
-//                    if eventTasks != nil {
-//                        ForEach(eventTasks!.getTasks(), id: \.self){ task in
-//                            HStack{
-//                                Button  {
-//                                    //Toggle Task State
-//                                    print("Task State Toggled - \(task.taskTitle)")
-//                                    viewModel.toggleEventsTaskState(event: event, task: task)
-//                                } label: {
-//                                    if task.complete {
-//                                        Image(systemName: "checkmark.square").padding(.horizontal)
-//                                    } else {
-//                                        Image(systemName: "square").padding(.horizontal)
-//                                    }
-//                                }.padding(.horizontal)
-//                                if task.complete {
-//                                    Text(task.taskTitle).strikethrough()
-//                                } else {
-//                                    Text(task.taskTitle)
-//                                }
-//                                Spacer()
-//                            }.padding()
-//                        }
-//                        Button {
-//                            //Add task to event
-//                            print("Add additional tasks")
-//                            viewModel.createTask = true
-//                        } label: {
-//                            Text("+ Add New Task")
-//                        }.padding()
-//                    } else {
-//                        Button {
-//                            //Add task to event
-//                            print("Add first task")
-//                            viewModel.createTask = true
-//                        } label: {
-//                            Text("+ Add First Task")
-//                        }.padding()
-//                    }
-//                }.foregroundColor(Color.black).font(.title2)
-//            }
-//            Spacer()
-//        }.sheet(isPresented: $viewModel.createTask) {
-//            //Create task view
-//            AddTaskFormView(event: event)
+            
+            Spacer()
         }.alert(isPresented:$viewModel.deleteMode){
             Alert(
                 title: Text("Are you sure you want to delete: \("'")\(event.getName())\("'")?"),
@@ -410,7 +346,9 @@ struct eventInterractionSheet: View {
                 primaryButton: .destructive(Text("Delete"), action: {
                     viewModel.deleteMode = false
                     viewModel.deleteEvent(event)
-                    eventBinding = nil
+                    viewModel.setViewContext(viewModel.lastContext!)
+                    viewModel.lastContext = nil
+                    viewModel.eventSelected = nil
                 }),
                 secondaryButton: .cancel({
                     viewModel.deleteMode = false
@@ -418,43 +356,9 @@ struct eventInterractionSheet: View {
         }.sheet(isPresented: $viewModel.editMode){
             EditEventSheet(eventBinding: $event)
         }.onAppear(){
-            event = eventBinding!
+            event = viewModel.eventSelected!
         }
         
-    }
-    
-    @ViewBuilder
-    var dropDownMenu: some View {
-        // Delete item
-        Button {
-            viewModel.deleteMode = true
-            viewModel.editMode = false
-        } label: {
-            Text("Delete")
-            Spacer()
-            Image(systemName: "trash")
-        }
-        // Edit item
-        Button {
-            viewModel.editMode = true
-            viewModel.deleteMode = false
-        } label: {
-            Text("Edit")
-            Spacer()
-            Image(systemName: "pencil")
-        }
-        // Edit Event Series
-        if event.getSeriesID() != nil{
-            Button {
-                viewModel.editMode = true
-                viewModel.editSeries = true
-                viewModel.deleteMode = false
-            } label: {
-                Text("Edit Series")
-                Spacer()
-                Image(systemName: "pencil")
-            }
-        }
     }
 }
 

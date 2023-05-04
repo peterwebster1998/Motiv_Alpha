@@ -81,6 +81,19 @@ struct CALm : Codable{
         return value
     }
     
+    func getTasks(_ event: Event) -> [TDLm.Task]{
+        return eventsDict[event.getDateKey()]!.first(where: {$0.getID() == event.getID()})!.getTasks()
+    }
+    
+    func getDaysTasks(_ day: String) -> [TDLm.Task]{
+        let daysEvents = eventsDict[day]!
+        var daysTasks: [TDLm.Task] = []
+        for i in daysEvents{
+            daysTasks.append(contentsOf: getTasks(i))
+        }
+        return daysTasks
+    }
+    
     func getConflicts() -> [String:[Event]] {
         return conflicts
     }
@@ -212,8 +225,8 @@ struct CALm : Codable{
     }
     
     mutating func editEvent(event: Event, name: String, description: String, duration: Int, repetition: Repeat, time: Date){
-        let tempTDH = TimeDateHelper()
-        let newDateKey = tempTDH.dateString(time)
+        let tdh = TimeDateHelper()
+        let newDateKey = tdh.dateString(time)
         if isEvent(event){
             if(event.getDateKey() == newDateKey){
                 let eventIdx = eventsDict[event.getDateKey()]!.firstIndex(where: {$0.id == event.id})!
@@ -415,18 +428,20 @@ struct CALm : Codable{
         private var eventName: String
         private var description: String
         private var repetition: Repeat
+        private var tasks: [TDLm.Task]?
         private var overNighter: Bool
         internal let id: UUID
         private var seriesID: UUID?
         
         //MARK: - Init
-        init(dateKey: String, startTime: Date, durationMins: Int, eventName: String, description: String, repetition: Repeat, id: UUID? = nil,/* eventTasks: TDLm.ToDoList? = nil,*/ seriesID: UUID? = nil){
+        init(dateKey: String, startTime: Date, durationMins: Int, eventName: String, description: String, repetition: Repeat, id: UUID? = nil, eventTasks: [TDLm.Task]? = nil, seriesID: UUID? = nil){
             self.dateKey = dateKey
             self.startTime = startTime
             self.durationMins = durationMins
             self.eventName = eventName
             self.description = description
             self.repetition = repetition
+            self.tasks = eventTasks
             self.id = (id == nil) ? UUID() : id!
             self.seriesID = seriesID
             
@@ -472,6 +487,10 @@ struct CALm : Codable{
             return dateKey
         }
         
+        func getTasks() -> [TDLm.Task]{
+            return tasks ?? []
+        }
+        
         func getID() -> UUID {
             return id
         }
@@ -499,6 +518,13 @@ struct CALm : Codable{
         
         mutating func setSeriesID(_ id: UUID){
             self.seriesID = id
+        }
+        
+        mutating func addTask(_ task: TDLm.Task){
+            if self.tasks == nil {
+                self.tasks = []
+            }
+            self.tasks!.append(task)
         }
     }
     

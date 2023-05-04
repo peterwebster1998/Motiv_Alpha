@@ -21,7 +21,7 @@ struct HomeView: View {
         GeometryReader{ geo in
             ZStack{
                 if viewModel.currentActiveModule == nil {
-                    CompositeHomeView()
+                    CompositeHomeView(geo: geo)
                 } else {
                     ModuleView()
                 }
@@ -44,7 +44,8 @@ struct AppSelectButton: View {
             Image(systemName: "square.grid.3x3.fill")
                 .padding()
                 .font(.title)
-        }.foregroundColor(.black)
+                .foregroundColor(.black)
+        }
     }
 }
 
@@ -61,25 +62,60 @@ struct ModuleView: View {
     }
 }
 
+//struct CompositeHomeView: View{
+//    @EnvironmentObject var calVM: CALvm
+//    @EnvironmentObject var tdlVM: TDLvm
+//    @EnvironmentObject var viewModel: HomeViewModel
+//    @EnvironmentObject var tdh: TimeDateHelper
+//
+//    var body: some View {
+//        VStack(spacing: 0){
+//            HomeViewBanner()
+//            Divider()
+//            GeometryReader{ geo in
+//                VStack(spacing: 0){
+//                    CalendarComponentView().frame(width: geo.size.width, height: geo.size.height * 0.7, alignment: .center)
+//                    Divider()
+//                    Divider()
+//                    ToDoComponentView().frame(width: geo.size.width, height: geo.size.height * 0.3, alignment: .center)
+//                }
+//            }
+//        }
+//    }
+//}
+
 struct CompositeHomeView: View{
     @EnvironmentObject var calVM: CALvm
-//    @EnvironmentObject var tdlVM: TDLvm
+    @EnvironmentObject var tdlVM: TDLvm
     @EnvironmentObject var viewModel: HomeViewModel
     @EnvironmentObject var tdh: TimeDateHelper
+    let geo: GeometryProxy
+    @State var toDoHeight: CGFloat = 0
     
     var body: some View {
-        VStack(spacing: 0){
+        ZStack{
+            CalendarComponentView().frame(maxWidth: .infinity, maxHeight: .infinity)
+            blurTransitionRect
+                .frame(width: geo.size.width, height: geo.size.height * 0.05)
+                .position(x: geo.size.width * 0.5, y: geo.size.height * 0.25)
+            ToDoComponentView(geo: geo, height: $toDoHeight)
+                .frame(maxWidth: .infinity, maxHeight: toDoHeight)
+                .position(x: geo.size.width * 0.5, y: geo.size.height - (toDoHeight/2))
             HomeViewBanner()
-            Divider()
-            GeometryReader{ geo in
-                VStack(spacing: 0){
-                    CalendarComponentView().frame(width: geo.size.width, height: geo.size.height * 0.55, alignment: .center)
-                    Divider()
-                    Divider()
-                    ToDoComponentView().frame(width: geo.size.width, height: geo.size.height * 0.45, alignment: .center)
-                }
-            }
+                .frame(width: geo.size.width * 0.95, height: geo.size.height * 0.1)
+                .position(x: geo.size.width * 0.5, y: geo.size.height * 0.05)
+        }.task{
+            toDoHeight = geo.size.height * 0.3
         }
+    }
+    
+    @ViewBuilder
+    var blurTransitionRect: some View{
+        ZStack{
+            Rectangle()
+                .foregroundColor(.clear)
+//            UIVisualEffectView(effect: UIBlurEffect(style: .regular))
+        }.edgesIgnoringSafeArea(.top)
     }
 }
 
@@ -87,14 +123,15 @@ struct HomeViewBanner: View {
     @EnvironmentObject var tdh: TimeDateHelper
     
     var body: some View {
-        ZStack{
-            HStack{
+        Capsule().fill(.white).shadow(radius: 5).overlay(
+            HStack(spacing: 0){
                 AppSelectButton()
+                Spacer()
+                Text(tdh.dateString(Date())).font(.largeTitle).foregroundColor(.black)
                 Spacer()
                 Image(systemName: "house").font(.title).foregroundColor(.black).padding(.horizontal)
             }
-            Text(tdh.dateString(Date())).font(.largeTitle).padding()
-        }
+        )
     }
 }
 
@@ -111,9 +148,10 @@ struct CalendarComponentView: View {
                         var hour: Int = Int(time[0])!
                         hour = (hour == 12) ? hour-12 : hour
                         hour = (tdh.getAMPM(Date()) == "PM") ? hour+12: hour
+                        hour = (hour > 2) ? hour-2 : hour
                         let currentTime: String = ((hour < 10) ? ("0"+String(hour)) : String(hour)) + ":00"
                         print("Scrolling to \(currentTime)")
-                        scrollProxy.scrollTo((hour > 18) ? "18:00" : currentTime, anchor: .top)
+                        scrollProxy.scrollTo((hour > 15) ? "15:00" : currentTime, anchor: .top)
                     }
             }
         }
@@ -123,13 +161,13 @@ struct CalendarComponentView: View {
 struct ToDoComponentView: View {
     @EnvironmentObject var tdh : TimeDateHelper
     @EnvironmentObject var tdlVM: TDLvm
+    let geo: GeometryProxy
+    @Binding var height: CGFloat
 
     var body: some View {
         VStack{
-            HStack{
-                Text("Todays To Dos:").font(.title).padding()
-                Spacer()
-            }.background(.gray).border(.black)
+            ToDoComponentViewHeader()
+            
             ScrollView {
                 ForEach(tdlVM.getTodaysToDos(), id: \.self) { element in
                     ZStack{
@@ -152,7 +190,17 @@ struct ToDoComponentView: View {
                     DividerLine().foregroundColor(.gray)
                 }
             }
-        }
+        }.background(.white)
+    }
+}
+
+struct ToDoComponentViewHeader: View {
+    
+    var body: some View {
+        HStack{
+            Text("Todays To Dos:").font(.title).padding()
+            Spacer()
+        }.background(.gray).border(.black)
     }
 }
 

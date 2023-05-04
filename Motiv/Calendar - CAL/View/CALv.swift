@@ -26,13 +26,12 @@ struct CALv: View {
             switch viewModel.viewType {
             case .Month:
                 MonthView()
-                //                let _ = print("MONTH VIEW - [\(timeDateHelper.dateString(timeDateHelper.temporalHorizons[0])) - \(timeDateHelper.dateString(timeDateHelper.temporalHorizons[1]))]")
             case .Week:
                 WeekView()
-                //                let _ = print("WEEK VIEW")
             case .Day:
                 DayView()
-                //                let _ = print("DAY VIEW")
+            case .Event:
+                EventView()
             }
         }.onAppear {
             timeDateHelper.today()
@@ -40,18 +39,6 @@ struct CALv: View {
         .sheet(isPresented: $viewModel.eventConflict){
             ConflictView()
         }
-        /*
-         Month View:
-         - Scroll vertically continuously between months
-         - Show each day, when tapped switch to Day View context
-         Week View
-         - Scroll horizontally to view all 7 days together vertically stacked
-         - Set Origin to current time of day? Maybe
-         Day View
-         - Scroll vertically to view all events for that day, including scheduled sleep hours
-         - Default Origin should also be current time
-         - Based on model, events should be shown for the 1.5 hrs previous to current time and 3.5 hrs afterwards for a 5 hr window
-         */
     }
 }
 
@@ -75,6 +62,8 @@ struct CALBanner: View {
                                 .labelsHidden()
                                 .opacity(0.02)
                         )
+                    case .Event:
+                        Text(viewModel.eventSelected!.getName()).font(.largeTitle).frame(maxWidth: UIScreen.main.bounds.width * 0.75).multilineTextAlignment(.center)
                     default:
                         Text(timeDateHelper.monthYearStr(currentDate)).padding().font(.largeTitle).frame(maxWidth: .infinity).overlay(
                             DatePicker("Date", selection: $pickerDate, displayedComponents: [.date])
@@ -83,24 +72,46 @@ struct CALBanner: View {
                         )
                     }
                 }
-                HStack{
-                    Button{
-                        homeVM.currentActiveModule = nil
-                    } label:{
-                        Image(systemName: "house")
+                switch viewModel.viewType{
+                case .Event:
+                    HStack{
+                        Button {
+                            viewModel.setViewContext(viewModel.lastContext!)
+                            viewModel.eventSelected = nil
+                            viewModel.lastContext = nil
+                        } label: {
+                            Image(systemName: "chevron.left").foregroundColor(Color.black).font(.title)
+                        }.padding()
+                        Spacer()
+                        Menu {
+                            eventDropDownMenu
+                        } label: {
+                            Image(systemName: "slider.horizontal.3").foregroundColor(Color.black).font(.title)
+                        }.padding()
                     }
-                    .padding()
-                    Spacer()
-                    Menu {
-                        timeframeContextDropdownMenu
-                    } label: {
-                        Image(systemName: "calendar").padding().imageScale(.large)
+                default:
+                    HStack{
+                        Button{
+                            homeVM.currentActiveModule = nil
+                        } label:{
+                            Image(systemName: "house").font(.title)
+                        }
+                        .padding()
+                        Spacer()
+                        Menu {
+                            timeframeContextDropdownMenu
+                        } label: {
+                            Image(systemName: "calendar").font(.title)
+                        }
+                        .padding()
                     }
                 }
             }
             switch viewModel.viewType{
             case .Month:
                 weekdayLabels
+            case .Event:
+                EmptyView()
             default:
                 timeOfDayScale
             }
@@ -152,6 +163,40 @@ struct CALBanner: View {
                 viewModel.eventConflict = true
             } label: {
                 Text("Conflicts")
+            }
+        }
+    }
+    
+    @ViewBuilder
+    var eventDropDownMenu: some View {
+        // Delete item
+        Button {
+            viewModel.deleteMode = true
+            viewModel.editMode = false
+        } label: {
+            Text("Delete")
+            Spacer()
+            Image(systemName: "trash")
+        }
+        // Edit item
+        Button {
+            viewModel.editMode = true
+            viewModel.deleteMode = false
+        } label: {
+            Text("Edit")
+            Spacer()
+            Image(systemName: "pencil")
+        }
+        // Edit Event Series
+        if viewModel.eventSelected!.getSeriesID() != nil{
+            Button {
+                viewModel.editMode = true
+                viewModel.editSeries = true
+                viewModel.deleteMode = false
+            } label: {
+                Text("Edit Series")
+                Spacer()
+                Image(systemName: "pencil")
             }
         }
     }

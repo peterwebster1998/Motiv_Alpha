@@ -34,7 +34,7 @@ class TimeDateHelper: ObservableObject {
             calendar.date(byAdding: .year, value: -1, to: Date()) ?? Date.distantPast,
             calendar.date(byAdding: .year, value: 1, to: Date()) ?? Date.distantFuture
         ]
-        print("Initial temporal horizons: \(temporalHorizons)")
+//        print("Initial temporal horizons: \(temporalHorizons)")
         temporalRange = [[Date]]()
         //Manually create first range of values before class instantiation
         var idxDate = temporalHorizons[0]
