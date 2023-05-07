@@ -30,6 +30,9 @@
 		1D765DA829F86EFE0009F125 /* TDLm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D765DA729F86EFE0009F125 /* TDLm.swift */; };
 		1D781ED329F9A7BF00DCD178 /* TDLvm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D781ED229F9A7BF00DCD178 /* TDLvm.swift */; };
 		1D781ED529FC232100DCD178 /* TDLvOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D781ED429FC232100DCD178 /* TDLvOperation.swift */; };
+		1D781EDB2A08339900DCD178 /* HABv.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D781EDA2A08339900DCD178 /* HABv.swift */; };
+		1D781EDD2A0833AF00DCD178 /* HABvm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D781EDC2A0833AF00DCD178 /* HABvm.swift */; };
+		1D781EDF2A0833BC00DCD178 /* HABm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D781EDE2A0833BC00DCD178 /* HABm.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -57,6 +60,9 @@
 		1D765DA729F86EFE0009F125 /* TDLm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDLm.swift; sourceTree = "<group>"; };
 		1D781ED229F9A7BF00DCD178 /* TDLvm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDLvm.swift; sourceTree = "<group>"; };
 		1D781ED429FC232100DCD178 /* TDLvOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TDLvOperation.swift; sourceTree = "<group>"; };
+		1D781EDA2A08339900DCD178 /* HABv.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HABv.swift; sourceTree = "<group>"; };
+		1D781EDC2A0833AF00DCD178 /* HABvm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HABvm.swift; sourceTree = "<group>"; };
+		1D781EDE2A0833BC00DCD178 /* HABm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HABm.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -92,6 +98,7 @@
 				1D765D7729F824750009F125 /* Home */,
 				1D765D7B29F8249E0009F125 /* Calendar - CAL */,
 				1D765D9929F869D80009F125 /* ToDoLists - TDL */,
+				1D781ED62A08334400DCD178 /* Habits - HAB */,
 				1D765D9D29F86A660009F125 /* FlashCards - FLC */,
 				1D765DA129F86ADC0009F125 /* RecipeBox - RBX */,
 				1D765D5D29F70D490009F125 /* MotivApp.swift */,
@@ -252,6 +259,40 @@
 			path = ViewModel;
 			sourceTree = "<group>";
 		};
+		1D781ED62A08334400DCD178 /* Habits - HAB */ = {
+			isa = PBXGroup;
+			children = (
+				1D781ED92A08337100DCD178 /* View */,
+				1D781ED82A08336700DCD178 /* ViewModel */,
+				1D781ED72A08335E00DCD178 /* Model */,
+			);
+			path = "Habits - HAB";
+			sourceTree = "<group>";
+		};
+		1D781ED72A08335E00DCD178 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				1D781EDE2A0833BC00DCD178 /* HABm.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		1D781ED82A08336700DCD178 /* ViewModel */ = {
+			isa = PBXGroup;
+			children = (
+				1D781EDC2A0833AF00DCD178 /* HABvm.swift */,
+			);
+			path = ViewModel;
+			sourceTree = "<group>";
+		};
+		1D781ED92A08337100DCD178 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				1D781EDA2A08339900DCD178 /* HABv.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -331,6 +372,7 @@
 				1D765DA429F86B260009F125 /* RBXv.swift in Sources */,
 				1D765D9029F8607F0009F125 /* CALvConflicts.swift in Sources */,
 				1D781ED529FC232100DCD178 /* TDLvOperation.swift in Sources */,
+				1D781EDD2A0833AF00DCD178 /* HABvm.swift in Sources */,
 				1D765D8229F85C2D0009F125 /* CALvm.swift in Sources */,
 				1D765D8A29F85F400009F125 /* CALvWeek.swift in Sources */,
 				1D765D8E29F860380009F125 /* CALvEventInteraction.swift in Sources */,
@@ -338,9 +380,11 @@
 				1D765D9429F861960009F125 /* HomeViewModel.swift in Sources */,
 				1D781ED329F9A7BF00DCD178 /* TDLvm.swift in Sources */,
 				1D765DA029F86AAE0009F125 /* FLCv.swift in Sources */,
+				1D781EDB2A08339900DCD178 /* HABv.swift in Sources */,
 				1D765D9229F861070009F125 /* HomeModel.swift in Sources */,
 				1D765D8829F85E630009F125 /* CALvMonth.swift in Sources */,
 				1D765D8029F85B160009F125 /* CALm.swift in Sources */,
+				1D781EDF2A0833BC00DCD178 /* HABm.swift in Sources */,
 				1D765D8629F85DE80009F125 /* CALv.swift in Sources */,
 				1D765D9C29F86A240009F125 /* TDLv.swift in Sources */,
 			);
