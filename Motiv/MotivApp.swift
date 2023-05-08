@@ -13,6 +13,7 @@ struct MotivApp: App {
     @StateObject var HOMEviewModel: HomeViewModel = HomeViewModel()
     @StateObject var TDLviewModel: TDLvm = TDLvm()
     @StateObject var CALviewModel: CALvm = CALvm()
+    @StateObject var HABviewModel: HABvm = HABvm()
     @StateObject var timeDateHelper: TimeDateHelper = TimeDateHelper()
 
     var body: some Scene {
@@ -21,6 +22,7 @@ struct MotivApp: App {
                 .environmentObject(HOMEviewModel)
                 .environmentObject(TDLviewModel)
                 .environmentObject(CALviewModel)
+                .environmentObject(HABviewModel)
                 .environmentObject(timeDateHelper)
         }
     }

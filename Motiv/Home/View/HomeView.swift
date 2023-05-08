@@ -62,28 +62,6 @@ struct ModuleView: View {
     }
 }
 
-//struct CompositeHomeView: View{
-//    @EnvironmentObject var calVM: CALvm
-//    @EnvironmentObject var tdlVM: TDLvm
-//    @EnvironmentObject var viewModel: HomeViewModel
-//    @EnvironmentObject var tdh: TimeDateHelper
-//
-//    var body: some View {
-//        VStack(spacing: 0){
-//            HomeViewBanner()
-//            Divider()
-//            GeometryReader{ geo in
-//                VStack(spacing: 0){
-//                    CalendarComponentView().frame(width: geo.size.width, height: geo.size.height * 0.7, alignment: .center)
-//                    Divider()
-//                    Divider()
-//                    ToDoComponentView().frame(width: geo.size.width, height: geo.size.height * 0.3, alignment: .center)
-//                }
-//            }
-//        }
-//    }
-//}
-
 struct CompositeHomeView: View{
     @EnvironmentObject var calVM: CALvm
     @EnvironmentObject var tdlVM: TDLvm
