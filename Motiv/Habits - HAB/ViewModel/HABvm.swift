@@ -19,6 +19,8 @@ class HABvm: ObservableObject {
     @Published private var model: HABm
     @Published private(set) var viewContext: HABviewTypes
     @Published var selectedHabit: HABm.Habit?
+    @Published var updated: Bool
+    @Published var deleteMode: Bool
     
     // MARK: - Init
     init (){
@@ -30,6 +32,8 @@ class HABvm: ObservableObject {
         }
         
         self.viewContext = .All
+        self.updated = false
+        self.deleteMode = false
     }
     
     // MARK: - ViewModel Getters & Setters
@@ -55,14 +59,21 @@ class HABvm: ObservableObject {
     
     func addHabit(_ habit: HABm.Habit){
         model.addHabit(habit)
+        updated = true
+        autosave()
     }
     
     func deleteHabit(_ name: String) -> Bool {
-        return model.deleteHabit(name)
+        let result = model.deleteHabit(name)
+        updated = true
+        autosave()
+        return result
     }
     
     func updateHabit(_ habit: HABm.Habit){
         model.updateHabit(habit)
+        updated = true
+        autosave()
     }
     
     // MARK: - Persistence

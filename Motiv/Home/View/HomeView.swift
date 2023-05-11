@@ -140,7 +140,7 @@ struct CalendarComponentView: View {
                         hour = (hour > 2) ? hour-2 : hour
                         let currentTime: String = ((hour < 10) ? ("0"+String(hour)) : String(hour)) + ":00"
                         print("Scrolling to \(currentTime)")
-                        scrollProxy.scrollTo((hour > 15) ? "15:00" : currentTime, anchor: .top)
+                        scrollProxy.scrollTo((hour > 18) ? "18:00" : currentTime, anchor: .top)
                     }
             }
         }
