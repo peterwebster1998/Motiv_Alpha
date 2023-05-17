@@ -43,6 +43,7 @@ class TDLvm: ObservableObject {
     @Published var editMode: Bool
     @Published var deleteMode: Bool
     @Published var taskElementToEdit: String?
+    @Published var mostRecentlyAddedTask: TDLm.Task?
     
     // MARK: - Init
     init (){
@@ -110,6 +111,7 @@ class TDLvm: ObservableObject {
         if parentTaskID != nil {
             selectedTask = model.getTask(parentTaskID!)
         }
+        mostRecentlyAddedTask = model.getTaskList(key).last
         autosave()
     }
     
@@ -183,6 +185,10 @@ class TDLvm: ObservableObject {
     
     func getTodaysToDos() -> [TDLm.Task]{
          return model.getTodaysToDos()
+    }
+    
+    func existsInTDL(_ task: TDLm.Task) -> Bool {
+        return model.existsInTDL(task)
     }
     
     // MARK: - Persistence

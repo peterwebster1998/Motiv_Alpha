@@ -8,23 +8,44 @@
 import SwiftUI
 
 struct HABv: View {
+    @EnvironmentObject var viewModel: HABvm
     @State var height: CGFloat = UIScreen.main.bounds.height * 0.1
-
+    
     var body: some View {
-        HABBanner().position(x: UIScreen.main.bounds.midX, y: height/2)
-        HABBody().frame(maxWidth: .infinity, maxHeight: UIScreen.main.bounds.height * 0.9).position(x: UIScreen.main.bounds.midX, y: UIScreen.main.bounds.height * 0.55)
+        GeometryReader { geo in
+            ZStack{
+                HABBanner(geo: geo).position(x: UIScreen.main.bounds.midX, y: height/2)
+                HABBody(geo: geo).frame(maxWidth: .infinity, maxHeight: UIScreen.main.bounds.height * 0.9).position(x: UIScreen.main.bounds.midX, y: UIScreen.main.bounds.height * 0.55)
+                if viewModel.addTask {
+                    AddTaskToHabitView(geo: geo)
+                }
+                if viewModel.pressAndHold{
+                    HABPressAndHoldView()
+                }
+            }.frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
     }
 }
 
 struct HABBanner: View {
     @EnvironmentObject var viewModel: HABvm
     @EnvironmentObject var homeViewModel: HomeViewModel
+    let geo: GeometryProxy
     @State var bannerText: String = "Habits"
     
     var body: some View {
-        ZStack{
-            Text(bannerText).font(.largeTitle)
-            bannerButtons
+        VStack(spacing: 0){
+            ZStack{
+                Text(bannerText).font(.largeTitle)
+                    .onLongPressGesture(minimumDuration: 1, maximumDistance: 10){
+                        if viewModel.viewContext == .One{
+                            viewModel.habitElementToEdit = "Name"
+                            viewModel.pressAndHold = true
+                        }
+                    }
+                bannerButtons
+            }
+            DividerLine(geo: geo)
         }.onChange(of: viewModel.viewContext){_ in
             switch viewModel.viewContext{
             case .All:
@@ -33,6 +54,19 @@ struct HABBanner: View {
                 bannerText = "New Habit"
             case .One:
                 bannerText = viewModel.selectedHabit!.getName()
+            case .Task:
+                bannerText = viewModel.selectedTask!.getName()
+            }
+        }.onChange(of: viewModel.selectedHabit){_ in
+            switch viewModel.viewContext{
+            case .All:
+                bannerText = "Habits"
+            case .New:
+                bannerText = "New Habit"
+            case .One:
+                bannerText = viewModel.selectedHabit!.getName()
+            case .Task:
+                bannerText = viewModel.selectedTask!.getName()
             }
         }
     }
@@ -46,6 +80,13 @@ struct HABBanner: View {
                     homeViewModel.appSelect = true
                 } label: {
                     Image(systemName: "square.grid.3x3.fill").padding()
+                }
+            case .Task:
+                Button{
+                    viewModel.setViewContext("one")
+                    viewModel.selectedTask = nil
+                } label: {
+                    Image(systemName: "chevron.left").padding()
                 }
             default:
                 Button{
@@ -77,9 +118,7 @@ struct HABBanner: View {
     var habitMenu: some View {
         Button{
             //Check to see if want to create new task or pair with existing tasks
-            
-            
-            
+            viewModel.addTask = true
         } label: {
             HStack{
                 Image(systemName: "plus")
@@ -108,16 +147,19 @@ struct HABBanner: View {
 
 struct HABBody: View {
     @EnvironmentObject var viewModel: HABvm
-
+    let geo: GeometryProxy
+    
     var body: some View{
-        Group{
+        ZStack{
             switch viewModel.viewContext{
             case .All:
-                AllHabitsView()
+                AllHabitsView(geo: geo)
             case .One:
-                HabitView()
+                HabitView(geo: geo)
             case .New:
                 CreateHabitView()
+            case .Task:
+                TDLTaskView(geo: geo, task: viewModel.selectedTask!, inHabit: true)
             }
         }.alert(isPresented:$viewModel.deleteMode){
             Alert(
@@ -142,6 +184,7 @@ struct HABBody: View {
 
 struct AllHabitsView: View {
     @EnvironmentObject var viewModel: HABvm
+    let geo: GeometryProxy
     @State var habits: [HABm.Habit] = []
     
     let habitCols = [
@@ -151,15 +194,99 @@ struct AllHabitsView: View {
     ]
     
     var body: some View {
-        LazyVGrid(columns: habitCols){
-            ForEach(habits, id: \.self){ habit in
-                HabitTileView(habit: habit).padding(.vertical)
-                    .onTapGesture {
-                        viewModel.selectedHabit = habit
-                        viewModel.setViewContext("one")
+        ScrollView{
+            if habits.filter({$0.getRepetitionPeriod() == .Daily}).count > 0{
+                Text("Daily").padding(.horizontal).frame(maxWidth: .infinity, alignment: .leading)
+                LazyVGrid(columns: habitCols){
+                    ForEach(habits.filter({$0.getRepetitionPeriod() == .Daily}), id: \.self){ habit in
+                        HabitTileView(geo: geo, habit: habit).padding(.vertical)
+                            .onTapGesture {
+                                viewModel.selectedHabit = habit
+                                viewModel.setViewContext("one")
+                            }
                     }
+                }.padding(.horizontal)
             }
-        }.padding().task{
+            if habits.filter({$0.getRepetitionPeriod() == .Weekly}).count > 0{
+                DividerLine(geo: geo)
+                Text("Weekly").padding(.horizontal).frame(maxWidth: .infinity, alignment: .leading)
+                LazyVGrid(columns: habitCols){
+                    ForEach(habits.filter({$0.getRepetitionPeriod() == .Weekly}), id: \.self){ habit in
+                        HabitTileView(geo: geo, habit: habit).padding(.vertical)
+                            .onTapGesture {
+                                viewModel.selectedHabit = habit
+                                viewModel.setViewContext("one")
+                            }
+                    }
+                }.padding(.horizontal)
+            }
+            if habits.filter({$0.getRepetitionPeriod() == .Monthly}).count > 0{
+                DividerLine(geo: geo)
+                Text("Monthly").padding(.horizontal).frame(maxWidth: .infinity, alignment: .leading)
+                LazyVGrid(columns: habitCols){
+                    ForEach(habits.filter({$0.getRepetitionPeriod() == .Monthly}), id: \.self){ habit in
+                        HabitTileView(geo: geo, habit: habit).padding(.vertical)
+                            .onTapGesture {
+                                viewModel.selectedHabit = habit
+                                viewModel.setViewContext("one")
+                            }
+                    }
+                }.padding(.horizontal)
+            }
+            if habits.filter({$0.getRepetitionPeriod() == .Quarterly}).count > 0{
+                DividerLine(geo: geo)
+                Text("Quarterly").padding(.horizontal).frame(maxWidth: .infinity, alignment: .leading)
+                LazyVGrid(columns: habitCols){
+                    ForEach(habits.filter({$0.getRepetitionPeriod() == .Quarterly}), id: \.self){ habit in
+                        HabitTileView(geo: geo, habit: habit).padding(.vertical)
+                            .onTapGesture {
+                                viewModel.selectedHabit = habit
+                                viewModel.setViewContext("one")
+                            }
+                    }
+                }.padding(.horizontal)
+            }
+            if habits.filter({$0.getRepetitionPeriod() == .Annually}).count > 0{
+                DividerLine(geo: geo)
+                Text("Annually").padding(.horizontal).frame(maxWidth: .infinity, alignment: .leading)
+                LazyVGrid(columns: habitCols){
+                    ForEach(habits.filter({$0.getRepetitionPeriod() == .Annually}), id: \.self){ habit in
+                        HabitTileView(geo: geo, habit: habit).padding(.vertical)
+                            .onTapGesture {
+                                viewModel.selectedHabit = habit
+                                viewModel.setViewContext("one")
+                            }
+                    }
+                }.padding(.horizontal)
+            }
+            if habits.filter({$0.getRepetitionPeriod() == .Decennially}).count > 0{
+                DividerLine(geo: geo)
+                Text("Decennially (10 Years)").padding(.horizontal).frame(maxWidth: .infinity, alignment: .leading)
+                LazyVGrid(columns: habitCols){
+                    ForEach(habits.filter({$0.getRepetitionPeriod() == .Decennially}), id: \.self){ habit in
+                        HabitTileView(geo: geo, habit: habit).padding(.vertical)
+                            .onTapGesture {
+                                viewModel.selectedHabit = habit
+                                viewModel.setViewContext("one")
+                            }
+                    }
+                }.padding(.horizontal)
+            }
+            if habits.filter({$0.getRepetitionPeriod() == .Centennially}).count > 0{
+                DividerLine(geo: geo)
+                Text("Centennially (100 Years)").padding(.horizontal).frame(maxWidth: .infinity, alignment: .leading)
+                LazyVGrid(columns: habitCols){
+                    ForEach(habits.filter({$0.getRepetitionPeriod() == .Centennially}), id: \.self){ habit in
+                        HabitTileView(geo: geo, habit: habit).padding(.vertical)
+                            .onTapGesture {
+                                viewModel.selectedHabit = habit
+                                viewModel.setViewContext("one")
+                            }
+                    }
+                }.padding(.horizontal)
+            }
+            Spacer()
+        }.font(.title2).task{
             habits = viewModel.getHabits()
         }.onChange(of: viewModel.updated){val in
             if val {
@@ -172,32 +299,47 @@ struct AllHabitsView: View {
 struct HabitView: View {
     @EnvironmentObject var viewModel: HABvm
     @EnvironmentObject var tdh: TimeDateHelper
-    @State var habit: HABm.Habit = HABm.Habit(name: "place", notes: "hold", repetition: (.Daily, 1))
+    let geo: GeometryProxy
+    @State var habit: HABm.Habit = HABm.Habit(name: "place", notes: "holders", repetition: (.Daily, 1))
     
     var body: some View {
         VStack{
             statsBar
-            DividerLine(screenProportion: 0.8, lineWidth: 2)
+            DividerLine(geo: geo)
             HStack{
                 Text("Last Completion:").padding(.horizontal)
                 Spacer()
                 Text("\(tdh.getTimeOfDayHrsMins(habit.getLastCompletion())) \(tdh.getAMPM(habit.getLastCompletion())) \(tdh.dateString(habit.getLastCompletion()))").padding(.horizontal)
             }
+            HStack{
+                Text("Frequency:").padding(.horizontal)
+                Spacer()
+                Text(habit.getRepetition()).padding(.horizontal)
+            }
+            Group{
             Text("Notes:").frame(maxWidth: .infinity, alignment: .leading).font(.title).padding()
             Text(habit.getNotes())
+            }.onLongPressGesture(minimumDuration: 1, maximumDistance: 10){
+                viewModel.habitElementToEdit = "Notes"
+                viewModel.pressAndHold = true
+            }
             Text("Tasks:").frame(maxWidth: .infinity, alignment: .leading).font(.title).padding()
             ZStack{
                 RoundedRectangle(cornerRadius: 15).stroke(.black, lineWidth: 2).foregroundColor(.clear)
                 ScrollView{
                     ForEach(habit.getTasks(), id: \.self){ task in
-                        ElementTile(title: task.getName())
-                        DividerLine(screenProportion: 0.64, lineWidth: 2)
+                        ElementTile(title: task.getName(), inHabit: true).scaleEffect(0.95)
+                        DividerLine(geo: geo, screenProportion: 0.64, lineWidth: 2)
                     }
                 }
             }.frame(maxWidth: UIScreen.main.bounds.width * 0.85, maxHeight: UIScreen.main.bounds.height * 0.5)
             Spacer()
         }.task {
             habit = viewModel.selectedHabit!
+        }.onChange(of: viewModel.selectedHabit){ val in
+            if val != nil{
+                habit = viewModel.selectedHabit!
+            }
         }
     }
     
@@ -385,6 +527,7 @@ struct CreateHabitView: View {
 
 struct HabitTileView: View {
     @EnvironmentObject var viewModel: HABvm
+    let geo: GeometryProxy
     @State var habit: HABm.Habit
     @State var recentlyCompleted: Bool = false
     
@@ -393,7 +536,7 @@ struct HabitTileView: View {
             RoundedRectangle(cornerRadius: 15).foregroundColor(.mint)
             VStack(spacing: 0){
                 Text(habit.getName()).bold().padding(EdgeInsets(top: 15, leading: 15, bottom: 0, trailing: 15))
-                DividerLine(screenProportion: 0.25, lineWidth: 2).padding(.vertical)
+                DividerLine(geo: geo, screenProportion: 0.25, lineWidth: 2).padding(.vertical)
                 HStack{
                     Image(systemName: "flame").padding(.horizontal)
                     Spacer()
@@ -431,8 +574,72 @@ struct HabitTileView: View {
     }
 }
 
-struct HABv_Previews: PreviewProvider {
-    static var previews: some View {
-        HABv()
+struct HABPressAndHoldView: View {
+    @EnvironmentObject var viewModel: HABvm
+    
+    var body: some View {
+        ZStack{
+            Color.black.opacity(0.5).ignoresSafeArea()
+            if viewModel.habitElementToEdit == "Notes" {
+                HABNotesEditTile(habit: viewModel.selectedHabit!, notes: viewModel.selectedHabit!.getNotes())
+            } else if viewModel.habitElementToEdit == "Name"{
+                HABNameEditTile(habit: viewModel.selectedHabit!, name: viewModel.selectedHabit!.getName())
+            }
+        }.frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+
+struct HABNotesEditTile: View {
+    @EnvironmentObject var viewModel: HABvm
+    let habit: HABm.Habit
+    @State var notes: String
+    
+    var body: some View {
+        VStack{
+            RoundedRectangle(cornerRadius: 10)
+                .frame(maxWidth: UIScreen.main.bounds.width * 0.75, maxHeight: UIScreen.main.bounds.height * 0.15)
+                .foregroundColor(.white)
+                .overlay(
+                    TextField(habit.getNotes(), text: $notes).font(.subheadline).padding()
+                )
+            Button{
+                var updatedHabit = habit
+                updatedHabit.setNotes(notes)
+                viewModel.updateHabit(updatedHabit)
+                viewModel.selectedHabit = updatedHabit
+                viewModel.pressAndHold = false
+            } label: {
+                RoundedRectangle(cornerRadius: 10).foregroundColor(.white).overlay(Text("Done").foregroundColor(.black))
+                    .frame(maxWidth: UIScreen.main.bounds.width * 0.2, maxHeight: UIScreen.main.bounds.height * 0.075)
+            }
+        }
+    }
+}
+
+struct HABNameEditTile: View {
+    @EnvironmentObject var viewModel: HABvm
+    let habit: HABm.Habit
+    @State var name: String
+    
+    var body: some View{
+        VStack{
+            RoundedRectangle(cornerRadius: 10)
+                .frame(maxWidth: UIScreen.main.bounds.width * 0.75, maxHeight: UIScreen.main.bounds.height * 0.15)
+                .foregroundColor(.white)
+                .overlay(
+                    TextField(habit.getName(), text: $name).font(.largeTitle).padding()
+                )
+            Button{
+                var updatedHabit = habit
+                updatedHabit.setName(name)
+                viewModel.updateHabit(updatedHabit)
+                viewModel.selectedHabit = updatedHabit
+                viewModel.pressAndHold = false
+            } label: {
+                RoundedRectangle(cornerRadius: 10).foregroundColor(.white).overlay(Text("Done").foregroundColor(.black))
+                    .frame(maxWidth: UIScreen.main.bounds.width * 0.2, maxHeight: UIScreen.main.bounds.height * 0.075)
+            }
+        }
     }
 }

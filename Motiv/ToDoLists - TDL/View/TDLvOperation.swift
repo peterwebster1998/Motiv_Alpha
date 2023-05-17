@@ -9,11 +9,12 @@ import SwiftUI
 
 struct TDLCreateView: View {
     @EnvironmentObject var viewModel: TDLvm
+    let geo: GeometryProxy
     
     var body: some View {
         ZStack{
             Color.black.opacity(0.5)
-            CreateForm()
+            CreateForm(geo: geo)
             
         }.frame(maxWidth: .infinity, maxHeight: .infinity)
             .ignoresSafeArea()
@@ -22,13 +23,16 @@ struct TDLCreateView: View {
 
 struct CreateForm: View {
     @EnvironmentObject var viewModel: TDLvm
-    let screenWidth = UIScreen.main.bounds.width
+    @EnvironmentObject var HABviewModel: HABvm
+    @EnvironmentObject var tdh: TimeDateHelper
+    let geo: GeometryProxy
     @State var height: CGFloat = UIScreen.main.bounds.height * 0.2
     @State var expanded: Bool = false
     @State var insertNameTitle: String = ""
     @State var nameField: String = ""
     @State var descriptionField: String = ""
     @State var deadlineField: Date = Date()
+    @State var inHabit: Bool? = nil
     
     var body: some View {
         RoundedRectangle(cornerRadius: 10)
@@ -63,20 +67,29 @@ struct CreateForm: View {
                 Button {
                     print("Creating item!")
                     if nameField != ""{
-                        switch viewModel.viewContext {
-                        case .List:
-                            let key = viewModel.selectedList!
+                        if inHabit == nil {
+                            switch viewModel.viewContext {
+                            case .List:
+                                let key = viewModel.selectedList!
+                                let des = (descriptionField == "") ? nil : descriptionField
+                                let deadline = (deadlineField < Date()) ? nil : deadlineField
+                                viewModel.addTask(key: key, name: nameField, description: des, parentTaskID: nil, deadline: deadline)
+                            case .Task:
+                                let key = viewModel.selectedList!
+                                let des = (descriptionField == "") ? nil : descriptionField
+                                let parentID = viewModel.selectedTask!.getID()
+                                let deadline = (deadlineField < Date()) ? nil : deadlineField
+                                viewModel.addTask(key: key, name: nameField, description: des, parentTaskID: parentID, deadline: deadline)
+                            default:
+                                viewModel.addList(nameField)
+                            }
+                        } else {
+                            var updatedHabit = HABviewModel.selectedHabit!
                             let des = (descriptionField == "") ? nil : descriptionField
                             let deadline = (deadlineField < Date()) ? nil : deadlineField
-                            viewModel.addTask(key: key, name: nameField, description: des, parentTaskID: nil, deadline: deadline)
-                        case .Task:
-                            let key = viewModel.selectedList!
-                            let des = (descriptionField == "") ? nil : descriptionField
-                            let parentID = viewModel.selectedTask!.getID()
-                            let deadline = (deadlineField < Date()) ? nil : deadlineField
-                            viewModel.addTask(key: key, name: nameField, description: des, parentTaskID: parentID, deadline: deadline)
-                        default:
-                            viewModel.addList(nameField)
+                            updatedHabit.addTask(TDLm.Task(key: "Habit",name: nameField, description: des, parentTaskID: nil, deadline: deadline))
+                            HABviewModel.updateHabit(updatedHabit)
+                            HABviewModel.selectedHabit = updatedHabit
                         }
                     }
                     viewModel.createMode = false
@@ -89,10 +102,10 @@ struct CreateForm: View {
             }
             TextField("Enter Name", text: $nameField).padding().frame(maxWidth: .infinity, alignment: .center)
             if expanded{
-                DividerLine(screenProportion: 0.5, lineWidth: 2).foregroundColor(.gray)
+                DividerLine(geo: geo, screenProportion: 0.5, lineWidth: 2).foregroundColor(.gray)
                 Text("Description").padding(.horizontal).frame(maxWidth: .infinity, alignment: .leading)
                 TextField("Enter Description", text: $descriptionField).padding().frame(maxWidth: .infinity, alignment: .center)
-                DividerLine(screenProportion: 0.5, lineWidth: 2).foregroundColor(.gray)
+                DividerLine(geo: geo, screenProportion: 0.5, lineWidth: 2).foregroundColor(.gray)
                 Text("Deadline").padding(.horizontal).frame(maxWidth: .infinity, alignment: .leading)
                 DatePicker("Choose Date", selection: $deadlineField).labelsHidden()
             }
@@ -218,7 +231,7 @@ struct TDLEditTaskView: View {
         ZStack{
             Color.black.opacity(0.5).ignoresSafeArea()
             if viewModel.taskElementToEdit == "Deadline"{
-                DeadlineEditTile(task: viewModel.selectedTask!, date: viewModel.selectedTask!.getDeadline()!)
+                DeadlineEditTile(task: viewModel.selectedTask!, date: viewModel.selectedTask!.getDeadline() ?? Date())
             } else if viewModel.taskElementToEdit == "Description" {
                 DescriptionEditTile(task: viewModel.selectedTask!, description: viewModel.selectedTask!.getDescription())
             } else if viewModel.taskElementToEdit == "Name"{
@@ -293,7 +306,7 @@ struct DescriptionEditTile: View {
                 .foregroundColor(.white)
                 .frame(maxWidth: UIScreen.main.bounds.width * 0.8, maxHeight: UIScreen.main.bounds.height * 0.15)
                 .overlay(
-                    TextField(task.getDescription(), text: $description)
+                    TextField(task.getDescription(), text: $description).padding()
                 )
             Button{
                 var newTask = task

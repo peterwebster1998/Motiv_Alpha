@@ -58,6 +58,10 @@ struct TDLm : Codable{
         return taskList
     }
     
+    func existsInTDL(_ task: Task) -> Bool{
+        return (taskDict[task.getID()] != nil) ? true : false
+    }
+    
     mutating func addList(_ str: String){
         if tasksListDict[str] == nil{
             tasksListDict[str] = []

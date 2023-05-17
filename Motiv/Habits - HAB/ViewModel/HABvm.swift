@@ -13,14 +13,19 @@ class HABvm: ObservableObject {
         case All
         case One
         case New
+        case Task
     }
     
     // MARK: - Variables
     @Published private var model: HABm
     @Published private(set) var viewContext: HABviewTypes
     @Published var selectedHabit: HABm.Habit?
+    @Published var selectedTask: TDLm.Task?
     @Published var updated: Bool
     @Published var deleteMode: Bool
+    @Published var addTask: Bool
+    @Published var pressAndHold: Bool
+    @Published var habitElementToEdit: String
     
     // MARK: - Init
     init (){
@@ -34,6 +39,9 @@ class HABvm: ObservableObject {
         self.viewContext = .All
         self.updated = false
         self.deleteMode = false
+        self.addTask = false
+        self.pressAndHold = false
+        self.habitElementToEdit = ""
     }
     
     // MARK: - ViewModel Getters & Setters
@@ -45,6 +53,8 @@ class HABvm: ObservableObject {
             viewContext = .One
         case "new":
             viewContext = .New
+        case "task":
+            viewContext = .Task
         default:
             viewContext = .All
         }

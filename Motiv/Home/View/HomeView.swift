@@ -23,7 +23,7 @@ struct HomeView: View {
                 if viewModel.currentActiveModule == nil {
                     CompositeHomeView(geo: geo)
                 } else {
-                    ModuleView()
+                    ModuleView(geo: geo)
                 }
                 let _ = print("x: \(geo.size.width), y: \(geo.size.height)")
                 HomeNavBubble(x: geo.size.width + (buttonSize * 0.35) , y: geo.size.height * 0.6)
@@ -51,6 +51,7 @@ struct AppSelectButton: View {
 
 struct ModuleView: View {
     @EnvironmentObject var viewModel: HomeViewModel
+    let geo: GeometryProxy
     
     var body: some View {
         let mod = viewModel.currentActiveModule
@@ -176,7 +177,7 @@ struct ToDoComponentView: View {
                             .foregroundColor(.black)
                             .font(.title)
                     }
-                    DividerLine().foregroundColor(.gray)
+                    DividerLine(geo: geo).foregroundColor(.gray)
                 }
             }.background(.white)
         }

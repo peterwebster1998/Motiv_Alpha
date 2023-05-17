@@ -121,8 +121,13 @@ struct HABm: Codable {
             return tasks
         }
         
-        func getRepetition() -> [String]{
-            return [repetition.0.rawValue, String(repetition.1)]
+        func getRepetitionPeriod() -> repetitionPeriod{
+            return repetition.0
+        }
+        
+        func getRepetition() -> String{
+            let plurality = (repetition.1 == 1) ? "Time" : "Times"
+            return "\(repetition.1) \(plurality) \(repetition.0.rawValue)"
         }
         
         func getCount() -> Int {
@@ -179,43 +184,43 @@ struct HABm: Codable {
             if cont {
                 switch repetition.0 {
                 case .Daily:
-                    if now < tdh.calendar.date(byAdding: .day, value: 1, to: lastCompleted)!{
+                    if now < tdh.calendar.date(byAdding: .day, value: 1, to: lastStreakDay)!{
                         streak += 1
                     } else {
                         streak = 1
                     }
                 case .Weekly:
-                    if now < tdh.calendar.date(byAdding: .day, value: 7, to: lastCompleted)!{
+                    if now < tdh.calendar.date(byAdding: .day, value: 7, to: lastStreakDay)!{
                         streak += 1
                     } else {
                         streak = 1
                     }
                 case .Monthly:
-                    if now < tdh.calendar.date(byAdding: .month, value: 1, to: lastCompleted)!{
+                    if now < tdh.calendar.date(byAdding: .month, value: 1, to: lastStreakDay)!{
                         streak += 1
                     } else {
                         streak = 1
                     }
                 case .Quarterly:
-                    if now < tdh.calendar.date(byAdding: .quarter, value: 1, to: lastCompleted)!{
+                    if now < tdh.calendar.date(byAdding: .quarter, value: 1, to: lastStreakDay)!{
                         streak += 1
                     } else {
                         streak = 1
                     }
                 case .Annually:
-                    if now < tdh.calendar.date(byAdding: .year, value: 1, to: lastCompleted)!{
+                    if now < tdh.calendar.date(byAdding: .year, value: 1, to: lastStreakDay)!{
                         streak += 1
                     } else {
                         streak = 1
                     }
                 case .Decennially:
-                    if now < tdh.calendar.date(byAdding: .year, value: 10, to: lastCompleted)!{
+                    if now < tdh.calendar.date(byAdding: .year, value: 10, to: lastStreakDay)!{
                         streak += 1
                     } else {
                         streak = 1
                     }
                 case .Centennially:
-                    if now < tdh.calendar.date(byAdding: .year, value: 100, to: lastCompleted)!{
+                    if now < tdh.calendar.date(byAdding: .year, value: 100, to: lastStreakDay)!{
                         streak += 1
                     } else {
                         streak = 1

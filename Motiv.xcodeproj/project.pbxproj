@@ -33,6 +33,7 @@
 		1D781EDB2A08339900DCD178 /* HABv.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D781EDA2A08339900DCD178 /* HABv.swift */; };
 		1D781EDD2A0833AF00DCD178 /* HABvm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D781EDC2A0833AF00DCD178 /* HABvm.swift */; };
 		1D781EDF2A0833BC00DCD178 /* HABm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D781EDE2A0833BC00DCD178 /* HABm.swift */; };
+		1D781EE12A0E9A1600DCD178 /* HABvTaskInterraction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D781EE02A0E9A1600DCD178 /* HABvTaskInterraction.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -63,6 +64,7 @@
 		1D781EDA2A08339900DCD178 /* HABv.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HABv.swift; sourceTree = "<group>"; };
 		1D781EDC2A0833AF00DCD178 /* HABvm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HABvm.swift; sourceTree = "<group>"; };
 		1D781EDE2A0833BC00DCD178 /* HABm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HABm.swift; sourceTree = "<group>"; };
+		1D781EE02A0E9A1600DCD178 /* HABvTaskInterraction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HABvTaskInterraction.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -289,6 +291,7 @@
 			isa = PBXGroup;
 			children = (
 				1D781EDA2A08339900DCD178 /* HABv.swift */,
+				1D781EE02A0E9A1600DCD178 /* HABvTaskInterraction.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -372,6 +375,7 @@
 				1D765DA429F86B260009F125 /* RBXv.swift in Sources */,
 				1D765D9029F8607F0009F125 /* CALvConflicts.swift in Sources */,
 				1D781ED529FC232100DCD178 /* TDLvOperation.swift in Sources */,
+				1D781EE12A0E9A1600DCD178 /* HABvTaskInterraction.swift in Sources */,
 				1D781EDD2A0833AF00DCD178 /* HABvm.swift in Sources */,
 				1D765D8229F85C2D0009F125 /* CALvm.swift in Sources */,
 				1D765D8A29F85F400009F125 /* CALvWeek.swift in Sources */,

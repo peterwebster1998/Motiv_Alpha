@@ -9,33 +9,41 @@ import SwiftUI
 
 struct TDLv: View {
     @EnvironmentObject var viewModel: TDLvm
-    @State var height: CGFloat = UIScreen.main.bounds.height * 0.1
+    @State var height: CGFloat = 0
+    @State var inHabit: Bool? = nil
     
     var body: some View {
-        ZStack{
-            TDLBody().frame(maxWidth: .infinity, maxHeight: UIScreen.main.bounds.height * 0.9).position(x: UIScreen.main.bounds.midX, y: UIScreen.main.bounds.height * 0.55)
-            TDLBanner(height: $height).position(x: UIScreen.main.bounds.midX, y: height/2)
-            if viewModel.createMode{
-                TDLCreateView()
-            } else if viewModel.editMode && viewModel.viewContext == .ToDoLists{
-                TDLEditListView()
-            } else if viewModel.pressAndHold{
-                TDLPressAndHoldView()
-            } else if viewModel.editMode && viewModel.viewContext == .Task{
-                TDLEditTaskView()
+        GeometryReader { geo in
+            ZStack{
+                TDLBody(geo: geo).frame(maxWidth: .infinity, maxHeight: geo.size.height * 0.9).position(x: geo.size.width * 0.5, y: geo.size.height * 0.55)
+                TDLBanner(geo: geo, height: $height, inHabit: inHabit).position(x: geo.size.width * 0.5, y: height/2)
+                if viewModel.createMode{
+                    TDLCreateView(geo: geo)
+                } else if viewModel.editMode && viewModel.viewContext == .ToDoLists{
+                    TDLEditListView()
+                } else if viewModel.pressAndHold{
+                    TDLPressAndHoldView()
+                } else if viewModel.editMode && viewModel.viewContext == .Task{
+                    TDLEditTaskView()
+                }
+            }.frame(maxWidth: .infinity, maxHeight: .infinity).onAppear{
+                viewModel.setViewContext("lists")
+                height = geo.size.height * 0.1
             }
-        }.onAppear{viewModel.setViewContext("lists")}
+        }
     }
 }
 
 struct TDLBanner: View {
     @EnvironmentObject var viewModel: TDLvm
     @State var bannerText: String = "To Do Lists"
+    let geo: GeometryProxy
     @Binding var height: CGFloat
+    @State var inHabit: Bool?
     
     var body: some View{
         VStack(spacing: 0){
-            BannerTile(bannerText: $bannerText, height: $height).font(.largeTitle)
+            BannerTile(geo: geo, bannerText: $bannerText, height: $height, inHabit: inHabit).font(.largeTitle)
         }.onChange(of: viewModel.viewContext){ val in
             switch viewModel.viewContext {
             case .ToDoLists:
@@ -60,21 +68,22 @@ struct TDLBanner: View {
 struct BannerTile: View {
     @EnvironmentObject var viewModel: TDLvm
     @EnvironmentObject var homeVM: HomeViewModel
+    let geo: GeometryProxy
     @Binding var bannerText: String
     @Binding var height: CGFloat
     @State var tapped: Bool = false
     @State var otherOptions: [String] = []
     let animationDuration: Double = 0.25
     @State var opacity: Double = 0
+    @State var inHabit: Bool?
     
     var body: some View {
         Rectangle().foregroundColor(.white)
-            .frame(maxWidth: UIScreen.main.bounds.width , maxHeight: height)
+            .frame(maxWidth: geo.size.width , maxHeight: height)
             .animation(.easeInOut(duration: animationDuration), value: height)
             .overlay(
                 VStack{
                     ZStack{
-                        bannerButtons
                         Text(bannerText).padding().multilineTextAlignment(.center)
                             .onTapGesture {
                                 if viewModel.viewContext != .Task && viewModel.viewContext != .List{
@@ -82,14 +91,15 @@ struct BannerTile: View {
                                         setOtherOptions()
                                         tapped = true
                                         height = height * 3
-                                        height = min(height, UIScreen.main.bounds.height * 0.3)
+                                        height = min(height, geo.size.height * 0.3)
                                     } else {
                                         setViewContext(bannerText)
                                     }
                                 }
                             }
+                        bannerButtons
                     }
-                    DividerLine(screenProportion: 0.64, lineWidth: 2)
+                    DividerLine(geo: geo, screenProportion: 0.64, lineWidth: 2)
                     if tapped {
                         Text(otherOptions[0]).padding()
                             .opacity(opacity)
@@ -97,7 +107,7 @@ struct BannerTile: View {
                             .onTapGesture {
                                 setViewContext(otherOptions[0])
                             }
-                        DividerLine(screenProportion: 0.64, lineWidth: 2)
+                        DividerLine(geo: geo, screenProportion: 0.64, lineWidth: 2)
                             .opacity(opacity)
                             .animation(.easeInOut(duration: animationDuration).delay(animationDuration * 0.5), value: opacity)
                         Text(otherOptions[1]).padding()
@@ -106,7 +116,7 @@ struct BannerTile: View {
                             .onTapGesture {
                                 setViewContext(otherOptions[1])
                             }
-                        DividerLine(screenProportion: 0.64, lineWidth: 2)
+                        DividerLine(geo: geo, screenProportion: 0.64, lineWidth: 2)
                             .opacity(opacity)
                             .animation(.easeInOut(duration: animationDuration).delay(animationDuration), value: opacity)
                     }
@@ -118,7 +128,7 @@ struct BannerTile: View {
                     viewModel.editMode = true
                 }
             }.onChange(of: height){ _ in
-               opacity = (height >= UIScreen.main.bounds.height * 0.2) ? 1 : 0
+                opacity = (height >= geo.size.height * 0.2) ? 1 : 0
             }
     }
     
@@ -138,7 +148,9 @@ struct BannerTile: View {
                     viewModel.setViewContext(viewModel.previousViewContext!)
                     viewModel.previousViewContext = nil
                 default:
-                    homeVM.appSelect = true
+                    if inHabit == nil {
+                        homeVM.appSelect = true
+                    }
                 }
             } label: {
                 switch viewModel.viewContext{
@@ -147,7 +159,11 @@ struct BannerTile: View {
                 case .List:
                     Image(systemName: "chevron.left").padding()
                 default:
-                    Image(systemName: "square.grid.3x3.fill").padding()
+                    if inHabit == nil {
+                        Image(systemName: "square.grid.3x3.fill").padding()
+                    } else {
+                        EmptyView()
+                    }
                 }
             }
             Spacer()
@@ -188,14 +204,15 @@ struct BannerTile: View {
 struct TDLBody: View {
     @EnvironmentObject var viewModel: TDLvm
     @EnvironmentObject var tdh: TimeDateHelper
+    let geo: GeometryProxy
     @State var lists: [String] = []
     
     var body: some View {
         switch viewModel.viewContext {
         case .Task:
-            TDLTaskView(task: viewModel.selectedTask!)
+            TDLTaskView(geo: geo, task: viewModel.selectedTask!)
         default:
-            TDLListView(lists: $lists)
+            TDLListView(geo: geo, lists: $lists)
                 .task{
                     generateListsVals()
                 }
@@ -257,13 +274,14 @@ struct TDLBody: View {
 
 struct TDLListView: View {
     @EnvironmentObject var viewModel: TDLvm
+    let geo: GeometryProxy
     @Binding var lists: [String]
     
     var body: some View {
         ScrollView{
             ForEach(lists, id: \.self){ list in
                 ElementTile(title: list)
-                DividerLine().foregroundColor(.gray)
+                DividerLine(geo: geo).foregroundColor(.gray)
             }
             if lists.count == 0 {
                 Text("There are currently no elements in this list").padding()
@@ -274,13 +292,16 @@ struct TDLListView: View {
 
 struct ElementTile: View {
     @EnvironmentObject var viewModel: TDLvm
+    @EnvironmentObject var HABviewModel: HABvm
     let title: String
     @State var task: TDLm.Task? = nil
+    @State var inHabit: Bool? = nil
     
     var body: some View {
         ZStack{
             RoundedRectangle(cornerRadius: 15).foregroundColor(.white)
             HStack{
+                if inHabit == nil {
                 if viewModel.viewContext == .List || viewModel.viewContext == .Task{
                     if task != nil {
                         Button{
@@ -296,117 +317,176 @@ struct ElementTile: View {
                 Spacer()
                 Text(viewModel.getCompletionStatus(title))
                     .padding()
+                } else {
+                    //Habit Implementation
+                    Button{
+                        var updatedHabit = HABviewModel.selectedHabit!
+                        let out = updatedHabit.deleteTask(task!)
+                        if !viewModel.pressAndHold{
+                            task!.toggleCompletion()
+                            if out{
+                                updatedHabit.addTask(task!)
+                                HABviewModel.updateHabit(updatedHabit)
+                                HABviewModel.selectedHabit = updatedHabit
+                            }
+                            if viewModel.existsInTDL(task!){
+                                viewModel.updateTask(task!)
+                            }
+                        } else {
+                            HABviewModel.updateHabit(updatedHabit)
+                            HABviewModel.selectedHabit = updatedHabit
+                        }
+                    } label: {
+                        if !viewModel.pressAndHold{
+                            Image(systemName: (task?.getCompleted() ?? false) ? "checkmark.square" : "square")
+                        } else {
+                            Image(systemName: "trash")
+
+                        }
+                    }.padding()
+                    Text(title)
+                        .padding()
+                    Spacer()
+                }
             }.frame(maxWidth: .infinity)
                 .foregroundColor(.black)
                 .font(.title)
         }.onTapGesture {
-            if !viewModel.pressAndHold{
-                switch viewModel.viewContext {
-                case .Task:
-                    viewModel.selectedTask = viewModel.getSubtasks(viewModel.selectedTask!.getID()).first(where: {$0.getName() == title})
-                case .List:
-                    viewModel.selectedTask = viewModel.getTaskList(viewModel.selectedList!).first(where: {$0.getName() == title})
-                    viewModel.setViewContext("task")
-                default:
-                    viewModel.selectedList = title
-                    viewModel.previousViewContext = viewModel.viewContext.toString()
-                    viewModel.setViewContext("list")
+            if inHabit == nil {
+                if !viewModel.pressAndHold {
+                    switch viewModel.viewContext {
+                    case .Task:
+                        viewModel.selectedTask = viewModel.getSubtasks(viewModel.selectedTask!.getID()).first(where: {$0.getName() == title})
+                    case .List:
+                        viewModel.selectedTask = viewModel.getTaskList(viewModel.selectedList!).first(where: {$0.getName() == title})
+                        viewModel.setViewContext("task")
+                    default:
+                        viewModel.selectedList = title
+                        viewModel.previousViewContext = viewModel.viewContext.toString()
+                        viewModel.setViewContext("list")
+                    }
                 }
+            } else {
+                viewModel.pressAndHold = false
+                HABviewModel.selectedTask = task
+                HABviewModel.setViewContext("task")
             }
-        }
+    }
         .gesture(pressAndHoldToEditAndDelete)
         .task{
-            if viewModel.viewContext == .List {
-                task = viewModel.getTaskList(viewModel.selectedList!).first(where: {$0.getName() == title})
-            } else if viewModel.viewContext == .Task {
-                task = viewModel.getSubtasks(viewModel.selectedTask!.getID()).first(where: {$0.getName() == title})
+            if inHabit == nil {
+                if viewModel.viewContext == .List {
+                    task = viewModel.getTaskList(viewModel.selectedList!).first(where: {$0.getName() == title})
+                } else if viewModel.viewContext == .Task {
+                    task = viewModel.getSubtasks(viewModel.selectedTask!.getID()).first(where: {$0.getName() == title})
+                }
+            } else {
+                task = HABviewModel.selectedHabit!.getTasks().first(where: {$0.getName() == title})
             }
         }
     }
     
     var pressAndHoldToEditAndDelete: some Gesture{
         let gesture = LongPressGesture(minimumDuration: 1, maximumDistance: 30).onEnded{ _ in
-            if viewModel.viewContext == .List {
-                viewModel.selectedTask = task
-            } else if viewModel.viewContext != .Task {
-                viewModel.selectedList = title
-            } else {
-                viewModel.selectedTask = task
+            if inHabit == nil {
+                if viewModel.viewContext == .List {
+                    viewModel.selectedTask = task
+                } else if viewModel.viewContext != .Task {
+                    viewModel.selectedList = title
+                } else {
+                    viewModel.selectedTask = task
+                }
+                viewModel.editDeleteTitle = title
             }
-            viewModel.pressAndHold = true
-            viewModel.editDeleteTitle = title
-            print("Pressed and held!")
+            viewModel.pressAndHold = (viewModel.pressAndHold) ? false : true
         }
         return gesture
     }
 }
 
 struct DividerLine: View {
+    let geo: GeometryProxy
     @State var screenProportion: CGFloat = 0.9
     @State var lineWidth: CGFloat = 2
-    let screenWidth = UIScreen.main.bounds.size.width
-    
+    @State var screenWidth: CGFloat = 0
+
     var body: some View {
         RoundedRectangle(cornerRadius: lineWidth/2).frame(maxWidth: screenWidth * screenProportion, maxHeight: lineWidth, alignment: .center)
+            .task {
+                screenWidth = geo.size.width
+        }
     }
 }
 
 struct TDLTaskView: View {
     @EnvironmentObject var viewModel: TDLvm
     @EnvironmentObject var tdh: TimeDateHelper
+    let geo: GeometryProxy
     @State var task: TDLm.Task
-    
+    @State var inHabit: Bool?
     
     var body: some View {
         VStack{
-            if task.getDescription() != ""{
-                Group{
-                    Text("Description").frame(maxWidth: .infinity, alignment: .leading).padding().font(.title2)
+            Group{
+                Text("Description").frame(maxWidth: .infinity, alignment: .leading).padding().font(.title2)
+                if task.getDescription() != ""{
                     Text(task.getDescription()).font(.subheadline).multilineTextAlignment(.leading).padding(.horizontal)
-                }.onLongPressGesture(minimumDuration: 1, maximumDistance: 20){
-                    viewModel.taskElementToEdit = "Description"
-                    viewModel.editMode = true
-                    print("Edit mode!")
+                } else {
+                    Text("Press & hold to enter description").font(.subheadline).multilineTextAlignment(.leading).padding(.horizontal)
                 }
-                DividerLine(screenProportion: 0.8, lineWidth: 2)
+            }.onLongPressGesture(minimumDuration: 1, maximumDistance: 20){
+                viewModel.taskElementToEdit = "Description"
+                viewModel.editMode = true
+                print("Edit mode!")
             }
-            if task.getDeadline() != nil {
-                HStack{
-                    Text("Deadline: ").padding()
-                    Spacer()
-                    Spacer()
+            DividerLine(geo: geo, screenProportion: 0.8, lineWidth: 2)
+            
+            HStack{
+                Text("Deadline: ").padding()
+                Spacer()
+                Spacer()
+                if task.getDeadline() != nil {
+                    
                     Text((tdh.isToday(task.getDeadline()!)) ? tdh.getTimeOfDayHrsMins(task.getDeadline()!) : tdh.dateString(task.getDeadline()!)).padding()
-                    Spacer()
-                }.font(.title2).onLongPressGesture(minimumDuration: 1, maximumDistance: 20){
+                } else {
+                    Text("Press & hold to set deadline").padding().font(.subheadline)
+                }
+                Spacer()
+            }.font(.title2)
+                .onLongPressGesture(minimumDuration: 1, maximumDistance: 20){
                     viewModel.taskElementToEdit = "Deadline"
                     viewModel.editMode = true
                 }
-                DividerLine(screenProportion: 0.8, lineWidth: 2)
-            }
-            Text("Subtasks:").frame(maxWidth: .infinity, alignment: .leading).padding().font(.title)
+            DividerLine(geo: geo, screenProportion: 0.8, lineWidth: 2)
             
-            ScrollView{
-                VStack{
-                    if task.isParentTask() {
-                        ForEach(viewModel.getSubtasks(task.getID()), id: \.self){ sub in
-                            ElementTile(title: sub.getName())
-                                .onTapGesture {
-                                    viewModel.selectedTask = sub
-                                }
-                            DividerLine(screenProportion: 0.64, lineWidth: 2)
+            if inHabit == nil {
+                Text("Subtasks:").frame(maxWidth: .infinity, alignment: .leading).padding().font(.title)
+                
+                ScrollView{
+                    VStack{
+                        if task.isParentTask() {
+                            ForEach(viewModel.getSubtasks(task.getID()), id: \.self){ sub in
+                                ElementTile(title: sub.getName())
+                                    .onTapGesture {
+                                        viewModel.selectedTask = sub
+                                    }
+                                DividerLine(geo: geo, screenProportion: 0.64, lineWidth: 2)
+                            }
+                        } else {
+                            Text("This task currently does not have any subtasks").padding()
                         }
-                    } else {
-                        Text("This task currently does not have any subtasks").padding()
-                    }
-                    Spacer()
-                }.overlay(
-                    RoundedRectangle(cornerRadius: 5)
-                        .stroke(Color.black, lineWidth: 2)
-                        .foregroundColor(.clear)
-                        .frame(width: UIScreen.main.bounds.width * 0.8, alignment: .center)
-                )
-                .frame(maxWidth: UIScreen.main.bounds.width * 0.8)
-                .padding()
+                        Spacer()
+                    }.overlay(
+                        RoundedRectangle(cornerRadius: 5)
+                            .stroke(Color.black, lineWidth: 2)
+                            .foregroundColor(.clear)
+                            .frame(width: geo.size.width * 0.8, alignment: .center)
+                    )
+                    .frame(maxWidth: geo.size.width * 0.8)
+                    .padding()
+                }
+            } else {
+                Spacer()
             }
         }.onChange(of: viewModel.selectedTask){ value in
             if value != nil {
