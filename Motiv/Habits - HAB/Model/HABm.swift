@@ -26,7 +26,7 @@ struct HABm: Codable {
     
     // MARK: - HABm Methods
     init(){
-        self.habits = [Habit(name: "Plan", notes: "When you fail to plan, you plan to fail - Richard Williams", repetition: (.Daily, 1))]
+        self.habits = [Habit(name: "Plan", note: "When you fail to plan, you plan to fail - Richard Williams", repetition: (.Daily, 1))]
     }
     
     func getHabits() -> [Habit]{
@@ -66,7 +66,7 @@ struct HABm: Codable {
     struct Habit: Codable, Hashable {
         private let ID: UUID
         private var name: String
-        private var notes: String
+        private var notes: [String]
         private var tasks: [TDLm.Task]
         private var repetition: (repetitionPeriod, Int)
         private var count: Int
@@ -89,10 +89,13 @@ struct HABm: Codable {
             var id: String { self.rawValue }
         }
         
-        init(name: String, notes: String, repetition: (repetitionPeriod, Int)){
+        init(name: String, note: String, repetition: (repetitionPeriod, Int)){
             self.ID = UUID()
             self.name = name
-            self.notes = notes
+            self.notes = []
+            if note != "" {
+                self.notes.append(note)
+            }
             self.tasks = []
             self.repetition = repetition
             self.count = 0
@@ -113,7 +116,7 @@ struct HABm: Codable {
             return name
         }
         
-        func getNotes() -> String{
+        func getNotes() -> [String]{
             return notes
         }
         
@@ -251,8 +254,12 @@ struct HABm: Codable {
             self.name = str
         }
         
-        mutating func setNotes(_ str: String){
-            self.notes = str
+        mutating func addNote(_ str: String){
+            self.notes.append(str)
+        }
+        
+        mutating func setNotes(_ arr: [String]){
+            self.notes = arr
         }
         
         mutating func setRepetition(_ arr: (repetitionPeriod, Int)){
@@ -330,7 +337,7 @@ struct HABm: Codable {
             let values = try decoder.container(keyedBy: CodingKeys.self)
             ID = try values.decode(UUID.self, forKey: .ID)
             name = try values.decode(String.self, forKey: .name)
-            notes = try values.decode(String.self, forKey: .notes)
+            notes = try values.decode([String].self, forKey: .notes)
             tasks = try values.decode([TDLm.Task].self, forKey: .tasks)
             let repetitionPeriod = try values.decode(Habit.repetitionPeriod.self, forKey: .repetitionPeriod)
             let repetitionCount = try values.decode(Int.self, forKey: .repetitionCount)

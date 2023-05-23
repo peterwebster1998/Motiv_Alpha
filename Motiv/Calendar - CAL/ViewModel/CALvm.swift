@@ -20,6 +20,7 @@ class CALvm: ObservableObject {
         case Week
         case Day
         case Event
+        case Edit
     }
     
     // MARK: - Variables
@@ -29,7 +30,6 @@ class CALvm: ObservableObject {
     @Published var contextSwitch: Bool
     @Published var startUp: Bool
     @Published var deleteMode: Bool
-    @Published var editMode: Bool
     @Published var createEvent: Bool
     @Published var createTask: Bool
     @Published var eventConflict: Bool
@@ -39,6 +39,7 @@ class CALvm: ObservableObject {
     @Published var editSeries: Bool
     @Published var eventSelected: CALm.Event?
     @Published var lastContext: String?
+    @Published var pairWithHabit: Bool
     
     // MARK: - Init
     
@@ -56,12 +57,12 @@ class CALvm: ObservableObject {
         self.createEvent = false
         self.createTask = false
         self.deleteMode = false
-        self.editMode = false
         self.eventConflict = false
         self.conflictResolved = false
         self.conflictsUpdated = false
         self.refreshWindows = false
         self.editSeries = false
+        self.pairWithHabit = false
         
         //Removes conflicts now in the past
         model.refreshConflicts()
@@ -78,6 +79,8 @@ class CALvm: ObservableObject {
             return "Day"
         case .Event:
             return "Event"
+        case .Edit:
+            return "Edit"
         }
     }
     
@@ -91,6 +94,8 @@ class CALvm: ObservableObject {
             viewType = CALviewTypes.Day
         case "e":
             viewType = CALviewTypes.Event
+        case "edit":
+            viewType = CALviewTypes.Edit
         default:
             viewType = CALviewTypes.Day
         }
@@ -98,6 +103,10 @@ class CALvm: ObservableObject {
     
     func getDaysEvents(_ day: String) -> [CALm.Event] {
         model.getDaysEvents(day)
+    }
+    
+    func getEventSeries(_ ID: UUID) -> CALm.EventSeries {
+        return model.getEventSeries(ID)
     }
 
     func getDaysTasks(_ day: String) -> [TDLm.Task]{
@@ -158,7 +167,7 @@ class CALvm: ObservableObject {
                 autosave()
                 return true
             } else {
-                editMode = false
+                setViewContext("e")
                 eventConflict = true
                 model.deleteEvent(event)
                 return false
@@ -180,11 +189,21 @@ class CALvm: ObservableObject {
             autosave()
             return true
         } else {
-            editMode = false
+            setViewContext("e")
             eventConflict = true
             model.deleteEvent(event)
             return false
         }
+    }
+    
+    func updateEvent(_ event: CALm.Event){
+        model.updateEvent(event)
+        autosave()
+    }
+    
+    func updateEventSeries(_ updatedSeries: CALm.EventSeries){
+        model.updateEventSeries(updatedSeries)
+        autosave()
     }
     
     func addConflict(_ event: CALm.Event){

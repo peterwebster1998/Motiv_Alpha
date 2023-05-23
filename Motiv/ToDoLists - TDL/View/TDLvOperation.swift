@@ -36,7 +36,7 @@ struct CreateForm: View {
     
     var body: some View {
         RoundedRectangle(cornerRadius: 10)
-            .frame(maxWidth: screenWidth * 0.75, maxHeight: height)
+            .frame(maxWidth: geo.size.width * 0.75, maxHeight: height)
             .foregroundColor(.white)
             .animation(.linear(duration: 0.1), value: height)
             .overlay(
@@ -102,10 +102,10 @@ struct CreateForm: View {
             }
             TextField("Enter Name", text: $nameField).padding().frame(maxWidth: .infinity, alignment: .center)
             if expanded{
-                DividerLine(geo: geo, screenProportion: 0.5, lineWidth: 2).foregroundColor(.gray)
+                DividerLine(geo: geo, screenProportion: 0.5, lineWidth: 1.5).foregroundColor(.gray)
                 Text("Description").padding(.horizontal).frame(maxWidth: .infinity, alignment: .leading)
                 TextField("Enter Description", text: $descriptionField).padding().frame(maxWidth: .infinity, alignment: .center)
-                DividerLine(geo: geo, screenProportion: 0.5, lineWidth: 2).foregroundColor(.gray)
+                DividerLine(geo: geo, screenProportion: 0.5, lineWidth: 1.5).foregroundColor(.gray)
                 Text("Deadline").padding(.horizontal).frame(maxWidth: .infinity, alignment: .leading)
                 DatePicker("Choose Date", selection: $deadlineField).labelsHidden()
             }
@@ -114,7 +114,7 @@ struct CreateForm: View {
                     Spacer()
                     Button {
                         expanded.toggle()
-                        height = expanded ? screenHeight * 0.45 : screenHeight * 0.2
+                        height = expanded ? geo.size.height * 0.45 : geo.size.height * 0.2
                     } label: {
                         HStack{
                             Text(expanded ? "Less" : "More").font(.title3)

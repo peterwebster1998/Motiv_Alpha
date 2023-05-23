@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+
 struct AddTaskToHabitView: View {
     
     private enum taskChoice{
@@ -21,7 +22,9 @@ struct AddTaskToHabitView: View {
     
     var body: some View {
         ZStack{
-            Color.black.opacity(0.5)
+            Color.black.opacity(0.5).onTapGesture {
+                viewModel.addTask = false
+            }
             interractionAreaSwitchView.scaleEffect(0.85).background(RoundedRectangle(cornerRadius: 15).frame(maxWidth: geo.size.width * 0.9, maxHeight: geo.size.height * 0.95).foregroundColor(.white))
         }.frame(maxWidth: .infinity, maxHeight: .infinity).ignoresSafeArea()
     }

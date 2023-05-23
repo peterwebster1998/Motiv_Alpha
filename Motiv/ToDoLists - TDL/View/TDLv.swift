@@ -99,7 +99,7 @@ struct BannerTile: View {
                             }
                         bannerButtons
                     }
-                    DividerLine(geo: geo, screenProportion: 0.64, lineWidth: 2)
+                    DividerLine(geo: geo, screenProportion: 0.64, lineWidth: 1.5).foregroundColor(.gray)
                     if tapped {
                         Text(otherOptions[0]).padding()
                             .opacity(opacity)
@@ -107,7 +107,7 @@ struct BannerTile: View {
                             .onTapGesture {
                                 setViewContext(otherOptions[0])
                             }
-                        DividerLine(geo: geo, screenProportion: 0.64, lineWidth: 2)
+                        DividerLine(geo: geo, screenProportion: 0.64, lineWidth: 1.5)
                             .opacity(opacity)
                             .animation(.easeInOut(duration: animationDuration).delay(animationDuration * 0.5), value: opacity)
                         Text(otherOptions[1]).padding()
@@ -116,7 +116,7 @@ struct BannerTile: View {
                             .onTapGesture {
                                 setViewContext(otherOptions[1])
                             }
-                        DividerLine(geo: geo, screenProportion: 0.64, lineWidth: 2)
+                        DividerLine(geo: geo, screenProportion: 0.64, lineWidth: 1.5)
                             .opacity(opacity)
                             .animation(.easeInOut(duration: animationDuration).delay(animationDuration), value: opacity)
                     }
@@ -341,7 +341,6 @@ struct ElementTile: View {
                             Image(systemName: (task?.getCompleted() ?? false) ? "checkmark.square" : "square")
                         } else {
                             Image(systemName: "trash")
-
                         }
                     }.padding()
                     Text(title)
@@ -407,7 +406,7 @@ struct ElementTile: View {
 struct DividerLine: View {
     let geo: GeometryProxy
     @State var screenProportion: CGFloat = 0.9
-    @State var lineWidth: CGFloat = 2
+    @State var lineWidth: CGFloat = 1.5
     @State var screenWidth: CGFloat = 0
 
     var body: some View {
@@ -439,7 +438,7 @@ struct TDLTaskView: View {
                 viewModel.editMode = true
                 print("Edit mode!")
             }
-            DividerLine(geo: geo, screenProportion: 0.8, lineWidth: 2)
+            DividerLine(geo: geo, screenProportion: 0.8, lineWidth: 1.5).foregroundColor(.gray)
             
             HStack{
                 Text("Deadline: ").padding()
@@ -457,7 +456,7 @@ struct TDLTaskView: View {
                     viewModel.taskElementToEdit = "Deadline"
                     viewModel.editMode = true
                 }
-            DividerLine(geo: geo, screenProportion: 0.8, lineWidth: 2)
+            DividerLine(geo: geo, screenProportion: 0.8, lineWidth: 1.5).foregroundColor(.gray)
             
             if inHabit == nil {
                 Text("Subtasks:").frame(maxWidth: .infinity, alignment: .leading).padding().font(.title)
@@ -470,7 +469,7 @@ struct TDLTaskView: View {
                                     .onTapGesture {
                                         viewModel.selectedTask = sub
                                     }
-                                DividerLine(geo: geo, screenProportion: 0.64, lineWidth: 2)
+                                DividerLine(geo: geo, screenProportion: 0.64, lineWidth: 1.5).foregroundColor(.gray)
                             }
                         } else {
                             Text("This task currently does not have any subtasks").padding()

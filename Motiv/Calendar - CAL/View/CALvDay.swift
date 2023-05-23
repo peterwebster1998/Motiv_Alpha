@@ -18,7 +18,8 @@ import SwiftUI
 struct DayView: View {
     @EnvironmentObject var timeDateHelper: TimeDateHelper
     @EnvironmentObject var viewModel: CALvm
-    
+    let geo: GeometryProxy
+
     var body: some View {
         ZStack{
             ScrollViewReader{ proxy in
@@ -43,7 +44,7 @@ struct DayView: View {
                 }
             }
         }.sheet(isPresented: $viewModel.createEvent){
-            CreateEventView()
+            CreateEventView(geo: geo)
         }
     }
     
@@ -341,8 +342,3 @@ struct EventTile: View {
 }
 
 
-struct CALvDay_Previews: PreviewProvider {
-    static var previews: some View {
-        DayView()
-    }
-}

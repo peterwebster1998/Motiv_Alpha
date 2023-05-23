@@ -24,8 +24,9 @@ class HABvm: ObservableObject {
     @Published var updated: Bool
     @Published var deleteMode: Bool
     @Published var addTask: Bool
+    @Published var addNote: Bool
     @Published var pressAndHold: Bool
-    @Published var habitElementToEdit: String
+    @Published var habitElement: String
     
     // MARK: - Init
     init (){
@@ -40,8 +41,9 @@ class HABvm: ObservableObject {
         self.updated = false
         self.deleteMode = false
         self.addTask = false
+        self.addNote = false
         self.pressAndHold = false
-        self.habitElementToEdit = ""
+        self.habitElement = ""
     }
     
     // MARK: - ViewModel Getters & Setters

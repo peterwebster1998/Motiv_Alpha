@@ -20,24 +20,36 @@ struct CALv: View {
     @EnvironmentObject var timeDateHelper: TimeDateHelper
     
     var body: some View {
-        VStack(spacing: 0){
-            CALBanner(currentDate: timeDateHelper.dateInView)
-            Divider()
-            switch viewModel.viewType {
-            case .Month:
-                MonthView()
-            case .Week:
-                WeekView()
-            case .Day:
-                DayView()
-            case .Event:
-                EventView()
+        GeometryReader{ geo in
+            ZStack{
+                VStack(spacing: 0){
+                    CALBanner(currentDate: timeDateHelper.dateInView)
+                    Divider()
+                    switch viewModel.viewType {
+                    case .Month:
+                        MonthView()
+                    case .Week:
+                        WeekView(geo: geo)
+                    case .Day:
+                        DayView(geo: geo)
+                    case .Event:
+                        EventView(geo: geo)
+                    case .Edit:
+                        EditEventView(geo: geo)
+                    }
+                }
+                if viewModel.pairWithHabit {
+                    PairWithHabitView(geo: geo)
+                }
+                if viewModel.createTask {
+                    AddTaskFormView(geo: geo)
+                }
+            }.frame(maxWidth: .infinity, maxHeight: .infinity).onAppear {
+                timeDateHelper.today()
             }
-        }.onAppear {
-            timeDateHelper.today()
-        }
-        .sheet(isPresented: $viewModel.eventConflict){
-            ConflictView()
+            .sheet(isPresented: $viewModel.eventConflict){
+                ConflictView()
+            }
         }
     }
 }
@@ -47,6 +59,7 @@ struct CALBanner: View {
     @EnvironmentObject var viewModel: CALvm
     @EnvironmentObject var timeDateHelper: TimeDateHelper
     @EnvironmentObject var homeVM: HomeViewModel
+    @EnvironmentObject var habitVM: HABvm
     @State var currentDate: Date
     @State private var pickerDate: Date = Date()
     //    @State private var showPicker: Bool = false
@@ -63,6 +76,8 @@ struct CALBanner: View {
                                 .opacity(0.02)
                         )
                     case .Event:
+                        Text(viewModel.eventSelected!.getName()).font(.largeTitle).frame(maxWidth: UIScreen.main.bounds.width * 0.75).multilineTextAlignment(.center)
+                    case .Edit:
                         Text(viewModel.eventSelected!.getName()).font(.largeTitle).frame(maxWidth: UIScreen.main.bounds.width * 0.75).multilineTextAlignment(.center)
                     default:
                         Text(timeDateHelper.monthYearStr(currentDate)).padding().font(.largeTitle).frame(maxWidth: .infinity).overlay(
@@ -88,6 +103,17 @@ struct CALBanner: View {
                         } label: {
                             Image(systemName: "slider.horizontal.3").foregroundColor(Color.black).font(.title)
                         }.padding()
+                    }
+                    
+                case .Edit:
+                    HStack{
+                        Button {
+                            viewModel.setViewContext("e")
+                        } label: {
+                            Image(systemName: "chevron.left").foregroundColor(Color.black).font(.title)
+                        }.padding()
+                        Spacer()
+                        
                     }
                 default:
                     HStack{
@@ -172,7 +198,6 @@ struct CALBanner: View {
         // Delete item
         Button {
             viewModel.deleteMode = true
-            viewModel.editMode = false
         } label: {
             Text("Delete")
             Spacer()
@@ -180,7 +205,7 @@ struct CALBanner: View {
         }
         // Edit item
         Button {
-            viewModel.editMode = true
+            viewModel.setViewContext("edit")
             viewModel.deleteMode = false
         } label: {
             Text("Edit")
@@ -190,13 +215,35 @@ struct CALBanner: View {
         // Edit Event Series
         if viewModel.eventSelected!.getSeriesID() != nil{
             Button {
-                viewModel.editMode = true
+                viewModel.setViewContext("edit")
                 viewModel.editSeries = true
                 viewModel.deleteMode = false
             } label: {
                 Text("Edit Series")
                 Spacer()
                 Image(systemName: "pencil")
+            }
+            
+            if viewModel.getEventSeries(viewModel.eventSelected!.getSeriesID()!).getHabit() == nil {
+                Button {
+                    viewModel.pairWithHabit = true
+                } label: {
+                    Text("Pair With Habit")
+                    Spacer()
+                    Image(systemName: "link")
+                }
+            } else {
+                Button {
+                    homeVM.currentActiveModule = homeVM.getApps().first(where: {$0.getName() == "Habits"})
+                    habitVM.selectedHabit = viewModel.getEventSeries(viewModel.eventSelected!.getSeriesID()!).getHabit()!
+                    habitVM.setViewContext("one")
+                    viewModel.setViewContext("m")
+                    viewModel.eventSelected = nil
+                } label: {
+                    Text("Go To Habit")
+                    Spacer()
+                    Image(systemName: "person.fill.checkmark")
+                }
             }
         }
     }

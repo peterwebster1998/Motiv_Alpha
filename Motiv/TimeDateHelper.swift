@@ -80,6 +80,11 @@ class TimeDateHelper: ObservableObject {
         return String(str[..<str.index(str.startIndex, offsetBy: 2)])
     }
     
+    func dateFromString(_ str: String) -> Date? {
+        dateFormatter.dateFormat = "dd LLL yyyy"
+        return dateFormatter.date(from: str)
+    }
+    
     func isDate(_ str: String) -> Bool {
         dateFormatter.dateFormat = "dd LLL yyyy"
         let out = dateFormatter.date(from: str)

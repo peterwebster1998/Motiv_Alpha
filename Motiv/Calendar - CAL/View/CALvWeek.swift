@@ -24,6 +24,7 @@ internal let dateBarWidthProportion: CGFloat = 0.15
 struct WeekView: View {
     @EnvironmentObject var timeDateHelper: TimeDateHelper
     @EnvironmentObject var viewModel: CALvm
+    let geo: GeometryProxy
     @State var datesInView: [Date] = []
     
     var body: some View {
@@ -58,7 +59,7 @@ struct WeekView: View {
                     datesInView.append(timeDateHelper.calendar.date(byAdding: .day, value: num, to: timeDateHelper.dateInView)!)
                 }
             }.sheet(isPresented: $viewModel.createEvent){
-                CreateEventView()
+                CreateEventView(geo: geo)
             }
     }
 }

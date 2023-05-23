@@ -1,16 +1,16 @@
 /*
-  CALvEventInteraction.swift
-  Motiv
-
-  Created by Peter Webster on 4/25/23.
-
+ CALvEventInteraction.swift
+ Motiv
+ 
+ Created by Peter Webster on 4/25/23.
+ 
  //
  //  CALvEventInterraction.swift
  //  motiv-prerelease
  //
  //  Created by Peter Webster on 1/26/23.
  //
-*/
+ */
 
 import SwiftUI
 
@@ -18,12 +18,11 @@ import SwiftUI
 internal let hoursOfDay = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"]
 internal let minuteIntervals = ["00", "15", "30", "45"]
 internal let monthsOfYear = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-internal let screenWidth = UIScreen.main.bounds.size.width
-internal let screenHeight = UIScreen.main.bounds.size.height
 
 struct CreateEventView: View {
     @EnvironmentObject var timeDateHelper: TimeDateHelper
     @EnvironmentObject var viewModel: CALvm
+    let geo: GeometryProxy
     @State private var nameToPass: String = ""
     @State private var description: String = ""
     @State private var startTime: Date = Date()
@@ -70,7 +69,7 @@ struct CreateEventView: View {
             Group {
                 Divider()
                 Text("Description").frame(maxWidth: .infinity, alignment: .leading).font(.title2).padding(.horizontal)
-                TextEditor(text: $description).frame(maxWidth: screenWidth * 0.9, maxHeight: 150, alignment: .topLeading)
+                TextEditor(text: $description).frame(maxWidth: geo.size.width * 0.9, maxHeight: 150, alignment: .topLeading)
             }
             Group{
                 Divider()
@@ -302,43 +301,29 @@ struct CreateEventView: View {
 struct EventView: View {
     @EnvironmentObject var timeDateHelper: TimeDateHelper
     @EnvironmentObject var viewModel: CALvm
+    @EnvironmentObject var HABviewModel: HABvm
+    let geo: GeometryProxy
     @State private var event: CALm.Event = CALm.Event(dateKey: "0000", startTime: Date(), durationMins: 0, eventName: "Placeholder Event", description: "", repetition: .Never)
+    @State private var taskList: [TDLm.Task] = []
+    @State private var completedHabit: Bool = false
     
     var body: some View {
-        VStack{
-            Divider()
-            HStack{
-                Spacer()
-                Group{
-                    Text(event.getDateKey()).frame(alignment: .center)
-                    Text("\(timeDateHelper.getTimeOfDayHrsMins(event.getStartTime())) \(timeDateHelper.getAMPM(event.getStartTime()))")
+        ZStack{
+            VStack{
+                Divider()
+                dateTimeDurationBar
+                Divider()
+                descriptionTile
+                Divider()
+                if event.getSeriesID() != nil{
+                    if viewModel.getEventSeries(event.getSeriesID()!).getHabit() != nil{
+                        habitTile
+                        Divider()
+                    }
                 }
-                Spacer()
-                Group{
-                    Image(systemName: "timer")
-                    Text(timeDateHelper.convertMinstoHrsMins(event.getDuration()))
-                }
-                Spacer()
-                Group{
-                    Image(systemName: "repeat")
-                    Text(event.getRepetition())
-                }
+                tasksTile
                 Spacer()
             }
-            Divider()
-            HStack{
-                Text("Description").font(.title).padding()
-                Spacer()
-            }
-            Text(event.getDescription()).frame(maxWidth: .infinity, alignment: .leading).padding()
-            Divider()
-            //Insert ToDo interraction here
-            HStack{
-                Text("Tasks:").font(.title).padding()
-                Spacer()
-            }
-            
-            Spacer()
         }.alert(isPresented:$viewModel.deleteMode){
             Alert(
                 title: Text("Are you sure you want to delete: \("'")\(event.getName())\("'")?"),
@@ -353,226 +338,378 @@ struct EventView: View {
                 secondaryButton: .cancel({
                     viewModel.deleteMode = false
                 }))
-        }.sheet(isPresented: $viewModel.editMode){
-            EditEventSheet(eventBinding: $event)
-        }.onAppear(){
-            event = viewModel.eventSelected!
+        }.onAppear{
+            setVariables()
+        }.onChange(of: viewModel.eventSelected){ val in
+            if val != nil{
+                setVariables()
+            }
         }
+    }
+    
+    func setVariables(){
+        event = viewModel.eventSelected!
+        taskList = event.getTasks()
+        if event.getSeriesID() != nil{
+            if viewModel.getEventSeries(event.getSeriesID()!).getHabit() != nil{
+                let habit = viewModel.getEventSeries(event.getSeriesID()!).getHabit()!
+                if habit.getTasks().count < 0{
+                    taskList.append(contentsOf: habit.getTasks())
+                }
+            }
+        }
+    }
+    
+    var dateTimeDurationBar: some View{
+        HStack{
+            Spacer()
+            Group{
+                Text(event.getDateKey()).frame(alignment: .center)
+                Text("\(timeDateHelper.getTimeOfDayHrsMins(event.getStartTime())) \(timeDateHelper.getAMPM(event.getStartTime()))")
+            }
+            Spacer()
+            Group{
+                Image(systemName: "timer")
+                Text(timeDateHelper.convertMinstoHrsMins(event.getDuration()))
+            }
+            Spacer()
+            Group{
+                Image(systemName: "repeat")
+                Text(event.getRepetition())
+            }
+            Spacer()
+        }
+    }
+    
+    @ViewBuilder
+    var descriptionTile: some View {
+        HStack{
+            Text("Description").font(.title).padding()
+            Spacer()
+        }
+        Text(event.getDescription()).frame(maxWidth: .infinity, alignment: .leading).padding()
+    }
+    
+    var habitTile: some View {
+        HStack{
+            Text("Habit: \(viewModel.getEventSeries(event.getSeriesID()!).getHabit()!.getName())").font(.title).padding()
+            Spacer()
+            Button {
+                //Complete Habit
+                var habit = viewModel.getEventSeries(event.getSeriesID()!).getHabit()!
+                if !completedHabit{
+                    habit.complete()
+                    completedHabit = true
+                } else {
+                    habit.undoComplete()
+                    completedHabit = false
+                }
+                HABviewModel.updateHabit(habit)
+            } label: {
+                Image(systemName: completedHabit ? "arrow.uturn.backward" : "checkmark").font(.title).foregroundColor(.black).padding().overlay(
+                    RoundedRectangle(cornerRadius: 10).stroke(.black, lineWidth: 1.5).foregroundColor(.clear)
+                )
+            }.padding()
+        }
+    }
+    
+    @ViewBuilder
+    var tasksTile: some View {
+        HStack{
+            Text("Tasks:").font(.title).padding()
+            Spacer()
+            Button{
+                viewModel.createTask = true
+            } label: {
+                Image(systemName: "plus").font(.title).padding()
+            }
+        }.foregroundColor(.black)
         
+        RoundedRectangle(cornerRadius: 15).stroke(.gray, lineWidth: 1).frame(maxWidth: geo.size.width * 0.9, maxHeight: geo.size.height * 0.6).foregroundColor(.clear).overlay(
+            ScrollView{
+                ForEach(taskList, id: \.self){ task in
+                    ElementTile(title: task.getName())
+                    Divider()
+                }
+            }
+        )
     }
 }
 
 struct AddTaskFormView: View {
-    
     @EnvironmentObject var viewModel: CALvm
-    let event: CALm.Event
+    @EnvironmentObject var TDH: TimeDateHelper
+    let geo: GeometryProxy
+    @State private var event: CALm.Event = CALm.Event(dateKey: "", startTime: Date(), durationMins: 0, eventName: "", description: "", repetition: .Never)
     @State private var nameToPass: String = ""
     @State private var description: String = ""
     
     var body: some View {
-        VStack {
-            ZStack{
-                Text("Create New Task").font(.largeTitle)
-                HStack {
-                    Button {
-                        viewModel.createTask = false
-                    } label: {
-                        Image(systemName: "chevron.backward").padding()
-                    }
-                    Spacer()
-                }
+        ZStack{
+            Color.black.opacity(0.7)
+            addTaskForm.frame(maxWidth: geo.size.width * 0.9, maxHeight: geo.size.height * 0.7)
+        }.frame(maxWidth: .infinity, maxHeight: .infinity).ignoresSafeArea()
+            .task{
+                event = viewModel.eventSelected!
             }
-            Divider()
-            Text("Task Name").frame(maxWidth: .infinity, alignment: .leading).font(.title2).padding()
-            TextField("Name", text: $nameToPass)
-            Divider()
-            Text("Description").frame(maxWidth: .infinity, alignment: .leading).font(.title2).padding()
-            TextEditor(text: $description).frame(maxWidth: screenWidth * 0.9, maxHeight: 150, alignment: .topLeading)
-            Divider()
-            Spacer()
-            Button {
-//                if nameToPass != ""{
-//                    let task : TDLm.ToDoList.Task
-//                    let taskNo = event.getTasks()?.tasks.count ?? 0
-//                    if description != "" {
-//                        task = TDLm.ToDoList.Task(taskTitle: nameToPass, taskNo: taskNo, description: description)
-//                    } else {
-//                        task = TDLm.ToDoList.Task(taskTitle: nameToPass, taskNo: taskNo)
-//                    }
-//                    viewModel.addTaskToEvent(event: event, task: task)
-//                }
-                viewModel.createTask = false
-            } label: {
+    }
+    
+    @ViewBuilder
+    var addTaskForm: some View{
+        RoundedRectangle(cornerRadius: 15).foregroundColor(.white).overlay(
+            VStack(spacing: 0){
                 ZStack{
-                    RoundedRectangle(cornerRadius: 15)
-                        .stroke(Color.gray, lineWidth: 1.5)
-                        .frame(width:75, height:50)
-                    Text("Create").foregroundColor(Color.black)
+                    Text("Create New Task").font(.largeTitle)
+                    HStack {
+                        Button {
+                            viewModel.createTask = false
+                        } label: {
+                            Image(systemName: "chevron.backward").font(.title).padding()
+                        }
+                        Spacer()
+                    }
                 }
-            }
-        }
+                Divider()
+                Text("Task Name").frame(maxWidth: .infinity, alignment: .leading).font(.title2).padding()
+                TextField("Name", text: $nameToPass).padding()
+                Divider()
+                Text("Description").frame(maxWidth: .infinity, alignment: .leading).font(.title2).padding()
+                TextEditor(text: $description).overlay(
+                    RoundedRectangle(cornerRadius: 7.5).stroke(.gray, lineWidth: 1).foregroundColor(.clear)
+                ).padding()
+                Divider()
+                Button {
+                    if nameToPass != ""{
+                        let task : TDLm.Task
+                        if description != "" {
+                            task = TDLm.Task(key: TDH.dateString(event.getStartTime()), name: nameToPass, description: description, parentTaskID: nil, deadline: event.getStartTime())
+                        } else {
+                            task = TDLm.Task(key: TDH.dateString(event.getStartTime()), name: nameToPass, description: nil, parentTaskID: nil, deadline: event.getStartTime())
+                        }
+                        //Currently broken for some reason, task is added to event but local event is not updated
+                        event.addTask(task)
+                        viewModel.updateEvent(event)
+                        viewModel.eventSelected = event
+                    }
+                    viewModel.createTask = false
+                } label: {
+                    ZStack{
+                        RoundedRectangle(cornerRadius: 15)
+                            .stroke(Color.gray, lineWidth: 1.5)
+                            .frame(width:75, height:50)
+                        Text("Create")
+                    }
+                }.padding()
+            }.foregroundColor(.black)
+        )
     }
 }
 
-struct EditEventSheet: View {
+struct EditEventView: View {
     
     @EnvironmentObject var viewModel: CALvm
     @EnvironmentObject var timeDateHelper: TimeDateHelper
-    @Binding var eventBinding: CALm.Event
+    let geo: GeometryProxy
     @State private var eventName = ""
     @State private var description = ""
     @State private var duration = 0
     @State private var repetition = CALm.Repeat.Never
     @State private var startTime = Date()
     @State private var event: CALm.Event = CALm.Event(dateKey: "", startTime: Date(), durationMins: 0, eventName: "", description: "", repetition: .Never)
-    
-    //Picker Variables
+    @State private var eventSeries: CALm.EventSeries?
+    @State private var habitDeleted: Bool = false
     @State private var repeatSelect : Bool = false
     @State private var durationSelect : Bool = false
+
     
     
     var body: some View {
         VStack{
-            ZStack{
-                HStack{
-                    Button {
-                        viewModel.editMode = false
-                    } label: {
-                        Image(systemName: "chevron.left").foregroundColor(Color.black).font(.title)
-                    }
-                    Spacer()
+            ScrollView {
+                Group{
+                    dateTimeTile
+                    Divider()
+                    durationTile
+                    Divider()
+                    repetitionTile
+                    Divider()
+                    descriptionTile
+                    Divider()
                 }
-                TextField(eventName, text: $eventName).font(.largeTitle).multilineTextAlignment(.center).padding(.horizontal)
-            }.padding()
-            Divider()
-            // Start Date & Time Manipulation
-            HStack {
-                Text("Start Date & Time:").padding(.horizontal)
-                Spacer()
-                DatePicker("", selection: $startTime).labelsHidden()
-                Spacer()
-            }
-            Divider()
-            // Duration Manipulation
-            HStack{
-                Text("Duration: ").padding(.horizontal)
-                Spacer()
-                Button {
-                    duration -= 15
-                    duration = (duration < 0) ? 0 : duration
-                } label: {
-                    Image(systemName: "minus.rectangle")
-                }.foregroundColor(.black)
-                Label(timeDateHelper.convertMinstoHrsMins(duration), systemImage: "timer")
-                    .padding(EdgeInsets(top: 8, leading: 10, bottom: 8, trailing: 10))
-                    .background(.thickMaterial, in: RoundedRectangle(cornerRadius: 10))
-                Button {
-                    duration += 15
-                } label: {
-                    Image(systemName: "plus.rectangle")
-                }.foregroundColor(.black)
-                Spacer()
-            }
-            Divider()
-            // Repetition Manipulation
-            HStack{
-                Text("Repetition: ").padding(.horizontal)
-                Spacer()
-                Button{
-                    repeatSelect = true
-                } label: {
-                    Label(repetition.rawValue, systemImage: "repeat")
-                        .padding(EdgeInsets(top: 8, leading: 10, bottom: 8, trailing: 10))
-                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
-                }.popover(isPresented: $repeatSelect) {
-                    VStack{
-                        Picker("Repetition", selection: $repetition){
-                            ForEach(CALm.Repeat.allCases){
-                                Text($0.rawValue).tag($0)
-                            }
-                        }.pickerStyle(WheelPickerStyle())
-                        Spacer()
-                        Button {
-                            repeatSelect = false
-                        } label: {
-                            Text("Done")
-                        }
-                    }
-                }.foregroundColor(Color.black)
-                Spacer()
-            }
-            Group{
-                Divider()
-                HStack{
-                    Text("Description").font(.title).padding()
-                    Spacer()
-                }
-                TextEditor(text: $description).frame(maxWidth: .infinity, maxHeight: 150, alignment: .leading).padding()
-                Divider()
-            }
-            //Insert ToDo interraction here
-            Group{
-                HStack{
-                    Text("Tasks:").font(.title).padding()
-                    Spacer()
-                }
-//                ZStack{
-//                    RoundedRectangle(cornerRadius: 5).stroke(lineWidth: 0.2).frame(maxWidth: UIScreen.screenWidth*0.85)
-//                    ScrollView{
-//                        let eventTasks = viewModel.getTasks(event)
-//                        if eventTasks != nil {
-//                            ForEach(eventTasks!.getTasks(), id: \.self){ task in
-//                                HStack{
-//                                    Button  {
-//                                        //Deleting Task
-//                                        print("Deleting Task - \(task.taskTitle)")
-//                                        viewModel.deleteTaskInEvent(event: event, task: task)
-//                                    } label: {
-//                                        Image(systemName: "trash").padding(.horizontal)
-//                                    }.padding(.horizontal)
-//                                    Text(task.taskTitle)
-//                                    Spacer()
-//                                }.padding()
-//                            }
-//                        }
-//                    }.foregroundColor(Color.black).font(.title2)
-//                }
-            }
-            Group{
-                Spacer()
-                Button {
-                    //Make edits
-                    if !viewModel.editSeries{
-                        let success = viewModel.editEvent(event: event, name: eventName, description: description, duration: duration, repetition: repetition, time: startTime)
-                        if success {
-                            eventBinding = CALm.Event(dateKey: timeDateHelper.dateString(startTime), startTime: startTime, durationMins: duration, eventName: eventName, description: description, repetition: repetition,/* eventTasks: viewModel.getTasks(event),*/ seriesID: event.getSeriesID())
-                            viewModel.editMode = false
-                        }
-                    } else {
-                        let success = viewModel.editEventSeries(event: event, name: eventName, description: description, duration: duration, repetition: repetition, time: startTime)
-                        if success {
-                            eventBinding = CALm.Event(dateKey: timeDateHelper.dateString(startTime), startTime: startTime, durationMins: duration, eventName: eventName, description: description, repetition: repetition,/* eventTasks: viewModel.getTasks(event),*/ seriesID: event.getSeriesID())
-                            viewModel.editSeries = false
-                            viewModel.editMode = false
-                        }
-                    }
-                } label: {
-                    ZStack{
-                        RoundedRectangle(cornerRadius: 15)
-                            .stroke(Color.gray, lineWidth: 1.5)
-                            .frame(width: 175, height:50)
-                        Text("Confirm Changes").foregroundColor(Color.black)
+                if event.getSeriesID() != nil{
+                    if viewModel.getEventSeries(event.getSeriesID()!).getHabit() != nil {
+                        habitTile
+                        Divider()
                     }
                 }
-                Spacer()
+                if event.getTasks().count > 0 {
+                    tasksTile
+                }
             }
-        }.onAppear {
-            event = eventBinding
+            Spacer()
+            confirmButton
+            Spacer()
+            
+        }.foregroundColor(.black).onAppear {
+            event = viewModel.eventSelected!
             eventName = event.getName()
             description = event.getDescription()
             duration = event.getDuration()
             repetition = CALm.Repeat(rawValue: event.getRepetition())!
             startTime = event.getStartTime()
+            if event.getSeriesID() != nil {
+                eventSeries = viewModel.getEventSeries(event.getSeriesID()!)
+            }
+        }
+    }
+
+    @ViewBuilder
+    var dateTimeTile: some View {
+        HStack {
+            Text("Start Date & Time:").padding()
+            Spacer()
+            DatePicker("", selection: $startTime).labelsHidden()
+            Spacer()
+        }
+    }
+    
+    @ViewBuilder
+    var durationTile: some View {
+        HStack{
+            Text("Duration: ").padding(.horizontal)
+            Spacer()
+            Button {
+                duration -= 15
+                duration = (duration < 0) ? 0 : duration
+            } label: {
+                Image(systemName: "minus.rectangle")
+            }.foregroundColor(.black)
+            Label(timeDateHelper.convertMinstoHrsMins(duration), systemImage: "timer")
+                .padding(EdgeInsets(top: 8, leading: 10, bottom: 8, trailing: 10))
+                .background(.thickMaterial, in: RoundedRectangle(cornerRadius: 10))
+            Button {
+                duration += 15
+            } label: {
+                Image(systemName: "plus.rectangle")
+            }.foregroundColor(.black)
+            Spacer()
+        }
+    }
+    
+    @ViewBuilder
+    var repetitionTile: some View {
+        HStack{
+            Text("Repetition: ").padding(.horizontal)
+            Spacer()
+            Button{
+                repeatSelect = true
+            } label: {
+                Label(repetition.rawValue, systemImage: "repeat")
+                    .padding(EdgeInsets(top: 8, leading: 10, bottom: 8, trailing: 10))
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
+            }.popover(isPresented: $repeatSelect) {
+                VStack{
+                    Picker("Repetition", selection: $repetition){
+                        ForEach(CALm.Repeat.allCases){
+                            Text($0.rawValue).tag($0)
+                        }
+                    }.pickerStyle(WheelPickerStyle())
+                    Spacer()
+                    Button {
+                        repeatSelect = false
+                    } label: {
+                        Text("Done")
+                    }
+                }
+            }.foregroundColor(Color.black)
+            Spacer()
+        }
+    }
+    
+    @ViewBuilder
+    var descriptionTile: some View {
+        HStack{
+            Text("Description").font(.title).padding()
+            Spacer()
+        }
+        TextEditor(text: $description).frame(maxWidth: .infinity, maxHeight: 150, alignment: .leading).padding()
+    }
+    
+    var habitTile: some View {
+        HStack{
+            Text("Habit: \(viewModel.getEventSeries(event.getSeriesID()!).getHabit()!.getName())").font(.title).padding()
+            Spacer()
+            Button {
+                if !habitDeleted {
+                    eventSeries!.deleteHabit()
+                }
+                habitDeleted.toggle()
+            } label: {
+                Text(!habitDeleted ? "Unlink from Habit" : "Undo").font(.title2).padding().overlay(
+                    RoundedRectangle(cornerRadius: 10).stroke(.black, lineWidth: 1.5).foregroundColor(.clear)
+                )
+            }.padding()
+        }
+    }
+    
+    @ViewBuilder
+    var tasksTile: some View {
+        HStack{
+            Text("Tasks:").font(.title).padding()
+            Spacer()
+        }
+       
+        RoundedRectangle(cornerRadius: 5).stroke(lineWidth: 0.2).overlay(
+            ScrollView{
+                let eventTasks = viewModel.eventSelected!.getTasks()
+                if eventTasks.count > 0 {
+                    ForEach(eventTasks, id: \.self){ task in
+                        HStack{
+                            Button  {
+                                //Deleting Task
+                                print("Deleting Task - \(task.getName())")
+                                event.deleteTask(task)
+                            } label: {
+                                Image(systemName: "trash").padding(.horizontal)
+                            }.padding(.horizontal)
+                            Text(task.getName())
+                            Spacer()
+                        }.padding()
+                    }
+                }
+            }.foregroundColor(Color.black).font(.title2)
+        ).frame(maxWidth: geo.size.width * 0.85, maxHeight: geo.size.height * 0.5)
+    }
+    
+    var confirmButton: some View {
+        Button {
+            //Make edits
+            if !viewModel.editSeries{
+                let success = viewModel.editEvent(event: event, name: eventName, description: description, duration: duration, repetition: repetition, time: startTime)
+                if success {
+                    event = CALm.Event(dateKey: timeDateHelper.dateString(startTime), startTime: startTime, durationMins: duration, eventName: eventName, description: description, repetition: repetition,/* eventTasks: viewModel.getTasks(event),*/ seriesID: event.getSeriesID())
+                    viewModel.eventSelected = event
+                    viewModel.setViewContext("e")
+                }
+            } else {
+                let success = viewModel.editEventSeries(event: event, name: eventName, description: description, duration: duration, repetition: repetition, time: startTime)
+                if success {
+                    event = CALm.Event(dateKey: timeDateHelper.dateString(startTime), startTime: startTime, durationMins: duration, eventName: eventName, description: description, repetition: repetition, eventTasks: event.getTasks(), seriesID: event.getSeriesID())
+                    if habitDeleted {
+                        viewModel.updateEventSeries(eventSeries!)
+                    }
+                    viewModel.eventSelected = event
+                    viewModel.editSeries = false
+                    viewModel.setViewContext("e")
+                }
+            }
+        } label: {
+            ZStack{
+                RoundedRectangle(cornerRadius: 15)
+                    .stroke(Color.gray, lineWidth: 1.5)
+                    .frame(width: 175, height:50)
+                Text("Confirm Changes").foregroundColor(Color.black)
+            }
         }
     }
 }

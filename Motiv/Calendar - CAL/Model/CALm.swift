@@ -154,6 +154,10 @@ struct CALm : Codable{
         return conflict
     }
     
+    func getEventSeries(_ ID: UUID) -> EventSeries {
+        return eventSeries.first(where: {$0.getID() == ID})!
+    }
+    
     mutating func addEventToDay(day: String, event: Event){
         var localEvent = event
         if event.getRepetition() != "Never" && event.getSeriesID() == nil{
@@ -242,6 +246,44 @@ struct CALm : Codable{
         }
     }
     
+    mutating func updateEvent(_ event: Event){
+        let tdh = TimeDateHelper()
+        let idx = eventsDict[tdh.dateString(event.getStartTime())]?.firstIndex(where: {$0.getID() == event.getID()}) ?? nil
+        if idx != nil {
+            eventsDict[tdh.dateString(event.getStartTime())]![idx!] = event
+        } else {
+            let keys = eventsDict.keys
+            let futureKeys = keys.filter({
+                if tdh.dateFromString($0) != nil {
+                    if tdh.dateFromString($0)! > Date() {
+                        return true
+                    }
+                }
+                return false
+            })
+            
+            for key in futureKeys {
+                if eventsDict[key]!.contains(where: {$0.getID() == event.getID()}) {
+                    let idx = eventsDict[key]!.firstIndex(where: {$0.getID() == event.getID()})!
+                    eventsDict[key]![idx] = event
+                    break
+                }
+            }
+            print("Couldn't find event in future checking past")
+            
+            for key in keys.filter({!futureKeys.contains($0)}) {
+                if eventsDict[key]!.contains(where: {$0.getID() == event.getID()}) {
+                    let idx = eventsDict[key]!.firstIndex(where: {$0.getID() == event.getID()})!
+                    eventsDict[key]![idx] = event
+                    break
+                }
+            }
+            
+            print("Couldnt find event to update, adding to model")
+            self.addEventToDay(day: event.getDateKey(), event: event)
+        }
+    }
+    
     mutating func editEventSeries(oldEvent: Event, newEvent: Event){
         let idx = eventSeries.firstIndex(where: {$0.seriesID == oldEvent.getSeriesID()})!
         eventSeries[idx].modifySeries(oldEvent: oldEvent, newEvent: newEvent)
@@ -284,12 +326,20 @@ struct CALm : Codable{
         }
     }
     
+    mutating func updateEventSeries(_ newSeries: EventSeries){
+        let idx = eventSeries.firstIndex(where: {$0.getID() == newSeries.getID()})
+        if idx != nil {
+            eventSeries[idx!] = newSeries
+        }
+    }
+    
     //MARK: - CALm.EventSeries
     struct EventSeries: Codable {
         private var series: [Event]
         private var repitition: Repeat
+        private var habit: HABm.Habit?
         let seriesID: UUID
-        
+
         init (event: Event){
             self.seriesID = UUID()
             var localEvent = event
@@ -298,6 +348,17 @@ struct CALm : Codable{
             self.series.append(localEvent)
             self.repitition = Repeat(rawValue: event.getRepetition())!
             updateSeries()
+        }
+        
+        init (event: Event, habit: HABm.Habit){
+            self.seriesID = UUID()
+            var localEvent = event
+            localEvent.setSeriesID(seriesID)
+            self.series = []
+            self.series.append(localEvent)
+            self.repitition = Repeat(rawValue: event.getRepetition())!
+            updateSeries()
+            self.habit = habit
         }
         
         mutating func updateSeries() {
@@ -411,6 +472,14 @@ struct CALm : Codable{
             series.remove(at: idx)
         }
         
+        mutating func setHabit(_ habit: HABm.Habit){
+            self.habit = habit
+        }
+        
+        mutating func deleteHabit(){
+            self.habit = nil
+        }
+        
         func getSeries() -> [Event]{
             return series
         }
@@ -418,6 +487,12 @@ struct CALm : Codable{
         func getID() -> UUID{
             return seriesID
         }
+        
+        func getHabit() -> HABm.Habit?{
+            return habit
+        }
+        
+       
     }
     //MARK: -  CALm.Event
     struct Event : Hashable, Codable, Identifiable{
@@ -525,6 +600,13 @@ struct CALm : Codable{
                 self.tasks = []
             }
             self.tasks!.append(task)
+        }
+        
+        mutating func deleteTask(_ task: TDLm.Task){
+            let idx = self.tasks!.firstIndex(where: {$0.getID() == task.getID()})
+            if idx != nil {
+                self.tasks!.remove(at: idx!)
+            }
         }
     }
     
