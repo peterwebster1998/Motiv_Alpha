@@ -302,6 +302,7 @@ struct EventView: View {
     @EnvironmentObject var timeDateHelper: TimeDateHelper
     @EnvironmentObject var viewModel: CALvm
     @EnvironmentObject var HABviewModel: HABvm
+    @EnvironmentObject var TDLviewModel: TDLvm
     let geo: GeometryProxy
     @State private var event: CALm.Event = CALm.Event(dateKey: "0000", startTime: Date(), durationMins: 0, eventName: "Placeholder Event", description: "", repetition: .Never)
     @State private var taskList: [TDLm.Task] = []
@@ -425,11 +426,17 @@ struct EventView: View {
             }
         }.foregroundColor(.black)
         
-        RoundedRectangle(cornerRadius: 15).stroke(.gray, lineWidth: 1).frame(maxWidth: geo.size.width * 0.9, maxHeight: geo.size.height * 0.6).foregroundColor(.clear).overlay(
+        RoundedRectangle(cornerRadius: 15).stroke(.gray, lineWidth: 1).frame(maxWidth: geo.size.width * 0.9, maxHeight: geo.size.height * 0.6).foregroundColor(.clear).background(
             ScrollView{
-                ForEach(taskList, id: \.self){ task in
-                    ElementTile(title: task.getName())
-                    Divider()
+                VStack{
+                    ForEach(taskList, id: \.self){ task in
+                        ElementTile(title: task.getName()).onTapGesture {
+                            TDLviewModel.setViewContext("task")
+                            TDLviewModel.selectedTask = task
+                            TDLviewModel.selectedList = event.getDateKey()
+                        }
+                        Divider()
+                    }
                 }
             }
         )
@@ -451,6 +458,12 @@ struct AddTaskFormView: View {
         }.frame(maxWidth: .infinity, maxHeight: .infinity).ignoresSafeArea()
             .task{
                 event = viewModel.eventSelected!
+            }
+            .onChange(of: viewModel.eventSelected){val in
+                if val != nil {
+                    print("refreshed")
+                    self.event = val!
+                }
             }
     }
     
@@ -486,10 +499,7 @@ struct AddTaskFormView: View {
                         } else {
                             task = TDLm.Task(key: TDH.dateString(event.getStartTime()), name: nameToPass, description: nil, parentTaskID: nil, deadline: event.getStartTime())
                         }
-                        //Currently broken for some reason, task is added to event but local event is not updated
-                        event.addTask(task)
-                        viewModel.updateEvent(event)
-                        viewModel.eventSelected = event
+                        addTaskToEvent(task)
                     }
                     viewModel.createTask = false
                 } label: {
@@ -503,11 +513,20 @@ struct AddTaskFormView: View {
             }.foregroundColor(.black)
         )
     }
+    
+    func addTaskToEvent(_ task: TDLm.Task){
+        var updatedEvent = event
+        updatedEvent.addTask(task)
+        viewModel.updateEvent(updatedEvent)
+        viewModel.eventSelected = updatedEvent
+        event = updatedEvent
+    }
 }
 
 struct EditEventView: View {
     
     @EnvironmentObject var viewModel: CALvm
+    @EnvironmentObject var TDLviewModel: TDLvm
     @EnvironmentObject var timeDateHelper: TimeDateHelper
     let geo: GeometryProxy
     @State private var eventName = ""
@@ -520,47 +539,46 @@ struct EditEventView: View {
     @State private var habitDeleted: Bool = false
     @State private var repeatSelect : Bool = false
     @State private var durationSelect : Bool = false
+    @State private var eventTasks: [TDLm.Task] = []
+    @State private var deleteTasks: [Bool] = []
 
-    
-    
     var body: some View {
         VStack{
             ScrollView {
-                Group{
-                    dateTimeTile
-                    Divider()
-                    durationTile
-                    Divider()
-                    repetitionTile
-                    Divider()
-                    descriptionTile
-                    Divider()
-                }
-                if event.getSeriesID() != nil{
+                
+                dateTimeTile
+                durationTile
+                repetitionTile
+                descriptionTile
+                
+                if event.getSeriesID() != nil && viewModel.editSeries{
                     if viewModel.getEventSeries(event.getSeriesID()!).getHabit() != nil {
                         habitTile
-                        Divider()
                     }
                 }
                 if event.getTasks().count > 0 {
                     tasksTile
                 }
             }
-            Spacer()
             confirmButton
-            Spacer()
-            
-        }.foregroundColor(.black).onAppear {
-            event = viewModel.eventSelected!
-            eventName = event.getName()
-            description = event.getDescription()
-            duration = event.getDuration()
-            repetition = CALm.Repeat(rawValue: event.getRepetition())!
-            startTime = event.getStartTime()
-            if event.getSeriesID() != nil {
-                eventSeries = viewModel.getEventSeries(event.getSeriesID()!)
+        }.foregroundColor(.black)
+            .onAppear {
+                event = viewModel.eventSelected!
+                eventName = event.getName()
+                description = event.getDescription()
+                duration = event.getDuration()
+                repetition = CALm.Repeat(rawValue: event.getRepetition())!
+                startTime = event.getStartTime()
+                if event.getSeriesID() != nil {
+                    eventSeries = viewModel.getEventSeries(event.getSeriesID()!)
+                }
+                eventTasks = event.getTasks()
+                if eventTasks.count > 0 {
+                    for _ in 0..<eventTasks.count {
+                        deleteTasks.append(false)
+                    }
+                }
             }
-        }
     }
 
     @ViewBuilder
@@ -571,6 +589,7 @@ struct EditEventView: View {
             DatePicker("", selection: $startTime).labelsHidden()
             Spacer()
         }
+        Divider()
     }
     
     @ViewBuilder
@@ -594,6 +613,7 @@ struct EditEventView: View {
             }.foregroundColor(.black)
             Spacer()
         }
+        Divider()
     }
     
     @ViewBuilder
@@ -624,85 +644,111 @@ struct EditEventView: View {
             }.foregroundColor(Color.black)
             Spacer()
         }
+        Divider()
     }
     
     @ViewBuilder
     var descriptionTile: some View {
-        HStack{
-            Text("Description").font(.title).padding()
-            Spacer()
+        VStack{
+            HStack{
+                Text("Description:").padding([.top, .leading, .trailing])
+                Spacer()
+            }
+            RoundedRectangle(cornerRadius: 10).stroke(.gray, lineWidth: 1).foregroundColor(.clear).frame(maxWidth: geo.size.width * 0.925, minHeight: geo.size.height * 0.2, maxHeight: geo.size.height * 0.4).background(TextEditor(text: $description).padding(.horizontal))
+            Divider()
         }
-        TextEditor(text: $description).frame(maxWidth: .infinity, maxHeight: 150, alignment: .leading).padding()
     }
     
     var habitTile: some View {
-        HStack{
-            Text("Habit: \(viewModel.getEventSeries(event.getSeriesID()!).getHabit()!.getName())").font(.title).padding()
-            Spacer()
-            Button {
-                if !habitDeleted {
-                    eventSeries!.deleteHabit()
-                }
-                habitDeleted.toggle()
-            } label: {
-                Text(!habitDeleted ? "Unlink from Habit" : "Undo").font(.title2).padding().overlay(
-                    RoundedRectangle(cornerRadius: 10).stroke(.black, lineWidth: 1.5).foregroundColor(.clear)
-                )
-            }.padding()
+        VStack{
+            HStack{
+                Text("Habit: \(viewModel.getEventSeries(event.getSeriesID()!).getHabit()!.getName())").padding()
+                Spacer()
+                Button {
+                    if !habitDeleted {
+                        eventSeries!.deleteHabit()
+                    }
+                    habitDeleted.toggle()
+                } label: {
+                    Text(!habitDeleted ? "Unlink from Habit" : "Undo").padding().overlay(
+                        RoundedRectangle(cornerRadius: 10).stroke(.black, lineWidth: 1.5).foregroundColor(.clear)
+                    )
+                }.padding()
+            }
+            Divider()
         }
     }
     
     @ViewBuilder
     var tasksTile: some View {
-        HStack{
-            Text("Tasks:").font(.title).padding()
-            Spacer()
+        VStack{
+            HStack{
+                Text("Tasks:").padding()
+                Spacer()
+            }
+            RoundedRectangle(cornerRadius: 15).stroke(.gray, lineWidth: 1).frame(maxWidth: geo.size.width * 0.925, minHeight: geo.size.height * 0.2, maxHeight: geo.size.height * 0.6)
+                .overlay(
+                    ScrollView{
+                        VStack{
+                            if eventTasks.count > 0 {
+                                ForEach(eventTasks.indices, id: \.self){ idx in
+                                    HStack{
+                                        Button  {
+                                            //Deleting Task
+                                            print("Deleting Task - \(eventTasks[idx].getName())")
+                                            deleteTasks[idx].toggle()
+                                        } label: {
+                                            Image(systemName:!deleteTasks[idx] ? "trash" : "arrow.uturn.backward").padding(.horizontal)
+                                        }
+                                        if deleteTasks[idx]{
+                                            Text(eventTasks[idx].getName()).strikethrough()
+                                        } else {
+                                            Text(eventTasks[idx].getName())
+                                        }
+                                        Spacer()
+                                    }
+                                    DividerLine(geo: geo, screenProportion: 0.8, lineWidth: 1)
+                                }
+                            }
+                        }
+                    }.foregroundColor(Color.black).font(.title2).padding(.vertical)
+                )
         }
-       
-        RoundedRectangle(cornerRadius: 5).stroke(lineWidth: 0.2).overlay(
-            ScrollView{
-                let eventTasks = viewModel.eventSelected!.getTasks()
-                if eventTasks.count > 0 {
-                    ForEach(eventTasks, id: \.self){ task in
-                        HStack{
-                            Button  {
-                                //Deleting Task
-                                print("Deleting Task - \(task.getName())")
-                                event.deleteTask(task)
-                            } label: {
-                                Image(systemName: "trash").padding(.horizontal)
-                            }.padding(.horizontal)
-                            Text(task.getName())
-                            Spacer()
-                        }.padding()
-                    }
-                }
-            }.foregroundColor(Color.black).font(.title2)
-        ).frame(maxWidth: geo.size.width * 0.85, maxHeight: geo.size.height * 0.5)
     }
     
     var confirmButton: some View {
         Button {
+            //Delete Tasks if necessary
+            if deleteTasks.contains(true){
+                for task in eventTasks{
+                    if deleteTasks[eventTasks.firstIndex(of: task)!]{
+                        event.deleteTask(task)
+                        TDLviewModel.deleteTask(task.getID())
+                    }
+                }
+            }
+            viewModel.updateEvent(event)
             //Make edits
             if !viewModel.editSeries{
                 let success = viewModel.editEvent(event: event, name: eventName, description: description, duration: duration, repetition: repetition, time: startTime)
                 if success {
-                    event = CALm.Event(dateKey: timeDateHelper.dateString(startTime), startTime: startTime, durationMins: duration, eventName: eventName, description: description, repetition: repetition,/* eventTasks: viewModel.getTasks(event),*/ seriesID: event.getSeriesID())
-                    viewModel.eventSelected = event
-                    viewModel.setViewContext("e")
+                    event = CALm.Event(dateKey: timeDateHelper.dateString(startTime), startTime: startTime, durationMins: duration, eventName: eventName, description: description, repetition: repetition, eventTasks: event.getTasks(), seriesID: event.getSeriesID())
+                 
                 }
             } else {
                 let success = viewModel.editEventSeries(event: event, name: eventName, description: description, duration: duration, repetition: repetition, time: startTime)
                 if success {
                     event = CALm.Event(dateKey: timeDateHelper.dateString(startTime), startTime: startTime, durationMins: duration, eventName: eventName, description: description, repetition: repetition, eventTasks: event.getTasks(), seriesID: event.getSeriesID())
+                    eventSeries = viewModel.getEventSeries(event.getSeriesID()!)
                     if habitDeleted {
+                        eventSeries!.deleteHabit()
                         viewModel.updateEventSeries(eventSeries!)
                     }
-                    viewModel.eventSelected = event
                     viewModel.editSeries = false
-                    viewModel.setViewContext("e")
                 }
             }
+            viewModel.eventSelected = event
+            viewModel.setViewContext("e")
         } label: {
             ZStack{
                 RoundedRectangle(cornerRadius: 15)

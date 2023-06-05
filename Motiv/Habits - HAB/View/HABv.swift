@@ -32,7 +32,7 @@ struct HABv: View {
 
 struct HABBanner: View {
     @EnvironmentObject var viewModel: HABvm
-    @EnvironmentObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var homeVM: HomeViewModel
     let geo: GeometryProxy
     @State var bannerText: String = "Habits"
     
@@ -77,7 +77,7 @@ struct HABBanner: View {
             switch viewModel.viewContext {
             case .All:
                 Button{
-                    homeViewModel.appSelect = true
+                    homeVM.appSelect = true
                 } label: {
                     Image(systemName: "square.grid.3x3.fill").padding()
                 }
@@ -90,6 +90,10 @@ struct HABBanner: View {
                 }
             default:
                 Button{
+                    if viewModel.lastContext == "event"{
+                        homeVM.currentActiveModule = homeVM.getApps().first(where: {$0.getName() == "Calendar"})
+                        viewModel.lastContext = nil
+                    }
                     viewModel.setViewContext("all")
                     viewModel.selectedHabit = nil
                 } label: {
@@ -236,6 +240,7 @@ struct AllHabitsView: View {
                 HabitPanel(geo: geo, habits: habits, repetition: .Centennially)
 
             }
+            DividerLine(geo: geo).foregroundColor(.gray)
         }
         .font(.title2)
         .padding(.bottom)
@@ -346,6 +351,10 @@ struct HabitView: View {
             Group{
                 HStack{
                     Text("Notes:").frame(maxWidth: .infinity, alignment: .leading).font(.title).padding()
+                        .onTapGesture {
+                            viewModel.habitElement = "Notes"
+                            viewModel.pressAndHold = true
+                        }
                     Spacer()
                     Button{
                         viewModel.addNote = true

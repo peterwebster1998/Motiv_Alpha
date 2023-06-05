@@ -317,10 +317,12 @@ struct EventTileDayView: View {
             .position(x: geo.size.width * 0.4, y: y + (height / 2))
             .onTapGesture {
                 viewModel.eventSelected = event
-                viewModel.lastContext = "d"
                 viewModel.setViewContext("e")
                 if homeVM.currentActiveModule == nil{
                     homeVM.currentActiveModule = homeVM.getApps().first(where: {$0.getName() == "Calendar"})
+                    viewModel.lastContext = "home"
+                } else {
+                    viewModel.lastContext = "d"
                 }
             }
     }

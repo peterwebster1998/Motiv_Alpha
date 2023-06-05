@@ -16,17 +16,24 @@ import SwiftUI
 
 struct HomeView: View {
     @EnvironmentObject var viewModel: HomeViewModel
+    @EnvironmentObject var HABvm: HABvm
     
     var body: some View {
         GeometryReader{ geo in
             ZStack{
-                if viewModel.currentActiveModule == nil {
-                    CompositeHomeView(geo: geo)
+                if HABvm.getHabit("Plan")!.linkedToEventSeries(){
+                    //TO DO: Complete implementation
+                    ScheduleDailyPlanView(geo: geo)
                 } else {
-                    ModuleView(geo: geo)
+                    if viewModel.currentActiveModule == nil {
+                        CompositeHomeView(geo: geo)
+                    } else {
+                        ModuleView(geo: geo)
+                    }
+                    let _ = print("x: \(geo.size.width), y: \(geo.size.height)")
+                    HomeNavBubble(x: geo.size.width + (buttonSize * 0.35) , y: geo.size.height * 0.6)
                 }
-                let _ = print("x: \(geo.size.width), y: \(geo.size.height)")
-                HomeNavBubble(x: geo.size.width + (buttonSize * 0.35) , y: geo.size.height * 0.6)
+                
             }
         }.sheet(isPresented: $viewModel.appSelect){
             AppsNavigatorView()
@@ -149,35 +156,61 @@ struct CalendarComponentView: View {
 }
 
 struct ToDoComponentView: View {
-    @EnvironmentObject var tdh : TimeDateHelper
+    @EnvironmentObject var homeVM: HomeViewModel
     @EnvironmentObject var tdlVM: TDLvm
+    @EnvironmentObject var habVM: HABvm
+    @EnvironmentObject var tdh: TimeDateHelper
     let geo: GeometryProxy
     @Binding var dragOffset: CGFloat
+    @State var toDo: Bool = true
 
     var body: some View {
         VStack(spacing: 0){
-            ToDoComponentViewHeader(geo: geo, dragOffset: $dragOffset)
+            ToDoComponentViewHeader(geo: geo, dragOffset: $dragOffset, toDo: $toDo)
             
             ScrollView {
-                ForEach(tdlVM.getTodaysToDos(), id: \.self) { element in
-                    ZStack{
-                        RoundedRectangle(cornerRadius: 15).foregroundColor(.white)
-                        HStack{
-                            Button{
-                                var task = element
-                                task.toggleCompletion()
-                                tdlVM.updateTask(task)
-                            } label: {
-                                Image(systemName: (element.getCompleted()) ? "checkmark.square" : "square")
-                            }.padding()
-                            Text(element.getName())
-                                .padding()
-                            Spacer()
-                        }.frame(maxWidth: .infinity)
-                            .foregroundColor(.black)
-                            .font(.title)
+                if toDo{
+                    ForEach(homeVM.todaysToDos.0, id: \.self) { element in
+                        ZStack{
+                            RoundedRectangle(cornerRadius: 15).foregroundColor(.white)
+                            HStack{
+                                Button{
+                                    var task = element
+                                    task.toggleCompletion()
+                                    tdlVM.updateTask(task)
+                                } label: {
+                                    Image(systemName: (element.getCompleted()) ? "checkmark.square" : "square")
+                                }.padding()
+                                Text(element.getName())
+                                    .padding()
+                                Spacer()
+                            }.frame(maxWidth: .infinity)
+                                .foregroundColor(.black)
+                                .font(.title)
+                        }
+                        DividerLine(geo: geo).foregroundColor(.gray)
                     }
-                    DividerLine(geo: geo).foregroundColor(.gray)
+                } else {
+                    ForEach(homeVM.todaysToDos.1, id: \.self) { element in
+                        ZStack{
+                            RoundedRectangle(cornerRadius: 15).foregroundColor(.white)
+                            HStack{
+                                Button{
+                                    var habit = element
+                                    habit.complete()
+                                    habVM.updateHabit(habit)
+                                } label: {
+                                    Image(systemName: tdh.calendar.isDate(Date(), inSameDayAs:(element.getLastCompletion())) ? "checkmark.square" : "square")
+                                }.padding()
+                                Text(element.getName())
+                                    .padding()
+                                Spacer()
+                            }.frame(maxWidth: .infinity)
+                                .foregroundColor(.black)
+                                .font(.title)
+                        }
+                        DividerLine(geo: geo).foregroundColor(.gray)
+                    }
                 }
             }.background(.white)
         }
@@ -188,9 +221,10 @@ struct ToDoComponentViewHeader: View {
     @EnvironmentObject var viewModel: HomeViewModel
     let geo: GeometryProxy
     @Binding var dragOffset: CGFloat
+    @Binding var toDo: Bool
     
     var body: some View {
-        ToDoHeaderTabBar()
+        ToDoHeaderTabBar(toDo: $toDo)
             .frame(maxWidth: .infinity, maxHeight: geo.size.height * 0.065)
             .background(.clear)
             .gesture(DragGesture(minimumDistance: 15, coordinateSpace: .global)
@@ -205,7 +239,7 @@ struct ToDoComponentViewHeader: View {
 }
 
 struct ToDoHeaderTabBar: View {
-    @State var toDo: Bool = true
+    @Binding var toDo: Bool
     
     var body: some View {
         ZStack{

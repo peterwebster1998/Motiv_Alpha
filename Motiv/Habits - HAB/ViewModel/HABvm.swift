@@ -19,6 +19,7 @@ class HABvm: ObservableObject {
     // MARK: - Variables
     @Published private var model: HABm
     @Published private(set) var viewContext: HABviewTypes
+    @Published var lastContext: String?
     @Published var selectedHabit: HABm.Habit?
     @Published var selectedTask: TDLm.Task?
     @Published var updated: Bool

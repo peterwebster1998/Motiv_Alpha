@@ -36,6 +36,8 @@
 		1D781EE12A0E9A1600DCD178 /* HABvTaskInterraction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D781EE02A0E9A1600DCD178 /* HABvTaskInterraction.swift */; };
 		1D781EE32A169FB500DCD178 /* HABvHabitInterraction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D781EE22A169FB500DCD178 /* HABvHabitInterraction.swift */; };
 		1D781EE52A1A8A1F00DCD178 /* CALvHabitInterration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D781EE42A1A8A1F00DCD178 /* CALvHabitInterration.swift */; };
+		1D7903B52A2E64C90051E988 /* CALvSpecialEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D7903B42A2E64C90051E988 /* CALvSpecialEvents.swift */; };
+		1D7903B72A2E702A0051E988 /* HomeViewStartUp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D7903B62A2E702A0051E988 /* HomeViewStartUp.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -69,6 +71,8 @@
 		1D781EE02A0E9A1600DCD178 /* HABvTaskInterraction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HABvTaskInterraction.swift; sourceTree = "<group>"; };
 		1D781EE22A169FB500DCD178 /* HABvHabitInterraction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HABvHabitInterraction.swift; sourceTree = "<group>"; };
 		1D781EE42A1A8A1F00DCD178 /* CALvHabitInterration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALvHabitInterration.swift; sourceTree = "<group>"; };
+		1D7903B42A2E64C90051E988 /* CALvSpecialEvents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALvSpecialEvents.swift; sourceTree = "<group>"; };
+		1D7903B62A2E702A0051E988 /* HomeViewStartUp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewStartUp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -139,6 +143,7 @@
 			children = (
 				1D765D9529F861F60009F125 /* HomeView.swift */,
 				1D765D9729F862810009F125 /* HomeNavBubble.swift */,
+				1D7903B62A2E702A0051E988 /* HomeViewStartUp.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -179,6 +184,7 @@
 				1D765D8D29F860380009F125 /* CALvEventInteraction.swift */,
 				1D765D8F29F8607F0009F125 /* CALvConflicts.swift */,
 				1D781EE42A1A8A1F00DCD178 /* CALvHabitInterration.swift */,
+				1D7903B42A2E64C90051E988 /* CALvSpecialEvents.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -374,6 +380,7 @@
 			files = (
 				1D765D8429F85D590009F125 /* TimeDateHelper.swift in Sources */,
 				1D765D9629F861F60009F125 /* HomeView.swift in Sources */,
+				1D7903B52A2E64C90051E988 /* CALvSpecialEvents.swift in Sources */,
 				1D765D8C29F85FB00009F125 /* CALvDay.swift in Sources */,
 				1D765DA829F86EFE0009F125 /* TDLm.swift in Sources */,
 				1D765D9829F862810009F125 /* HomeNavBubble.swift in Sources */,
@@ -384,6 +391,7 @@
 				1D781ED529FC232100DCD178 /* TDLvOperation.swift in Sources */,
 				1D781EE12A0E9A1600DCD178 /* HABvTaskInterraction.swift in Sources */,
 				1D781EDD2A0833AF00DCD178 /* HABvm.swift in Sources */,
+				1D7903B72A2E702A0051E988 /* HomeViewStartUp.swift in Sources */,
 				1D765D8229F85C2D0009F125 /* CALvm.swift in Sources */,
 				1D765D8A29F85F400009F125 /* CALvWeek.swift in Sources */,
 				1D765D8E29F860380009F125 /* CALvEventInteraction.swift in Sources */,

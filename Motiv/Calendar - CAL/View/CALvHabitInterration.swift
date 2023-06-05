@@ -34,7 +34,6 @@ struct PairWithHabitView: View {
             VStack{
                 Button{
                     newOrExisting = .New
-                    
                 } label: {
                     RoundedRectangle(cornerRadius: 10).stroke(.black, lineWidth: 2).foregroundColor(.white).overlay(Text("Create New Habit").foregroundColor(.black).padding())
                 }.padding()
@@ -72,11 +71,13 @@ struct SelectExistingHabitView: View {
                 Button{
                     switch habitVM.viewContext {
                     case .One:
-                        let habit = habitVM.selectedHabit!
+                        var habit = habitVM.selectedHabit!
                         var updatedSeries = viewModel.getEventSeries(viewModel.eventSelected!.getSeriesID()!)
+                        habit.linkToEventSeries(updatedSeries.getID())
                         updatedSeries.setHabit(habit)
                         viewModel.updateEventSeries(updatedSeries)
                         viewModel.pairWithHabit = false
+                        habitVM.updateHabit(habit)
                         habitVM.setViewContext("all")
                         habitVM.selectedHabit = nil
                     default:
@@ -111,11 +112,13 @@ struct CreateNewHabitView: View {
         CreateHabitView()
             .onChange(of: habitVM.selectedHabit){val in
                 if val != nil {
-                    let habit = habitVM.selectedHabit!
+                    var habit = habitVM.selectedHabit!
                     var updatedSeries = viewModel.getEventSeries(viewModel.eventSelected!.getSeriesID()!)
+                    habit.linkToEventSeries(updatedSeries.getID())
                     updatedSeries.setHabit(habit)
                     viewModel.updateEventSeries(updatedSeries)
                     viewModel.pairWithHabit = false
+                    habitVM.selectedHabit!.linkToEventSeries(updatedSeries.getID())
                     habitVM.setViewContext("all")
                     habitVM.selectedHabit = nil
                 }

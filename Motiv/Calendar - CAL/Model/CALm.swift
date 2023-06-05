@@ -531,7 +531,7 @@ struct CALm : Codable{
         //MARK: - Protocol Stubs
         //Hashable Stub
         static func == (lhs: CALm.Event, rhs: CALm.Event) -> Bool {
-            if (lhs.dateKey == rhs.dateKey) && (lhs.startTime == rhs.startTime) && (lhs.durationMins == rhs.durationMins) && (lhs.eventName == rhs.eventName) && (lhs.description == rhs.description) && (lhs.repetition == rhs.repetition) && (lhs.id == rhs.id){
+            if (lhs.dateKey == rhs.dateKey) && (lhs.startTime == rhs.startTime) && (lhs.durationMins == rhs.durationMins) && (lhs.eventName == rhs.eventName) && (lhs.description == rhs.description) && (lhs.repetition == rhs.repetition) && (lhs.id == rhs.id) && (lhs.seriesID == rhs.seriesID) && (lhs.overNighter == rhs.overNighter) && (lhs.tasks == rhs.tasks){
                 return true
             } else {
                 return false

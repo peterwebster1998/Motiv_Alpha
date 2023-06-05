@@ -71,7 +71,7 @@ struct HABNotesTile: View {
     var body: some View {
         VStack{
             RoundedRectangle(cornerRadius: 10)
-                .frame(maxWidth: UIScreen.main.bounds.width * 0.85, maxHeight: UIScreen.main.bounds.height * 0.85)
+                .frame(maxWidth: UIScreen.main.bounds.width * 0.925, maxHeight: UIScreen.main.bounds.height * 0.9)
                 .foregroundColor(.white)
                 .overlay(
                     VStack{

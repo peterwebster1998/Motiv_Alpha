@@ -178,8 +178,12 @@ class TDLvm: ObservableObject {
         default:
             let list = model.getTaskList(str)
             let count = list.count
+            if count != 0 {
             let completed = list.filter({$0.getCompleted()}).count
-            return "\(completed)/\(count)"
+                return "\(completed)/\(count)"
+            } else {
+                return ""
+            }
         }
     }
     

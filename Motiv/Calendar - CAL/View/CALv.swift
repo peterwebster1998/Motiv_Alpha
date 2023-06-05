@@ -91,7 +91,13 @@ struct CALBanner: View {
                 case .Event:
                     HStack{
                         Button {
-                            viewModel.setViewContext(viewModel.lastContext!)
+                            if viewModel.lastContext! != "home" {
+                                viewModel.setViewContext(viewModel.lastContext!)
+                            } else {
+                                viewModel.setViewContext("m")
+                                timeDateHelper.today()
+                                homeVM.currentActiveModule = nil
+                            }
                             viewModel.eventSelected = nil
                             viewModel.lastContext = nil
                         } label: {
@@ -119,6 +125,7 @@ struct CALBanner: View {
                     HStack{
                         Button{
                             homeVM.currentActiveModule = nil
+                            timeDateHelper.setDateInView(Date())
                         } label:{
                             Image(systemName: "house").font(.title)
                         }
@@ -237,8 +244,7 @@ struct CALBanner: View {
                     homeVM.currentActiveModule = homeVM.getApps().first(where: {$0.getName() == "Habits"})
                     habitVM.selectedHabit = viewModel.getEventSeries(viewModel.eventSelected!.getSeriesID()!).getHabit()!
                     habitVM.setViewContext("one")
-                    viewModel.setViewContext("m")
-                    viewModel.eventSelected = nil
+                    habitVM.lastContext = "event"
                 } label: {
                     Text("Go To Habit")
                     Spacer()

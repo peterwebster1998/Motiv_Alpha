@@ -76,6 +76,7 @@ struct HABm: Codable {
         private var lastCompleted: Date
         private var lastCompletedCount: Int
         private var undoState: (Int, Int, Int, Date, Date, Int)
+        private var linkedToEventSeriesID: UUID?
 
         enum repetitionPeriod : String, Identifiable, CaseIterable, Hashable, Codable {
             case Daily = "Daily"
@@ -151,6 +152,14 @@ struct HABm: Codable {
         
         func getStats() -> [Int]{
             return [count, bestStreak, streak]
+        }
+        
+        func getLinkedToEventSeriesID() -> UUID?{
+            return linkedToEventSeriesID
+        }
+        
+        func linkedToEventSeries() -> Bool {
+            return (linkedToEventSeriesID != nil)
         }
         
         // MARK: - Setters
@@ -286,6 +295,10 @@ struct HABm: Codable {
             }
         }
         
+        mutating func linkToEventSeries(_ ID: UUID){
+            self.linkedToEventSeriesID = ID
+        }
+        
         // MARK: - Protocol Stubs
         static func == (lhs: HABm.Habit, rhs: HABm.Habit) -> Bool {
             return (lhs.ID == rhs.ID) && (lhs.name == rhs.name) && (lhs.notes == rhs.notes) && (lhs.tasks == rhs.tasks) && (lhs.repetition == rhs.repetition) && (lhs.count == rhs.count) && (lhs.streak == rhs.streak) && (lhs.bestStreak == rhs.bestStreak) && (lhs.lastStreakDay == rhs.lastStreakDay) && (lhs.lastCompleted == rhs.lastCompleted) && (lhs.lastCompletedCount == rhs.lastCompletedCount) && (lhs.undoState == rhs.undoState)
@@ -310,6 +323,7 @@ struct HABm: Codable {
             hasher.combine(undoState.3)
             hasher.combine(undoState.4)
             hasher.combine(undoState.5)
+            hasher.combine(linkedToEventSeriesID)
         }
         
         enum CodingKeys: String, CodingKey {
@@ -331,6 +345,7 @@ struct HABm: Codable {
             case undoStateLastStreakDay
             case undoStateLastCompleted
             case undoStateLastCompletedCount
+            case linkedToEventSeriesID
         }
         
         init(from decoder: Decoder) throws {
@@ -355,6 +370,7 @@ struct HABm: Codable {
             let undoStateLastCompleted = try values.decode(Date.self, forKey: .undoStateLastCompleted)
             let undoStateLastCompletedCount = try values.decode(Int.self, forKey: .undoStateLastCompletedCount)
             undoState = (undoStateCount, undoStateStreak, undoStateBestStreak, undoStateLastStreakDay, undoStateLastCompleted, undoStateLastCompletedCount)
+            linkedToEventSeriesID = try values.decode(UUID?.self, forKey: .linkedToEventSeriesID)
         }
         
         func encode(to encoder: Encoder) throws {
@@ -377,6 +393,7 @@ struct HABm: Codable {
             try container.encode(undoState.3, forKey: .undoStateLastStreakDay)
             try container.encode(undoState.4, forKey: .undoStateLastCompleted)
             try container.encode(undoState.5, forKey: .undoStateLastCompletedCount)
+            try container.encode(linkedToEventSeriesID, forKey: .linkedToEventSeriesID)
         }
     }
 }
