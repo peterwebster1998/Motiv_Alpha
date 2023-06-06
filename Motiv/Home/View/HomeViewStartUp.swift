@@ -13,7 +13,7 @@ struct ScheduleDailyPlanView: View {
     @EnvironmentObject var habVM: HABvm
     @EnvironmentObject var tdh: TimeDateHelper
     let geo: GeometryProxy
-    @State var plannedTime: Date
+    @State var plannedTime: Date = Date()
     @State var confirm: Bool = false
     
     var body: some View {
@@ -45,15 +45,15 @@ struct ScheduleDailyPlanView: View {
         RoundedRectangle(cornerRadius: 15).foregroundColor(.white).overlay(
             VStack{
                 Text("Choose Daily Planning Time").font(.title).foregroundColor(.black).padding()
-                Text("Planning your days are a crucial component for personal success").foregroundColor(.gray).padding(.horizontal)
-                DatePicker("Select when to plan daily:", selection: $plannedTime, displayedComponents: .hourAndMinute)
-                Text("Your selection: \(tdh.getTimeOfDayHrsMins(plannedTime))")
+                Text("Planning your days is a crucial component for personal success").foregroundColor(.gray).font(.title3).padding(.horizontal)
+                DatePicker("Select when you want to plan everyday:", selection: $plannedTime, displayedComponents: .hourAndMinute).padding()
+                Text("Your selection: \(tdh.getTimeOfDayHrsMins(plannedTime))").font(.title).padding()
                 Button{
                     confirm = true
                 } label: {
-                    Capsule().overlay(Text("Confirm Time"))
+                    Capsule().foregroundColor(.white).overlay(Text("Confirm Time").font(.title2))
                 }
-            }
+            }.foregroundColor(.black)
         )
     }
 }

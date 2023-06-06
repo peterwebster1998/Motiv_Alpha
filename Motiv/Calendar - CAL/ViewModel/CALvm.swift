@@ -40,6 +40,7 @@ class CALvm: ObservableObject {
     @Published var eventSelected: CALm.Event?
     @Published var lastContext: String?
     @Published var pairWithHabit: Bool
+    @Published var specialEvent: Bool
     
     // MARK: - Init
     
@@ -63,6 +64,7 @@ class CALvm: ObservableObject {
         self.refreshWindows = false
         self.editSeries = false
         self.pairWithHabit = false
+        self.specialEvent = false
         
         //Removes conflicts now in the past
         model.refreshConflicts()

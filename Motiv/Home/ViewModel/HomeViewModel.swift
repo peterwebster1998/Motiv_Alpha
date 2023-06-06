@@ -21,6 +21,8 @@ class HomeViewModel : ObservableObject {
     @Published var appSelect: Bool
     @Published var dragFinished: Bool
     @Published var todaysToDos: ([TDLm.Task], [HABm.Habit])
+    @Published var completedToDos: ([TDLm.Task], [HABm.Habit])
+
     
     init(){
         if let url = Autosave.url, let autosavedHomeModel = try? HomeModel(url: url){
@@ -34,6 +36,7 @@ class HomeViewModel : ObservableObject {
         self.appSelect = false
         self.dragFinished = false
         self.todaysToDos = ([], [])
+        self.completedToDos = ([], [])
     }
     
     func getApps() -> [HomeModel.Module]{

@@ -163,6 +163,8 @@ struct ToDoComponentView: View {
     let geo: GeometryProxy
     @Binding var dragOffset: CGFloat
     @State var toDo: Bool = true
+    @State var tasks: [TDLm.Task] = []
+    @State var habits: [HABm.Habit] = []
 
     var body: some View {
         VStack(spacing: 0){
@@ -170,7 +172,7 @@ struct ToDoComponentView: View {
             
             ScrollView {
                 if toDo{
-                    ForEach(homeVM.todaysToDos.0, id: \.self) { element in
+                    ForEach(tasks, id: \.self) { element in
                         ZStack{
                             RoundedRectangle(cornerRadius: 15).foregroundColor(.white)
                             HStack{
@@ -178,6 +180,11 @@ struct ToDoComponentView: View {
                                     var task = element
                                     task.toggleCompletion()
                                     tdlVM.updateTask(task)
+                                    if task.getCompleted() {
+                                        homeVM.completedToDos.0.append(homeVM.todaysToDos.0.remove(at: homeVM.todaysToDos.0.firstIndex(where:{$0.getID() == task.getID()})!))
+                                    } else {
+                                        homeVM.todaysToDos.0.append(homeVM.todaysToDos.0.remove(at: homeVM.completedToDos.0.firstIndex(where:{$0.getID() == task.getID()})!))
+                                    }
                                 } label: {
                                     Image(systemName: (element.getCompleted()) ? "checkmark.square" : "square")
                                 }.padding()
@@ -191,7 +198,7 @@ struct ToDoComponentView: View {
                         DividerLine(geo: geo).foregroundColor(.gray)
                     }
                 } else {
-                    ForEach(homeVM.todaysToDos.1, id: \.self) { element in
+                    ForEach(habits, id: \.self) { element in
                         ZStack{
                             RoundedRectangle(cornerRadius: 15).foregroundColor(.white)
                             HStack{
@@ -199,6 +206,11 @@ struct ToDoComponentView: View {
                                     var habit = element
                                     habit.complete()
                                     habVM.updateHabit(habit)
+                                    if tdh.calendar.isDate(habit.getLastCompletion(), inSameDayAs: tdh.dateInView){
+                                        homeVM.completedToDos.1.append(homeVM.todaysToDos.1.remove(at: homeVM.todaysToDos.1.firstIndex(where:{$0.getID() == habit.getID()})!))
+                                    } else {
+                                        homeVM.todaysToDos.1.append(homeVM.todaysToDos.1.remove(at: homeVM.completedToDos.1.firstIndex(where:{$0.getID() == habit.getID()})!))
+                                    }
                                 } label: {
                                     Image(systemName: tdh.calendar.isDate(Date(), inSameDayAs:(element.getLastCompletion())) ? "checkmark.square" : "square")
                                 }.padding()
@@ -213,6 +225,11 @@ struct ToDoComponentView: View {
                     }
                 }
             }.background(.white)
+        }.task{
+            tasks = homeVM.todaysToDos.0
+            tasks.append(contentsOf: homeVM.completedToDos.0)
+            habits = homeVM.todaysToDos.1
+            habits.append(contentsOf: homeVM.completedToDos.1)
         }
     }
 }

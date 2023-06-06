@@ -33,7 +33,11 @@ struct CALv: View {
                     case .Day:
                         DayView(geo: geo)
                     case .Event:
-                        EventView(geo: geo)
+                        if viewModel.eventSelected!.getName() != "Plan" {
+                            EventView(geo: geo)
+                        } else {
+                            PlanTomorrowEventView(geo: geo)
+                        }
                     case .Edit:
                         EditEventView(geo: geo)
                     }
