@@ -21,7 +21,7 @@ struct HomeView: View {
     var body: some View {
         GeometryReader{ geo in
             ZStack{
-                if HABvm.getHabit("Plan")!.linkedToEventSeries(){
+                if !HABvm.getHabit("Plan")!.linkedToEventSeries(){
                     //TO DO: Complete implementation
                     ScheduleDailyPlanView(geo: geo)
                 } else {
@@ -81,7 +81,7 @@ struct CompositeHomeView: View{
     
     var body: some View {
         ZStack{
-            CalendarComponentView()
+            CalendarComponentView(geo: geo)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .onTapGesture { toDoHeight = geo.size.height * 0.3 }
             blurTransitionRect
@@ -135,20 +135,21 @@ struct HomeViewBanner: View {
 struct CalendarComponentView: View {
     @EnvironmentObject var tdh: TimeDateHelper
     @EnvironmentObject var calVM: CALvm
+    let geo: GeometryProxy
     
     var body: some View {
         ScrollView{
             ScrollViewReader { scrollProxy in
-                TimeOfDayView()
+                TimeOfDayView(geo: geo)
                     .onAppear{
                         let time: [Substring] = tdh.getTimeOfDayHrsMins(Date()).split(separator: ":")
                         var hour: Int = Int(time[0])!
                         hour = (hour == 12) ? hour-12 : hour
                         hour = (tdh.getAMPM(Date()) == "PM") ? hour+12: hour
                         hour = (hour > 2) ? hour-2 : hour
-                        let currentTime: String = ((hour < 10) ? ("0"+String(hour)) : String(hour)) + ":00"
+                        let currentTime: String = (hour < 10) ? ("0"+String(hour)) : String(hour)
                         print("Scrolling to \(currentTime)")
-                        scrollProxy.scrollTo((hour > 18) ? "18:00" : currentTime, anchor: .top)
+                        scrollProxy.scrollTo((hour > 18) ? "18" : currentTime, anchor: .top)
                     }
             }
         }
@@ -165,71 +166,96 @@ struct ToDoComponentView: View {
     @State var toDo: Bool = true
     @State var tasks: [TDLm.Task] = []
     @State var habits: [HABm.Habit] = []
-
+    
     var body: some View {
         VStack(spacing: 0){
             ToDoComponentViewHeader(geo: geo, dragOffset: $dragOffset, toDo: $toDo)
-            
-            ScrollView {
-                if toDo{
-                    ForEach(tasks, id: \.self) { element in
-                        ZStack{
-                            RoundedRectangle(cornerRadius: 15).foregroundColor(.white)
-                            HStack{
-                                Button{
-                                    var task = element
-                                    task.toggleCompletion()
-                                    tdlVM.updateTask(task)
-                                    if task.getCompleted() {
-                                        homeVM.completedToDos.0.append(homeVM.todaysToDos.0.remove(at: homeVM.todaysToDos.0.firstIndex(where:{$0.getID() == task.getID()})!))
-                                    } else {
-                                        homeVM.todaysToDos.0.append(homeVM.todaysToDos.0.remove(at: homeVM.completedToDos.0.firstIndex(where:{$0.getID() == task.getID()})!))
-                                    }
-                                } label: {
-                                    Image(systemName: (element.getCompleted()) ? "checkmark.square" : "square")
-                                }.padding()
-                                Text(element.getName())
-                                    .padding()
-                                Spacer()
-                            }.frame(maxWidth: .infinity)
-                                .foregroundColor(.black)
-                                .font(.title)
-                        }
-                        DividerLine(geo: geo).foregroundColor(.gray)
-                    }
+            if toDo{
+                if tasks.count != 0{
+                    tasksList
                 } else {
-                    ForEach(habits, id: \.self) { element in
-                        ZStack{
-                            RoundedRectangle(cornerRadius: 15).foregroundColor(.white)
-                            HStack{
-                                Button{
-                                    var habit = element
-                                    habit.complete()
-                                    habVM.updateHabit(habit)
-                                    if tdh.calendar.isDate(habit.getLastCompletion(), inSameDayAs: tdh.dateInView){
-                                        homeVM.completedToDos.1.append(homeVM.todaysToDos.1.remove(at: homeVM.todaysToDos.1.firstIndex(where:{$0.getID() == habit.getID()})!))
-                                    } else {
-                                        homeVM.todaysToDos.1.append(homeVM.todaysToDos.1.remove(at: homeVM.completedToDos.1.firstIndex(where:{$0.getID() == habit.getID()})!))
-                                    }
-                                } label: {
-                                    Image(systemName: tdh.calendar.isDate(Date(), inSameDayAs:(element.getLastCompletion())) ? "checkmark.square" : "square")
-                                }.padding()
-                                Text(element.getName())
-                                    .padding()
-                                Spacer()
-                            }.frame(maxWidth: .infinity)
-                                .foregroundColor(.black)
-                                .font(.title)
-                        }
-                        DividerLine(geo: geo).foregroundColor(.gray)
-                    }
+                    emptyListPanel
                 }
-            }.background(.white)
+            } else {
+                if habits.count != 0 {
+                    habitsList
+                } else {
+                    emptyListPanel
+                }
+            }
         }.task{
             tasks = homeVM.todaysToDos.0
             tasks.append(contentsOf: homeVM.completedToDos.0)
             habits = homeVM.todaysToDos.1
             habits.append(contentsOf: homeVM.completedToDos.1)
+        }
+    }
+    
+    @ViewBuilder
+    var tasksList: some View {
+        ScrollView{
+            ForEach(tasks, id: \.self) { element in
+                ZStack{
+                    RoundedRectangle(cornerRadius: 15).foregroundColor(.white)
+                    HStack{
+                        Button{
+                            var task = element
+                            task.toggleCompletion()
+                            tdlVM.updateTask(task)
+                            if task.getCompleted() {
+                                homeVM.completedToDos.0.append(homeVM.todaysToDos.0.remove(at: homeVM.todaysToDos.0.firstIndex(where:{$0.getID() == task.getID()})!))
+                            } else {
+                                homeVM.todaysToDos.0.append(homeVM.todaysToDos.0.remove(at: homeVM.completedToDos.0.firstIndex(where:{$0.getID() == task.getID()})!))
+                            }
+                        } label: {
+                            Image(systemName: (element.getCompleted()) ? "checkmark.square" : "square")
+                        }.padding()
+                        Text(element.getName())
+                            .padding()
+                        Spacer()
+                    }.frame(maxWidth: .infinity)
+                        .foregroundColor(.black)
+                        .font(.title)
+                }
+                DividerLine(geo: geo).foregroundColor(.gray)
+            }
+        }.background(.white)
+    }
+    
+    @ViewBuilder
+    var habitsList: some View {
+        ScrollView {
+            ForEach(habits, id: \.self) { element in
+                ZStack{
+                    RoundedRectangle(cornerRadius: 15).foregroundColor(.white)
+                    HStack{
+                        Button{
+                            var habit = element
+                            habit.complete()
+                            habVM.updateHabit(habit)
+                            if tdh.calendar.isDate(habit.getLastCompletion(), inSameDayAs: tdh.dateInView){
+                                homeVM.completedToDos.1.append(homeVM.todaysToDos.1.remove(at: homeVM.todaysToDos.1.firstIndex(where:{$0.getID() == habit.getID()})!))
+                            } else {
+                                homeVM.todaysToDos.1.append(homeVM.todaysToDos.1.remove(at: homeVM.completedToDos.1.firstIndex(where:{$0.getID() == habit.getID()})!))
+                            }
+                        } label: {
+                            Image(systemName: tdh.calendar.isDate(Date(), inSameDayAs:(element.getLastCompletion())) ? "checkmark.square" : "square")
+                        }.padding()
+                        Text(element.getName())
+                            .padding()
+                        Spacer()
+                    }.frame(maxWidth: .infinity)
+                        .foregroundColor(.black)
+                        .font(.title)
+                }
+                DividerLine(geo: geo).foregroundColor(.gray)
+            }
+        }.background(.white)
+    }
+    
+    var emptyListPanel: some View {
+        Rectangle().foregroundColor(.white).frame(maxWidth: .infinity).ignoresSafeArea(edges: [.bottom]).overlay{
+            Text("No \(toDo ? "tasks" : "habits") in list").font(.title3).foregroundColor(.gray).padding()
         }
     }
 }

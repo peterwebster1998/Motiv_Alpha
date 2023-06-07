@@ -80,7 +80,11 @@ struct CALBanner: View {
                                 .opacity(0.02)
                         )
                     case .Event:
-                        Text(viewModel.eventSelected!.getName()).font(.largeTitle).frame(maxWidth: UIScreen.main.bounds.width * 0.75).multilineTextAlignment(.center)
+                        if viewModel.eventSelected!.getName() != "Plan" {
+                            Text(viewModel.eventSelected!.getName()).font(.largeTitle).frame(maxWidth: UIScreen.main.bounds.width * 0.75).multilineTextAlignment(.center)
+                        } else {
+                            Text("\(viewModel.eventSelected!.getName()) - \(timeDateHelper.dateString(timeDateHelper.dateInView))").font(.largeTitle).frame(maxWidth: UIScreen.main.bounds.width * 0.75).multilineTextAlignment(.center)
+                        }
                     case .Edit:
                         Text(viewModel.eventSelected!.getName()).font(.largeTitle).frame(maxWidth: UIScreen.main.bounds.width * 0.75).multilineTextAlignment(.center)
                     default:

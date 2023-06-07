@@ -284,6 +284,15 @@ struct CALm : Codable{
         }
     }
     
+    mutating func addEventSeries(_ series: EventSeries){
+        if !eventSeries.contains(where: {$0.getID() == series.getID()}){
+            eventSeries.append(series)
+            propagateSeries(series)
+        } else {
+            print("EventSeries already exists, not added")
+        }
+    }
+    
     mutating func editEventSeries(oldEvent: Event, newEvent: Event){
         let idx = eventSeries.firstIndex(where: {$0.seriesID == oldEvent.getSeriesID()})!
         eventSeries[idx].modifySeries(oldEvent: oldEvent, newEvent: newEvent)

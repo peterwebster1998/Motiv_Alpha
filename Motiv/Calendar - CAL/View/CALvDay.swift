@@ -24,7 +24,7 @@ struct DayView: View {
         ZStack{
             ScrollViewReader{ proxy in
                 ScrollView{
-                    TimeOfDayView()
+                    TimeOfDayView(geo: geo)
                         .gesture(swipeToChangeDay)
                 }.onAppear{
                     let hour = hourToScrollTo()
@@ -68,7 +68,7 @@ struct DayView: View {
     func hourToScrollTo() -> String {
         let isToday = (timeDateHelper.dateString(Date()) == timeDateHelper.dateString(timeDateHelper.dateInView))
         var hour = ""
-        if !isToday { hour = "08:00" }
+        if !isToday { hour = "08" }
         else {
             let time = timeDateHelper.getTimeOfDayHrsMins(Date())
             let hrSeg = time.split(separator: ":")[0]
@@ -76,7 +76,7 @@ struct DayView: View {
             hr = (hr == 12) ? 0: hr
             hr = (timeDateHelper.getAMPM(Date()) == "PM") ? hr+12 : hr
             hr = (hr > 19) ? 19 : hr
-            hour = ((String(hr).count == 1) ? "0"+String(hr): String(hr)) + ":00"
+            hour = (String(hr).count == 1) ? "0"+String(hr): String(hr)
         }
         return hour
     }
@@ -105,54 +105,52 @@ struct AddEventButton: View {
 
 
 struct TimeOfDayView: View {
-    
-    @EnvironmentObject var timeDateHelper: TimeDateHelper
-    
-    private let hoursInDay: [String] = ["00:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00"]
+//    @EnvironmentObject var timeDateHelper: TimeDateHelper
+    let geo: GeometryProxy
     
     var body: some View {
-        GeometryReader { geo in
-            HStack(spacing: 0){
+        Group{
+            GeometryReader{ localGeo in
+                DayTimeBar(geo: localGeo).position(x: geo.size.width * 0.1, y: geo.size.height * 1.8)
                 ZStack{
-                    VStack(spacing: 0){
-                        ForEach(hoursInDay, id: \.self){ hour in
-                            DayHourTile(geo: geo, hour: hour)
-                                .id(hour)
-                        }
-                    }
-                    timeIndicatorView(geo: geo)
-                }.frame(maxWidth: geo.size.width * 0.2, maxHeight: .infinity)
-                
-                ZStack{
-                    VStack(spacing: 0){
-                        ForEach(hoursInDay, id: \.self){hr in
-                            VStack(spacing:0){
-                                threeSideRect(width: 1, openEdge: .bottom)
-                                if hr != "23:00"{
-                                    threeSideRect(width: 1, openEdge: .bottom)
-                                } else {
-                                    Rectangle().strokeBorder(style: StrokeStyle(lineWidth: 1))
-                                }
-                            }.foregroundColor(Color.gray).frame(maxHeight: .infinity)
-                        }
-                    }
-                    ScheduledEventsView(geo: geo)
-                }.frame(maxWidth: geo.size.width * 0.80, maxHeight: .infinity)
+                    BackgroundLines(geo: localGeo)
+                    ScheduledEventsView(geo: localGeo)
+                }.position(x: geo.size.width * 0.6, y: geo.size.height * 1.8)
             }
-        }.frame(width: UIScreen.main.bounds.width , height: UIScreen.main.bounds.height * 0.9 * 4)
+        }.frame(maxWidth: .infinity, minHeight: geo.size.height * 0.9 * 4).padding(.top)
+    }
+}
+
+struct DayTimeBar: View {
+    let geo: GeometryProxy
+    
+    var body: some View{
+        ZStack{
+            VStack(spacing: 0){
+                ForEach(hoursOfDay, id: \.self){ hour in
+                    DayHourTile(geo: geo, hour: "\(hour+":00")")
+                        .id(hour)
+                }
+            }
+            timeIndicatorView(geo: geo)
+        }.frame(maxWidth: geo.size.width * 0.2, maxHeight: .infinity)
     }
 }
 
 struct DayHourTile: View {
     let geo: GeometryProxy
     let hour: String
+    @State var hr: CGFloat = 0
     @State var y: CGFloat = 0
     
     var body: some View {
         ZStack{
-            Text(hour).padding(.vertical).position(x: geo.size.width * 0.075, y: geo.size.height / (24 * 16))
+            Text(hour).padding(.vertical).position(x: geo.size.width * 0.075, y: 0)
             DayHourScaleLines().foregroundColor(.gray)
-        }.frame(maxWidth: geo.size.width * 0.2, maxHeight: geo.size.height / 24)
+        }.frame(maxHeight: geo.size.height / 24)
+            .task{
+                hr = CGFloat(Int(hour.split(separator: ":").first!)!)
+            }
     }
 }
 
@@ -183,6 +181,25 @@ struct DayHourScaleLines: Shape {
         path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
 
         return path
+    }
+}
+
+struct BackgroundLines: View{
+    let geo: GeometryProxy
+    
+    var body: some View{
+        VStack(spacing: 0){
+            ForEach(hoursOfDay, id: \.self){ hr in
+                //                    threeSideRect(width: 1, openEdge: .bottom).frame(maxWidth: .infinity, maxHeight: geo.size.height/96)
+                //                    threeSideRect(width: 1, openEdge: .bottom).frame(maxWidth: .infinity, maxHeight: geo.size.height/96)
+                threeSideRect(width: 1, openEdge: .bottom)
+                if hr != "23"{
+                    threeSideRect(width: 1, openEdge: .bottom)
+                } else {
+                    Rectangle().stroke(.gray, lineWidth: 1)
+                }
+            }
+        }.foregroundColor(.gray).frame(maxWidth: geo.size.width * 0.8, maxHeight: .infinity)
     }
 }
 
@@ -309,12 +326,12 @@ struct EventTileDayView: View {
     
     var body: some View {
         EventTile()
-            .frame(width: geo.size.width * 0.8, height: height)
+            .frame(maxWidth: geo.size.width * 0.8, maxHeight: height)
             .overlay (
                 Text(event.getName()).foregroundColor(Color.black)
             )
             .foregroundColor(Color.green)
-            .position(x: geo.size.width * 0.4, y: y + (height / 2))
+            .position(x: geo.size.width * 0.5, y: y + (height / 2))
             .onTapGesture {
                 viewModel.eventSelected = event
                 viewModel.setViewContext("e")
@@ -337,7 +354,7 @@ struct EventTile: View {
                 .frame(width: geo.size.width - (geo.size.height * 0.025), height: geo.size.height * 0.975)
                 .position(x: geo.size.width / 2, y: geo.size.height / 2)
                 .overlay(
-                RoundedRectangle(cornerRadius: 10).padding(5)
+                    RoundedRectangle(cornerRadius: 10).padding(geo.size.width * 0.01)
             )
         }
     }

@@ -31,6 +31,7 @@ struct ScheduleDailyPlanView: View {
                         let eventSeries = CALm.EventSeries(event: event, habit: habit)
                         habit.linkToEventSeries(eventSeries.getID())
                         habVM.updateHabit(habit)
+                        calVM.addEventSeries(eventSeries)
                     }),
                     secondaryButton: .cancel({
                         confirm = false
@@ -44,14 +45,24 @@ struct ScheduleDailyPlanView: View {
     var interractionPanel: some View {
         RoundedRectangle(cornerRadius: 15).foregroundColor(.white).overlay(
             VStack{
-                Text("Choose Daily Planning Time").font(.title).foregroundColor(.black).padding()
-                Text("Planning your days is a crucial component for personal success").foregroundColor(.gray).font(.title3).padding(.horizontal)
-                DatePicker("Select when you want to plan everyday:", selection: $plannedTime, displayedComponents: .hourAndMinute).padding()
-                Text("Your selection: \(tdh.getTimeOfDayHrsMins(plannedTime))").font(.title).padding()
+                Group{ //Header
+                    Text("Choose Daily Planning Time").font(.title).foregroundColor(.black).padding()
+                    Text("Planning your days is a crucial component for personal success").foregroundColor(.black).opacity(0.75).padding(.horizontal)
+                }
+                Spacer()
+                Group{ //Selection Panel
+                    DividerLine(geo: geo, screenProportion: 0.825)
+                    Text("Select when to plan everyday:").foregroundColor(.black).padding(.horizontal)
+                    DatePicker("", selection: $plannedTime, displayedComponents: .hourAndMinute).datePickerStyle(WheelDatePickerStyle()).labelsHidden().padding()
+                    DividerLine(geo: geo, screenProportion: 0.825)
+                }
+                Spacer()
+                Text("Current selection: \(tdh.getTimeOfDayHrsMins(plannedTime)) \(tdh.getAMPM(plannedTime))").font(.title2).padding()
+                Spacer()
                 Button{
                     confirm = true
                 } label: {
-                    Capsule().foregroundColor(.white).overlay(Text("Confirm Time").font(.title2))
+                    Capsule().stroke(.gray, lineWidth: 1.5).foregroundColor(.white).frame(maxWidth: geo.size.width * 0.5, maxHeight: geo.size.height * 0.1).padding().overlay(Text("Confirm Time").font(.title2).padding())
                 }
             }.foregroundColor(.black)
         )

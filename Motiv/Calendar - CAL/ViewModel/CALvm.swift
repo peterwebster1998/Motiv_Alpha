@@ -181,6 +181,11 @@ class CALvm: ObservableObject {
         }
     }
     
+    func addEventSeries(_ eventSeries: CALm.EventSeries){
+        model.addEventSeries(eventSeries)
+        autosave()
+    }
+    
     func editEventSeries(event: CALm.Event, name: String, description: String, duration: Int, repetition: CALm.Repeat, time: Date) -> Bool{
         // Conflict Check
         let tdh = TimeDateHelper()

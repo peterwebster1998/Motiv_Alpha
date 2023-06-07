@@ -92,7 +92,7 @@ struct SelectExistingTaskView: View {
                         viewModel.addTask = false
                     }
                 } label: {
-                    Rectangle().frame(maxWidth: UIScreen.main.bounds.width * 0.3, maxHeight: UIScreen.main.bounds.height * 0.1).foregroundColor(.white).overlay(
+                    Rectangle().frame(maxWidth: UIScreen.main.bounds.width * 0.3, maxHeight: UIScreen.main.bounds.height * 0.085).foregroundColor(.white).overlay(
                         Text(selectionOverlayText).foregroundColor(.black)
                             .onChange(of: TDLviewModel.viewContext) { _ in
                                 switch TDLviewModel.viewContext {
