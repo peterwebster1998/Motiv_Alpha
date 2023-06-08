@@ -11,12 +11,13 @@ struct TDLv: View {
     @EnvironmentObject var viewModel: TDLvm
     @State var height: CGFloat = 0
     @State var inHabit: Bool? = nil
+    @State var inPlan: Bool? = nil
     
     var body: some View {
         GeometryReader { geo in
             ZStack{
                 TDLBody(geo: geo).frame(maxWidth: .infinity, maxHeight: geo.size.height * 0.9).position(x: geo.size.width * 0.5, y: geo.size.height * 0.55)
-                TDLBanner(geo: geo, height: $height, inHabit: inHabit).position(x: geo.size.width * 0.5, y: height/2)
+                TDLBanner(geo: geo, height: $height, inHabit: inHabit, inPlan: inPlan).position(x: geo.size.width * 0.5, y: height/2)
                 if viewModel.createMode{
                     TDLCreateView(geo: geo)
                 } else if viewModel.editMode && viewModel.viewContext == .ToDoLists{
@@ -39,11 +40,12 @@ struct TDLBanner: View {
     @State var bannerText: String = "To Do Lists"
     let geo: GeometryProxy
     @Binding var height: CGFloat
-    @State var inHabit: Bool?
-    
+    @State var inHabit: Bool? = nil
+    @State var inPlan: Bool? = nil
+
     var body: some View{
         VStack(spacing: 0){
-            BannerTile(geo: geo, bannerText: $bannerText, height: $height, inHabit: inHabit).font(.largeTitle)
+            BannerTile(geo: geo, bannerText: $bannerText, height: $height, inHabit: inHabit, inPlan: inPlan).font(.largeTitle)
         }.onChange(of: viewModel.viewContext){ val in
             switch viewModel.viewContext {
             case .ToDoLists:
@@ -75,8 +77,9 @@ struct BannerTile: View {
     @State var otherOptions: [String] = []
     let animationDuration: Double = 0.25
     @State var opacity: Double = 0
-    @State var inHabit: Bool?
-    
+    @State var inHabit: Bool? = nil
+    @State var inPlan: Bool? = nil
+
     var body: some View {
         Rectangle().foregroundColor(.white)
             .frame(maxWidth: geo.size.width , maxHeight: height)
@@ -148,7 +151,7 @@ struct BannerTile: View {
                     viewModel.setViewContext(viewModel.previousViewContext!)
                     viewModel.previousViewContext = nil
                 default:
-                    if inHabit == nil {
+                    if inHabit == nil && inPlan == nil {
                         homeVM.appSelect = true
                     }
                 }
@@ -159,7 +162,7 @@ struct BannerTile: View {
                 case .List:
                     Image(systemName: "chevron.left").padding()
                 default:
-                    if inHabit == nil {
+                    if inHabit == nil && inPlan == nil{
                         Image(systemName: "square.grid.3x3.fill").padding()
                     } else {
                         EmptyView()
@@ -296,7 +299,8 @@ struct ElementTile: View {
     let title: String
     @State var task: TDLm.Task? = nil
     @State var inHabit: Bool? = nil
-    
+    @State var inPlan: Bool? = nil
+
     var body: some View {
         ZStack{
             RoundedRectangle(cornerRadius: 15).foregroundColor(.white)
@@ -317,7 +321,7 @@ struct ElementTile: View {
                 Spacer()
                 Text(viewModel.getCompletionStatus(title))
                     .padding()
-                } else {
+                } else if inHabit != nil {
                     //Habit Implementation
                     Button{
                         var updatedHabit = HABviewModel.selectedHabit!
@@ -351,7 +355,7 @@ struct ElementTile: View {
                 .foregroundColor(.black)
                 .font(.title)
         }.onTapGesture {
-            if inHabit == nil {
+            if inHabit == nil{
                 if !viewModel.pressAndHold {
                     switch viewModel.viewContext {
                     case .Task:
@@ -365,7 +369,7 @@ struct ElementTile: View {
                         viewModel.setViewContext("list")
                     }
                 }
-            } else {
+            } else if inHabit != nil{
                 viewModel.pressAndHold = false
                 HABviewModel.selectedTask = task
                 HABviewModel.setViewContext("task")
@@ -373,13 +377,13 @@ struct ElementTile: View {
     }
         .gesture(pressAndHoldToEditAndDelete)
         .task{
-            if inHabit == nil {
+            if inHabit == nil{
                 if viewModel.viewContext == .List {
                     task = viewModel.getTaskList(viewModel.selectedList!).first(where: {$0.getName() == title})
                 } else if viewModel.viewContext == .Task {
                     task = viewModel.getSubtasks(viewModel.selectedTask!.getID()).first(where: {$0.getName() == title})
                 }
-            } else {
+            } else if inHabit != nil {
                 task = HABviewModel.selectedHabit!.getTasks().first(where: {$0.getName() == title})
             }
         }
@@ -387,7 +391,7 @@ struct ElementTile: View {
     
     var pressAndHoldToEditAndDelete: some Gesture{
         let gesture = LongPressGesture(minimumDuration: 1, maximumDistance: 30).onEnded{ _ in
-            if inHabit == nil {
+            if inHabit == nil && inPlan == nil{
                 if viewModel.viewContext == .List {
                     viewModel.selectedTask = task
                 } else if viewModel.viewContext != .Task {
@@ -422,8 +426,9 @@ struct TDLTaskView: View {
     @EnvironmentObject var tdh: TimeDateHelper
     let geo: GeometryProxy
     @State var task: TDLm.Task
-    @State var inHabit: Bool?
-    
+    @State var inHabit: Bool? = nil
+    @State var inPlan: Bool? = nil
+
     var body: some View {
         VStack{
             Group{
@@ -465,7 +470,7 @@ struct TDLTaskView: View {
                     VStack{
                         if task.isParentTask() {
                             ForEach(viewModel.getSubtasks(task.getID()), id: \.self){ sub in
-                                ElementTile(title: sub.getName())
+                                ElementTile(title: sub.getName(), inPlan: inPlan)
                                     .onTapGesture {
                                         viewModel.selectedTask = sub
                                     }

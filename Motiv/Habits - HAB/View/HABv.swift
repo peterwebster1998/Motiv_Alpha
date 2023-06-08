@@ -10,11 +10,12 @@ import SwiftUI
 struct HABv: View {
     @EnvironmentObject var viewModel: HABvm
     @State var height: CGFloat = UIScreen.main.bounds.height * 0.1
+    @State var inPlan: Bool? = nil
     
     var body: some View {
         GeometryReader { geo in
             ZStack{
-                HABBanner(geo: geo).position(x: UIScreen.main.bounds.midX, y: height/2)
+                HABBanner(geo: geo, inPlan: inPlan).position(x: UIScreen.main.bounds.midX, y: height/2)
                 HABBody(geo: geo).frame(maxWidth: .infinity, maxHeight: UIScreen.main.bounds.height * 0.9).position(x: UIScreen.main.bounds.midX, y: UIScreen.main.bounds.height * 0.55)
                 if viewModel.addTask {
                     AddTaskToHabitView(geo: geo)
@@ -35,6 +36,8 @@ struct HABBanner: View {
     @EnvironmentObject var homeVM: HomeViewModel
     let geo: GeometryProxy
     @State var bannerText: String = "Habits"
+    @State var inPlan: Bool? = nil
+
     
     var body: some View {
         VStack(spacing: 0){
@@ -76,10 +79,14 @@ struct HABBanner: View {
         HStack{
             switch viewModel.viewContext {
             case .All:
-                Button{
-                    homeVM.appSelect = true
-                } label: {
-                    Image(systemName: "square.grid.3x3.fill").padding()
+                if inPlan == nil {
+                    Button{
+                        homeVM.appSelect = true
+                    } label: {
+                        Image(systemName: "square.grid.3x3.fill").padding()
+                    }
+                } else {
+                    EmptyView()
                 }
             case .Task:
                 Button{
@@ -102,17 +109,19 @@ struct HABBanner: View {
             }
             
             Spacer()
-            if viewModel.viewContext == .All {
-                Button{
-                    viewModel.setViewContext("new")
-                } label: {
-                    Image(systemName: "plus").padding()
-                }
-            } else if viewModel.viewContext == .One {
-                Menu{
-                    habitMenu
-                } label: {
-                    Image(systemName: "slider.horizontal.3").padding()
+            if inPlan == nil {
+                if viewModel.viewContext == .All {
+                    Button{
+                        viewModel.setViewContext("new")
+                    } label: {
+                        Image(systemName: "plus").padding()
+                    }
+                } else if viewModel.viewContext == .One {
+                    Menu{
+                        habitMenu
+                    } label: {
+                        Image(systemName: "slider.horizontal.3").padding()
+                    }
                 }
             }
         }.foregroundColor(.black).font(.title)
@@ -168,7 +177,7 @@ struct HABBody: View {
             case .One:
                 HabitView(geo: geo)
             case .New:
-                CreateHabitView()
+                CreateHabitView(geo: geo)
             case .Task:
                 TDLTaskView(geo: geo, task: viewModel.selectedTask!, inHabit: true)
             }
@@ -436,6 +445,7 @@ struct HabitView: View {
 
 struct CreateHabitView: View {
     @EnvironmentObject var viewModel: HABvm
+    let geo: GeometryProxy
     @State var nameField: String = ""
     @State var notesField: String = ""
     @State var timePeriod: HABm.Habit.repetitionPeriod = .Daily
@@ -462,7 +472,7 @@ struct CreateHabitView: View {
                             count = Int(val) ?? 0
                         }
                     }
-                Text("times per").padding(.horizontal)
+                Text("time\((count == 1) ? "" : "s") per").padding(.horizontal)
                 Menu {
                     timePeriodOptions
                 } label: {
@@ -471,7 +481,7 @@ struct CreateHabitView: View {
                         Text(periodStr)
                     }
                 }
-            }.frame(maxWidth: UIScreen.main.bounds.width * 0.8, maxHeight: UIScreen.main.bounds.height * 0.2, alignment: .center)
+            }.frame(maxWidth: geo.size.width * 0.8, maxHeight: geo.size.height * 0.2, alignment: .center)
             Button{
                 if nameField != "" && count != 0 && !simplifyValues(){
                     viewModel.addHabit(HABm.Habit(name: nameField, note: notesField, repetition: (timePeriod, count)))
@@ -482,7 +492,7 @@ struct CreateHabitView: View {
                 ZStack{
                     RoundedRectangle(cornerRadius: 10).stroke(.gray, lineWidth: 1).foregroundColor(.clear)
                     Text("Create")
-                }.frame(maxWidth: UIScreen.main.bounds.width * 0.2, maxHeight: UIScreen.main.bounds.height * 0.05)
+                }.frame(maxWidth: geo.size.width * 0.2, maxHeight: geo.size.height * 0.05)
             }.padding()
         }.foregroundColor(.black).font(.title3)
             .onChange(of: count){ val in

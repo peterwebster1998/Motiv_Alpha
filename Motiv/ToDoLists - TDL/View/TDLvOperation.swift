@@ -23,7 +23,8 @@ struct TDLCreateView: View {
 
 struct CreateForm: View {
     @EnvironmentObject var viewModel: TDLvm
-    @EnvironmentObject var HABviewModel: HABvm
+    @EnvironmentObject var habVM: HABvm
+    @EnvironmentObject var homeVM: HomeViewModel
     @EnvironmentObject var tdh: TimeDateHelper
     let geo: GeometryProxy
     @State var height: CGFloat = UIScreen.main.bounds.height * 0.2
@@ -33,6 +34,7 @@ struct CreateForm: View {
     @State var descriptionField: String = ""
     @State var deadlineField: Date = Date()
     @State var inHabit: Bool? = nil
+    @State var inPlan: Bool? = nil
     
     var body: some View {
         RoundedRectangle(cornerRadius: 10)
@@ -67,29 +69,31 @@ struct CreateForm: View {
                 Button {
                     print("Creating item!")
                     if nameField != ""{
-                        if inHabit == nil {
+                        let des = (descriptionField == "") ? nil : descriptionField
+                        let deadline = (deadlineField < Date()) ? nil : deadlineField
+                        if inHabit == nil && inPlan == nil{
                             switch viewModel.viewContext {
                             case .List:
                                 let key = viewModel.selectedList!
-                                let des = (descriptionField == "") ? nil : descriptionField
-                                let deadline = (deadlineField < Date()) ? nil : deadlineField
                                 viewModel.addTask(key: key, name: nameField, description: des, parentTaskID: nil, deadline: deadline)
                             case .Task:
                                 let key = viewModel.selectedList!
-                                let des = (descriptionField == "") ? nil : descriptionField
                                 let parentID = viewModel.selectedTask!.getID()
-                                let deadline = (deadlineField < Date()) ? nil : deadlineField
                                 viewModel.addTask(key: key, name: nameField, description: des, parentTaskID: parentID, deadline: deadline)
                             default:
                                 viewModel.addList(nameField)
                             }
-                        } else {
-                            var updatedHabit = HABviewModel.selectedHabit!
-                            let des = (descriptionField == "") ? nil : descriptionField
-                            let deadline = (deadlineField < Date()) ? nil : deadlineField
+                        } else if inHabit != nil {
+                            var updatedHabit = habVM.selectedHabit!
                             updatedHabit.addTask(TDLm.Task(key: "Habit",name: nameField, description: des, parentTaskID: nil, deadline: deadline))
-                            HABviewModel.updateHabit(updatedHabit)
-                            HABviewModel.selectedHabit = updatedHabit
+                            habVM.updateHabit(updatedHabit)
+                            habVM.selectedHabit = updatedHabit
+                        } else if inPlan != nil {
+                            viewModel.addTask(key: tdh.dateString(tdh.dateInView), name: nameField, description: des, parentTaskID: nil, deadline: deadline)
+                            let task = viewModel.getTaskList(tdh.dateString(tdh.dateInView)).first(where: {$0.getName() == nameField})!
+                            var tasks = homeVM.todaysToDos.0
+                            tasks.append(task)
+                            homeVM.todaysToDos = (tasks, homeVM.todaysToDos.1)
                         }
                     }
                     viewModel.createMode = false

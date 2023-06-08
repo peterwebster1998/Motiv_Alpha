@@ -109,7 +109,7 @@ struct CreateNewHabitView: View {
     let geo: GeometryProxy
     
     var body: some View {
-        CreateHabitView()
+        CreateHabitView(geo: geo)
             .onChange(of: habitVM.selectedHabit){val in
                 if val != nil {
                     var habit = habitVM.selectedHabit!

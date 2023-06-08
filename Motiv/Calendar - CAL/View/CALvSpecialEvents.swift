@@ -69,9 +69,18 @@ struct TaskAndHabitSelectionPanel: View {
                 topBar
                 tasksAndHabitsTile
             }
-            addTaskOrHabitButton
+            VStack{
+                Spacer()
+                addTaskOrHabitButton.padding()
+            }
         }.task{
             updateTasksAndHabits()
+        }.onChange(of: calVM.specialEvent){ val in
+            if !val{
+                updateTasksAndHabits()
+                print("Tasks: \(tasks)")
+                print("Habits: \(habits)")
+            }
         }
     }
     
@@ -90,25 +99,27 @@ struct TaskAndHabitSelectionPanel: View {
             .overlay(
                 ScrollView{
                     if toDo{
-                        ForEach(tasks, id: \.self){ item in
-                            VStack{
+                        VStack{
+                            ForEach(tasks, id: \.self){ item in
                                 HStack{
-                                    Image(systemName: item.getCompleted() ? "checkmark.square" : "square")
+                                    Image(systemName: item.getCompleted() ? "checkmark.square" : "square").padding(.horizontal)
                                     Text(item.getName())
+                                    Spacer()
                                 }.font(.title2)
                                 Divider()
                             }
-                        }
+                        }.padding(.vertical)
                     } else {
-                        ForEach(habits, id: \.self){ item in
-                            VStack{
+                        VStack{
+                            ForEach(habits, id: \.self){ item in
                                 HStack{
-                                    Image(systemName: "square")
+                                    Image(systemName: "square").padding(.horizontal)
                                     Text(item.getName())
+                                    Spacer()
                                 }.font(.title2)
                                 Divider()
                             }
-                        }
+                        }.padding(.vertical)
                     }
                 }.foregroundColor(.black)
             )
@@ -116,9 +127,8 @@ struct TaskAndHabitSelectionPanel: View {
     
     @ViewBuilder
     var addTaskOrHabitButton: some View {
-        Capsule().stroke(.gray, lineWidth: 1.5).foregroundColor(.white)
-            .frame(maxWidth: geo.size.width * 0.2, maxHeight: geo.size.height * 0.1)
-            .position(x: geo.size.width/2, y: geo.size.height * 0.95)
+        Capsule().stroke(.gray, lineWidth: 1.5).background(.white)
+            .frame(maxWidth: geo.size.width * 0.3, maxHeight: geo.size.height * 0.0625)
             .overlay(
                 Text("Add \(toDo ? "Task" : "Habit")").font(.title2).foregroundColor(.black)
             ).onTapGesture {
@@ -127,22 +137,23 @@ struct TaskAndHabitSelectionPanel: View {
     }
     
     func updateTasksAndHabits() {
+        var list = homeVM.todaysToDos
         //Get Existing List Items
-        tasks = homeVM.todaysToDos.0
-        habits = homeVM.todaysToDos.1
+        tasks = list.0
+        habits = list.1
         //Add Tasks from day and daily habits to List
-        tasks.append(contentsOf: tdlVM.getTaskList(tdh.dateString(tdh.dateInView)))
-        habits.append(contentsOf: habVM.getHabits().filter({$0.getRepetitionPeriod() == .Daily}))
+        list.0.append(contentsOf: tdlVM.getTaskList(tdh.dateString(tdh.dateInView)))
+        list.1.append(contentsOf: habVM.getHabits().filter({$0.getRepetitionPeriod() == .Daily}))
         //Remove Completed Items
-        tasks = tasks.filter({$0.getCompleted()})
-        habits = habits.filter({tdh.calendar.isDate(tdh.dateInView, inSameDayAs: $0.getLastCompletion())})
+        list.0 = list.0.filter({!$0.getCompleted()})
+        list.1 = list.1.filter({!tdh.calendar.isDate(tdh.dateInView, inSameDayAs: $0.getLastCompletion())})
         //Remove Duplicates
-        tasks = tasks.sorted(by: {$0.getName() < $1.getName()})
-        habits = habits.sorted(by: {$0.getName() < $1.getName()})
-        tasks = tasks.filter { task in
-            let idx = tasks.firstIndex(where: {$0 == task})!
-            if idx < tasks.count - 1{
-                if tasks[idx].getID() == tasks[idx+1].getID(){
+        list.0 = list.0.sorted(by: {$0.getName() < $1.getName()})
+        list.1 = list.1.sorted(by: {$0.getName() < $1.getName()})
+        list.0 = list.0.filter { task in
+            let idx = list.0.firstIndex(where: {$0 == task})!
+            if idx < list.0.count - 1{
+                if list.0[idx].getID() == list.0[idx+1].getID(){
                     return false
                 } else {
                     return true
@@ -151,10 +162,10 @@ struct TaskAndHabitSelectionPanel: View {
                 return true
             }
         }
-        habits = habits.filter { habit in
-            let idx = habits.firstIndex(where: {$0 == habit})!
-            if idx < habits.count - 1{
-                if habits[idx].getID() == habits[idx+1].getID(){
+        list.1 = list.1.filter { habit in
+            let idx = list.1.firstIndex(where: {$0 == habit})!
+            if idx < list.1.count - 1{
+                if list.1[idx].getID() == list.1[idx+1].getID(){
                     return false
                 } else {
                     return true
@@ -163,9 +174,11 @@ struct TaskAndHabitSelectionPanel: View {
                 return true
             }
         }
+        print("Local Calculated List\nTasks: \(list.0)\nHabits: \(list.1)\n")
+        (tasks, habits) = list
         //Update ViewModel
         homeVM.completedToDos = ([],[])
-        homeVM.todaysToDos = (tasks, habits)
+        homeVM.todaysToDos = list
     }
 }
 
@@ -231,6 +244,7 @@ struct AddTaskOrHabitView: View {
 //To Do: Complete Implementation for adding existing or new tasks or habits to next days TODO list
 struct CreateNewTaskOrHabitView: View{
     @EnvironmentObject var homeVM: HomeViewModel
+    @EnvironmentObject var calVM: CALvm
     @EnvironmentObject var tdlVM: TDLvm
     @EnvironmentObject var habVM: HABvm
     let geo: GeometryProxy
@@ -238,9 +252,23 @@ struct CreateNewTaskOrHabitView: View{
     
     var body: some View {
         if toDo {
-           
+            CreateForm(geo: geo, inPlan: true)
+                .onChange(of: tdlVM.createMode){ val in
+                    if !val {
+                        tdlVM.setViewContext("lists")
+                        calVM.specialEvent = false
+                    }
+                }
         } else {
-            
+            CreateHabitView(geo: geo)
+                .onChange(of: habVM.selectedHabit){ val in
+                    if val != nil {
+                        habVM.setViewContext("all")
+                        homeVM.todaysToDos.1.append(habVM.selectedHabit!)
+                        habVM.selectedHabit = nil
+                        calVM.specialEvent = false
+                    }
+                }
         }
     }
 }
@@ -287,6 +315,8 @@ struct SelectExistingTaskOrHabitView: View{
                         switch habVM.viewContext {
                         case .One:
                             homeVM.todaysToDos.1.append(habVM.selectedHabit!)
+                        case .Task:
+                            homeVM.todaysToDos.0.append(habVM.selectedTask!)
                         default:
                             break
                         }
@@ -313,6 +343,8 @@ struct SelectExistingTaskOrHabitView: View{
                                 switch habVM.viewContext {
                                 case .One:
                                     selectionOverlayText = "Add to Plan"
+                                case .Task:
+                                    selectionOverlayText = "Add task to Plan"
                                 default:
                                     selectionOverlayText = "Exit Selection"
                                 }
@@ -325,19 +357,3 @@ struct SelectExistingTaskOrHabitView: View{
     }
 }
 
-   
-//struct CreateNewTaskView: View {
-//    @EnvironmentObject var viewModel: HABvm
-//    @EnvironmentObject var TDLviewModel: TDLvm
-//    let geo: GeometryProxy
-//
-//    var body: some View {
-//        CreateForm(geo: geo, inHabit: true)
-//            .onChange(of: TDLviewModel.createMode){ val in
-//                if !val {
-//                    TDLviewModel.setViewContext("lists")
-//                    viewModel.addTask = false
-//                }
-//            }
-//    }
-//}
