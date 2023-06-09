@@ -69,17 +69,11 @@ struct TaskAndHabitSelectionPanel: View {
                 topBar
                 tasksAndHabitsTile
             }
-            VStack{
-                Spacer()
-                addTaskOrHabitButton.padding()
-            }
         }.task{
-            updateTasksAndHabits()
+            recreateDailyPlanForTomorrow()
         }.onChange(of: calVM.specialEvent){ val in
             if !val{
-                updateTasksAndHabits()
-                print("Tasks: \(tasks)")
-                print("Habits: \(habits)")
+                updateDailyPlan()
             }
         }
     }
@@ -90,6 +84,7 @@ struct TaskAndHabitSelectionPanel: View {
             Text("|").padding(.horizontal)
             Text("Habits").foregroundColor(toDo ? .gray : .black).onTapGesture {if toDo { toDo = false }}
             Spacer()
+            addTaskOrHabitButton
         }.font(.title).padding([.top, .leading, .trailing])
     }
     
@@ -127,58 +122,27 @@ struct TaskAndHabitSelectionPanel: View {
     
     @ViewBuilder
     var addTaskOrHabitButton: some View {
-        Capsule().stroke(.gray, lineWidth: 1.5).background(.white)
-            .frame(maxWidth: geo.size.width * 0.3, maxHeight: geo.size.height * 0.0625)
-            .overlay(
-                Text("Add \(toDo ? "Task" : "Habit")").font(.title2).foregroundColor(.black)
-            ).onTapGesture {
-                calVM.specialEvent = true
-            }
+        //Will not load both gray outline and white color, currently appears as foregroundColor.clear
+        Button{
+            calVM.specialEvent = true
+        } label: {
+            Image(systemName: "plus").font(.title).foregroundColor(.black)
+        }.padding(.horizontal)
     }
     
-    func updateTasksAndHabits() {
-        var list = homeVM.todaysToDos
-        //Get Existing List Items
-        tasks = list.0
-        habits = list.1
+    func recreateDailyPlanForTomorrow() {
         //Add Tasks from day and daily habits to List
-        list.0.append(contentsOf: tdlVM.getTaskList(tdh.dateString(tdh.dateInView)))
-        list.1.append(contentsOf: habVM.getHabits().filter({$0.getRepetitionPeriod() == .Daily}))
-        //Remove Completed Items
-        list.0 = list.0.filter({!$0.getCompleted()})
-        list.1 = list.1.filter({!tdh.calendar.isDate(tdh.dateInView, inSameDayAs: $0.getLastCompletion())})
-        //Remove Duplicates
-        list.0 = list.0.sorted(by: {$0.getName() < $1.getName()})
-        list.1 = list.1.sorted(by: {$0.getName() < $1.getName()})
-        list.0 = list.0.filter { task in
-            let idx = list.0.firstIndex(where: {$0 == task})!
-            if idx < list.0.count - 1{
-                if list.0[idx].getID() == list.0[idx+1].getID(){
-                    return false
-                } else {
-                    return true
-                }
-            } else {
-                return true
-            }
-        }
-        list.1 = list.1.filter { habit in
-            let idx = list.1.firstIndex(where: {$0 == habit})!
-            if idx < list.1.count - 1{
-                if list.1[idx].getID() == list.1[idx+1].getID(){
-                    return false
-                } else {
-                    return true
-                }
-            } else {
-                return true
-            }
-        }
-        print("Local Calculated List\nTasks: \(list.0)\nHabits: \(list.1)\n")
+        homeVM.addToDailyPlan(tdlVM.getTaskList(tdh.dateString(tdh.dateInView)))
+        homeVM.addToDailyPlan(habVM.getHabits().filter({$0.getRepetitionPeriod() == .Daily}))
+        updateDailyPlan()
+        homeVM.newDaysPlan()
+    }
+    
+    func updateDailyPlan() {
+        var list = homeVM.getDailyPlan()
+        list.0.append(contentsOf: homeVM.getCompletedPlanItems().0)
+        list.1.append(contentsOf: homeVM.getCompletedPlanItems().1)
         (tasks, habits) = list
-        //Update ViewModel
-        homeVM.completedToDos = ([],[])
-        homeVM.todaysToDos = list
     }
 }
 
@@ -264,7 +228,7 @@ struct CreateNewTaskOrHabitView: View{
                 .onChange(of: habVM.selectedHabit){ val in
                     if val != nil {
                         habVM.setViewContext("all")
-                        homeVM.todaysToDos.1.append(habVM.selectedHabit!)
+                        homeVM.addToDailyPlan([habVM.selectedHabit!])
                         habVM.selectedHabit = nil
                         calVM.specialEvent = false
                     }
@@ -302,9 +266,9 @@ struct SelectExistingTaskOrHabitView: View{
                     if toDo {
                         switch tdlVM.viewContext{
                         case .Task:
-                            homeVM.todaysToDos.0.append(tdlVM.selectedTask!)
+                            homeVM.addToDailyPlan([tdlVM.selectedTask!])
                         case .List:
-                            homeVM.todaysToDos.0.append(contentsOf: tdlVM.getTaskList(tdlVM.selectedList!))
+                            homeVM.addToDailyPlan(tdlVM.getTaskList(tdlVM.selectedList!))
                         default:
                             break
                         }
@@ -314,9 +278,9 @@ struct SelectExistingTaskOrHabitView: View{
                     } else {
                         switch habVM.viewContext {
                         case .One:
-                            homeVM.todaysToDos.1.append(habVM.selectedHabit!)
+                            homeVM.addToDailyPlan([habVM.selectedHabit!])
                         case .Task:
-                            homeVM.todaysToDos.0.append(habVM.selectedTask!)
+                            homeVM.addToDailyPlan([habVM.selectedTask!])
                         default:
                             break
                         }

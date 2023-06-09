@@ -91,9 +91,7 @@ struct CreateForm: View {
                         } else if inPlan != nil {
                             viewModel.addTask(key: tdh.dateString(tdh.dateInView), name: nameField, description: des, parentTaskID: nil, deadline: deadline)
                             let task = viewModel.getTaskList(tdh.dateString(tdh.dateInView)).first(where: {$0.getName() == nameField})!
-                            var tasks = homeVM.todaysToDos.0
-                            tasks.append(task)
-                            homeVM.todaysToDos = (tasks, homeVM.todaysToDos.1)
+                            homeVM.addToDailyPlan([task])
                         }
                     }
                     viewModel.createMode = false

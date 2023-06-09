@@ -166,6 +166,7 @@ struct ToDoComponentView: View {
     @State var toDo: Bool = true
     @State var tasks: [TDLm.Task] = []
     @State var habits: [HABm.Habit] = []
+    @State var elementStateToggled: Bool = false
     
     var body: some View {
         VStack(spacing: 0){
@@ -184,10 +185,18 @@ struct ToDoComponentView: View {
                 }
             }
         }.task{
-            tasks = homeVM.todaysToDos.0
-            tasks.append(contentsOf: homeVM.completedToDos.0)
-            habits = homeVM.todaysToDos.1
-            habits.append(contentsOf: homeVM.completedToDos.1)
+            var list = homeVM.getDailyPlan()
+            list.0.append(contentsOf: homeVM.getCompletedPlanItems().0)
+            list.1.append(contentsOf: homeVM.getCompletedPlanItems().1)
+            (tasks, habits) = list
+        }.onChange(of: elementStateToggled){val in
+            if val{
+                var list = homeVM.getDailyPlan()
+                list.0.append(contentsOf: homeVM.getCompletedPlanItems().0)
+                list.1.append(contentsOf: homeVM.getCompletedPlanItems().1)
+                (tasks, habits) = list
+                elementStateToggled = false
+            }
         }
     }
     
@@ -202,11 +211,8 @@ struct ToDoComponentView: View {
                             var task = element
                             task.toggleCompletion()
                             tdlVM.updateTask(task)
-                            if task.getCompleted() {
-                                homeVM.completedToDos.0.append(homeVM.todaysToDos.0.remove(at: homeVM.todaysToDos.0.firstIndex(where:{$0.getID() == task.getID()})!))
-                            } else {
-                                homeVM.todaysToDos.0.append(homeVM.todaysToDos.0.remove(at: homeVM.completedToDos.0.firstIndex(where:{$0.getID() == task.getID()})!))
-                            }
+                            homeVM.togglePlanItemCompletion(element)
+                            elementStateToggled = true
                         } label: {
                             Image(systemName: (element.getCompleted()) ? "checkmark.square" : "square")
                         }.padding()
@@ -233,11 +239,8 @@ struct ToDoComponentView: View {
                             var habit = element
                             habit.complete()
                             habVM.updateHabit(habit)
-                            if tdh.calendar.isDate(habit.getLastCompletion(), inSameDayAs: tdh.dateInView){
-                                homeVM.completedToDos.1.append(homeVM.todaysToDos.1.remove(at: homeVM.todaysToDos.1.firstIndex(where:{$0.getID() == habit.getID()})!))
-                            } else {
-                                homeVM.todaysToDos.1.append(homeVM.todaysToDos.1.remove(at: homeVM.completedToDos.1.firstIndex(where:{$0.getID() == habit.getID()})!))
-                            }
+                            homeVM.togglePlanItemCompletion(element)
+                            elementStateToggled = true
                         } label: {
                             Image(systemName: tdh.calendar.isDate(Date(), inSameDayAs:(element.getLastCompletion())) ? "checkmark.square" : "square")
                         }.padding()
