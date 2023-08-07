@@ -178,7 +178,7 @@ struct ToDoComponentView: View {
                     emptyListPanel
                 }
             } else {
-                if habits.count != 0 {
+                if habits.count != 0{
                     habitsList
                 } else {
                     emptyListPanel

@@ -310,8 +310,8 @@ struct ScheduledEventsView: View {
     
     func pmHourAdjustment(event: CALm.Event, hour: CGFloat) -> CGFloat {
         var hr = hour
-        hr = (hr == 12) ? 0: hr
-        hr = (timeDateHelper.getAMPM(event.getStartTime()) == "PM") ? hr+12 : hr
+        hr = (hr == 12 && timeDateHelper.getAMPM(event.getStartTime()) == "AM") ? 0: hr
+//        hr = (timeDateHelper.getAMPM(event.getStartTime()) == "PM") ? hr+12 : hr
         return hr
     }
 }

@@ -159,7 +159,7 @@ struct TDLm : Codable{
         var newTask = task
         let tdh = TimeDateHelper()
         
-        if oldTask.getDeadline() != nil {
+        if oldTask.getDeadline() != nil && (tdh.dateString(oldTask.getDeadline()!) == oldTask.getKey()){
             let deadline = oldTask.getDeadline()!
             let dateKey = tdh.dateString(deadline)
             let idx = tasksListDict[dateKey]!.firstIndex(where: {$0.getID() == ID})!

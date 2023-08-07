@@ -53,6 +53,14 @@ struct WeekView: View {
                 for num in 1...6{
                     datesInView.append(timeDateHelper.calendar.date(byAdding: .day, value: num, to: timeDateHelper.dateInView)!)
                 }
+                if datesInView.contains(where: {timeDateHelper.calendar.isDateInToday($0)}){
+                    datesInView = []
+                    timeDateHelper.today()
+                    datesInView.append(timeDateHelper.dateInView)
+                    for num in 1...6{
+                        datesInView.append(timeDateHelper.calendar.date(byAdding: .day, value: num, to: timeDateHelper.dateInView)!)
+                    }
+                }
             }.onChange(of: timeDateHelper.dateInView){day in
                 datesInView = [day]
                 for num in 1...6 {
@@ -143,21 +151,26 @@ struct SevenDayScheduleView: View {
             ScheduledEventsHorizontalView(geo: geo, datesInView: $datesInView)
         }.frame(width: geo.size.width * (24/hoursPerScreenWidth), height: geo.size.height)
             .onAppear{
+                print("calculating scroll")
                 var precomputedDatesInView: [Date] = [timeDateHelper.dateInView]
                 for i in 1...6 {
                     precomputedDatesInView.append(timeDateHelper.calendar.date(byAdding: .day, value: i, to: timeDateHelper.dateInView)!)
                 }
                 if !precomputedDatesInView.contains(where: {timeDateHelper.calendar.isDate(Date(), inSameDayAs: $0)}){
-                    scrollProxy.scrollTo("12", anchor: .leading)
+                    scrollProxy.scrollTo("06", anchor: .leading)
                 } else {
                     let currentTime = timeDateHelper.getTimeOfDayHrsMins(Date()).split(separator: ":")
                     var currentHr = String(currentTime.first!)
                     if timeDateHelper.getAMPM(Date()) == "PM" && currentHr != "12"{
                         currentHr = String(Int(currentHr)!+12)
                     }
-                    currentHr = (Int(currentHr)! > Int(24-hoursPerScreenWidth)) ? String(Int(24-hoursPerScreenWidth)) : currentHr
+                    var scrollHour = currentHr
+                    if precomputedDatesInView.contains(where: {timeDateHelper.calendar.isDateInToday($0)}) {
+                        print("adjusting time")
+                        scrollHour = timeAdjustment(scrollHour)
+                    }
                     
-                    scrollProxy.scrollTo(currentHr, anchor: .leading)
+                    scrollProxy.scrollTo(scrollHour, anchor: .leading)
                 }
             }
             .onChange(of: timeDateHelper.scrollToToday){value in
@@ -167,11 +180,34 @@ struct SevenDayScheduleView: View {
                     if timeDateHelper.getAMPM(Date()) == "PM" && currentHr != "12"{
                         currentHr = String(Int(currentHr)!+12)
                     }
-                    currentHr = (Int(currentHr)! > Int(24-hoursPerScreenWidth)) ? String(Int(24-hoursPerScreenWidth)) : currentHr
+                    var scrollHour = currentHr
+                    scrollHour = timeAdjustment(scrollHour)
                     
-                    scrollProxy.scrollTo(currentHr, anchor: .leading)
+                    scrollProxy.scrollTo(scrollHour, anchor: .leading)
+
                 }
             }
+    }
+    
+    func timeAdjustment(_ str: String) -> String {
+        let events = viewModel.getDaysEvents(timeDateHelper.dateString(Date()))
+        var newStr = str
+        for event in events{
+            if event.getStartTime() < Date() && timeDateHelper.calendar.date(byAdding: .minute, value: event.getDuration(), to: event.getStartTime())! > Date(){
+                let eventStart = timeDateHelper.getTimeOfDayHrsMins(event.getStartTime()).split(separator: ":")
+                newStr = String(eventStart.first!)
+                if timeDateHelper.getAMPM(event.getStartTime()) == "PM" && newStr != "12"{
+                    newStr = String(Int(newStr)!+12)
+                }
+                newStr = (String(eventStart.last!) != "00") ? newStr : String(Int(newStr)!-1)
+                newStr = (newStr.count == 1) ? "0"+newStr : newStr
+                newStr = (Int(newStr)! > Int(24-hoursPerScreenWidth)) ? String(Int(24-hoursPerScreenWidth)) : newStr
+                print(newStr)
+                return newStr
+            }
+        }
+        newStr = (Int(str)! > Int(24-hoursPerScreenWidth)) ? String(Int(24-hoursPerScreenWidth)) : str
+        return newStr
     }
 }
 
