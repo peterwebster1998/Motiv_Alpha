@@ -251,9 +251,8 @@ struct CreateEventView: View {
                     print("Create Event!")
                     let cal = timeDateHelper.calendar
                     let startTime = cal.date(from: DateComponents(year: pickerYear, month: monthsOfYear.firstIndex(of: pickerMonth)! + 1, day: Int(pickerDay), hour: Int(pickerHour), minute: Int(pickerMin)))
-                    let dateKey = timeDateHelper.dateString(startTime!)
-                    let event = CALm.Event(dateKey: dateKey, startTime: startTime!, durationMins: duration, eventName: nameToPass, description: description, repetition: repetition)
-                    let success = viewModel.addEventToDay(day: dateKey, event: event)
+                    let event = CALm.Event(startTime: startTime!, durationMins: duration, eventName: nameToPass, description: description, repetition: repetition)
+                    let success = viewModel.addEventToDay(day: event.getDateKey(), event: event)
                     if success {
                         viewModel.createEvent = false
                     }
@@ -304,7 +303,7 @@ struct EventView: View {
     @EnvironmentObject var HABviewModel: HABvm
     @EnvironmentObject var TDLviewModel: TDLvm
     let geo: GeometryProxy
-    @State private var event: CALm.Event = CALm.Event(dateKey: "0000", startTime: Date(), durationMins: 0, eventName: "Placeholder Event", description: "", repetition: .Never)
+    @State private var event: CALm.Event = CALm.Event(startTime: Date(), durationMins: 0, eventName: "Placeholder Event", description: "", repetition: .Never)
     @State private var taskList: [TDLm.Task] = []
     @State private var completedHabit: Bool = false
     
@@ -447,7 +446,7 @@ struct AddTaskFormView: View {
     @EnvironmentObject var viewModel: CALvm
     @EnvironmentObject var TDH: TimeDateHelper
     let geo: GeometryProxy
-    @State private var event: CALm.Event = CALm.Event(dateKey: "", startTime: Date(), durationMins: 0, eventName: "", description: "", repetition: .Never)
+    @State private var event: CALm.Event = CALm.Event(startTime: Date(), durationMins: 0, eventName: "", description: "", repetition: .Never)
     @State private var nameToPass: String = ""
     @State private var description: String = ""
     
@@ -534,7 +533,7 @@ struct EditEventView: View {
     @State private var duration = 0
     @State private var repetition = CALm.Repeat.Never
     @State private var startTime = Date()
-    @State private var event: CALm.Event = CALm.Event(dateKey: "", startTime: Date(), durationMins: 0, eventName: "", description: "", repetition: .Never)
+    @State private var event: CALm.Event = CALm.Event(startTime: Date(), durationMins: 0, eventName: "", description: "", repetition: .Never)
     @State private var eventSeries: CALm.EventSeries?
     @State private var habitDeleted: Bool = false
     @State private var repeatSelect : Bool = false
@@ -552,7 +551,8 @@ struct EditEventView: View {
                 descriptionTile
                 
                 if event.getSeriesID() != nil && viewModel.editSeries{
-                    if viewModel.getEventSeries(event.getSeriesID()!).getHabit() != nil {
+                    if viewModel.getEventSeries(event.getSeriesID()!).getHabit() != nil &&
+                        viewModel.getEventSeries(event.getSeriesID()!).getHabit()!.getName() != "Plan"{
                         habitTile
                     }
                 }
@@ -732,13 +732,13 @@ struct EditEventView: View {
             if !viewModel.editSeries{
                 let success = viewModel.editEvent(event: event, name: eventName, description: description, duration: duration, repetition: repetition, time: startTime)
                 if success {
-                    event = CALm.Event(dateKey: timeDateHelper.dateString(startTime), startTime: startTime, durationMins: duration, eventName: eventName, description: description, repetition: repetition, eventTasks: event.getTasks(), seriesID: event.getSeriesID())
+                    event = CALm.Event(startTime: startTime, durationMins: duration, eventName: eventName, description: description, repetition: repetition, eventTasks: event.getTasks(), seriesID: event.getSeriesID())
                  
                 }
             } else {
                 let success = viewModel.editEventSeries(event: event, name: eventName, description: description, duration: duration, repetition: repetition, time: startTime)
                 if success {
-                    event = CALm.Event(dateKey: timeDateHelper.dateString(startTime), startTime: startTime, durationMins: duration, eventName: eventName, description: description, repetition: repetition, eventTasks: event.getTasks(), seriesID: event.getSeriesID())
+                    event = CALm.Event(startTime: startTime, durationMins: duration, eventName: eventName, description: description, repetition: repetition, eventTasks: event.getTasks(), seriesID: event.getSeriesID())
                     eventSeries = viewModel.getEventSeries(event.getSeriesID()!)
                     if habitDeleted {
                         eventSeries!.deleteHabit()

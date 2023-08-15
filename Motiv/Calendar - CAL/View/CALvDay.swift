@@ -73,8 +73,9 @@ struct DayView: View {
             let time = timeDateHelper.getTimeOfDayHrsMins(Date())
             let hrSeg = time.split(separator: ":")[0]
             var hr = Int(hrSeg)!
-            hr = (hr == 12) ? 0: hr
+            hr = (hr == 12 && timeDateHelper.getAMPM(Date()) == "AM") ? 0: hr
             hr = (timeDateHelper.getAMPM(Date()) == "PM") ? hr+12 : hr
+            hr = (hr != 0) ? hr-1 : hr
             hr = (hr > 19) ? 19 : hr
             hour = (String(hr).count == 1) ? "0"+String(hr): String(hr)
         }
@@ -263,12 +264,12 @@ struct timeIndicatorView: View {
                 let minuteHeight = height / (24 * 60)
                 let time = timeDateHelper.getTimeOfDayHrsMins(Date()).split(separator: ":")
                 var hr = Int(time[0])!
-                hr = (hr == 12) ? 0: hr
+                hr = (hr == 12 && timeDateHelper.getAMPM(Date()) == "AM") ? 0: hr
                 hr = (timeDateHelper.getAMPM(Date()) == "PM") ? hr+12 : hr
                 let min = Int(time[1])!
                 y = CGFloat((hr *  60) + min) * minuteHeight
-                print("Time indicator Y: \(y)")
-                print("Height: \(height), Time: \(time), Hr: \(hr), Min: \(min)")
+//                print("Time indicator Y: \(y)")
+//                print("Height: \(height), Time: \(time), Hr: \(hr), Min: \(min)")
             }
     }
 }
@@ -311,7 +312,7 @@ struct ScheduledEventsView: View {
     func pmHourAdjustment(event: CALm.Event, hour: CGFloat) -> CGFloat {
         var hr = hour
         hr = (hr == 12 && timeDateHelper.getAMPM(event.getStartTime()) == "AM") ? 0: hr
-//        hr = (timeDateHelper.getAMPM(event.getStartTime()) == "PM") ? hr+12 : hr
+        hr = (timeDateHelper.getAMPM(event.getStartTime()) == "PM") ? hr+12 : hr
         return hr
     }
 }

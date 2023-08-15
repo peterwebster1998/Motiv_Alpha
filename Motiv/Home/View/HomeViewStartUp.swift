@@ -26,7 +26,7 @@ struct ScheduleDailyPlanView: View {
                     title: Text("Confirm Time Selection"),
                     message: Text("This can always be updated at another time"),
                     primaryButton: .default(Text("Confirm"), action:{
-                        let event = CALm.Event(dateKey: tdh.dateString(Date()), startTime: plannedTime, durationMins: 15, eventName: "Plan", description: "Plan Tomorrows Event", repetition: .Daily)
+                        let event = CALm.Event(startTime: plannedTime, durationMins: 15, eventName: "Plan", description: "Plan Tomorrows Event", repetition: .Daily)
                         var habit = habVM.getHabit("Plan")!
                         let eventSeries = CALm.EventSeries(event: event, habit: habit)
                         habit.linkToEventSeries(eventSeries.getID())
@@ -53,7 +53,7 @@ struct ScheduleDailyPlanView: View {
                 Group{ //Selection Panel
                     DividerLine(geo: geo, screenProportion: 0.825)
                     Text("Select when to plan everyday:").foregroundColor(.black).padding(.horizontal)
-                    DatePicker("", selection: $plannedTime, displayedComponents: .hourAndMinute).datePickerStyle(WheelDatePickerStyle()).labelsHidden().padding()
+                    DatePicker("", selection: $plannedTime, displayedComponents: .hourAndMinute).datePickerStyle(WheelDatePickerStyle()).labelsHidden().padding().foregroundColor(.black)
                     DividerLine(geo: geo, screenProportion: 0.825)
                 }
                 Spacer()

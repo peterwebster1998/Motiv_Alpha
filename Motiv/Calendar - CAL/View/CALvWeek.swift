@@ -160,31 +160,17 @@ struct SevenDayScheduleView: View {
                     scrollProxy.scrollTo("06", anchor: .leading)
                 } else {
                     let currentTime = timeDateHelper.getTimeOfDayHrsMins(Date()).split(separator: ":")
-                    var currentHr = String(currentTime.first!)
-                    if timeDateHelper.getAMPM(Date()) == "PM" && currentHr != "12"{
-                        currentHr = String(Int(currentHr)!+12)
-                    }
-                    var scrollHour = currentHr
-                    if precomputedDatesInView.contains(where: {timeDateHelper.calendar.isDateInToday($0)}) {
-                        print("adjusting time")
-                        scrollHour = timeAdjustment(scrollHour)
-                    }
-                    
+                    var scrollHour = String(currentTime.first!)
+                    scrollHour = timeAdjustment(scrollHour)
                     scrollProxy.scrollTo(scrollHour, anchor: .leading)
                 }
             }
             .onChange(of: timeDateHelper.scrollToToday){value in
                 if value {
                     let currentTime = timeDateHelper.getTimeOfDayHrsMins(Date()).split(separator: ":")
-                    var currentHr = String(currentTime.first!)
-                    if timeDateHelper.getAMPM(Date()) == "PM" && currentHr != "12"{
-                        currentHr = String(Int(currentHr)!+12)
-                    }
-                    var scrollHour = currentHr
+                    var scrollHour = String(currentTime.first!)
                     scrollHour = timeAdjustment(scrollHour)
-                    
                     scrollProxy.scrollTo(scrollHour, anchor: .leading)
-
                 }
             }
     }
@@ -192,21 +178,20 @@ struct SevenDayScheduleView: View {
     func timeAdjustment(_ str: String) -> String {
         let events = viewModel.getDaysEvents(timeDateHelper.dateString(Date()))
         var newStr = str
-        for event in events{
-            if event.getStartTime() < Date() && timeDateHelper.calendar.date(byAdding: .minute, value: event.getDuration(), to: event.getStartTime())! > Date(){
-                let eventStart = timeDateHelper.getTimeOfDayHrsMins(event.getStartTime()).split(separator: ":")
-                newStr = String(eventStart.first!)
-                if timeDateHelper.getAMPM(event.getStartTime()) == "PM" && newStr != "12"{
-                    newStr = String(Int(newStr)!+12)
-                }
-                newStr = (String(eventStart.last!) != "00") ? newStr : String(Int(newStr)!-1)
-                newStr = (newStr.count == 1) ? "0"+newStr : newStr
-                newStr = (Int(newStr)! > Int(24-hoursPerScreenWidth)) ? String(Int(24-hoursPerScreenWidth)) : newStr
-                print(newStr)
-                return newStr
-            }
+        if events.contains(where: {$0.getStartTime() < Date() && timeDateHelper.calendar.date(byAdding: .minute, value: $0.getDuration(), to: $0.getStartTime())! > Date()}){
+            let event = events.first(where: {$0.getStartTime() < Date() && timeDateHelper.calendar.date(byAdding: .minute, value: $0.getDuration(), to: $0.getStartTime())! > Date()})!
+            let eventStart = timeDateHelper.getTimeOfDayHrsMins(event.getStartTime()).split(separator: ":")
+            newStr = String(eventStart.first!)
+            newStr = (String(eventStart.last!) != "00") ? newStr : String(Int(newStr)!-1)
         }
-        newStr = (Int(str)! > Int(24-hoursPerScreenWidth)) ? String(Int(24-hoursPerScreenWidth)) : str
+        var hr = Int(newStr)!
+        hr = (hr == 12 && timeDateHelper.getAMPM(Date()) == "AM") ? 0: hr
+        if newStr == str || Int(newStr)! <= Int(String(timeDateHelper.getTimeOfDayHrsMins(Date()).split(separator: ":").first!))!{
+            hr = (timeDateHelper.getAMPM(Date()) == "PM") ? hr+12 : hr
+        }
+        hr = (hr != 0) ? hr-1 : hr
+        newStr = (String(hr).count == 1) ? "0"+String(hr) : String(hr)
+        newStr = (Int(newStr)! > Int(24-hoursPerScreenWidth)) ? String(Int(24-hoursPerScreenWidth)) : newStr
         return newStr
     }
 }
@@ -285,7 +270,7 @@ struct TimeBarCursor: View {
         let time: [Substring] = timeDateHelper.getTimeOfDayHrsMins(Date()).split(separator: ":")
         var hr: CGFloat = CGFloat(Int(time[0])!)
         let min: CGFloat = CGFloat(Int(time[1])!)
-        hr = (hr == 12) ? 0: hr
+        hr = (hr == 12 && timeDateHelper.getAMPM(Date()) == "AM") ? 0: hr
         hr = (timeDateHelper.getAMPM(Date()) == "PM") ? hr+12 : hr
         let x: CGFloat = (day/24)*(hr+(min/60))
         return timeCursorArrow().frame(maxWidth: 10, maxHeight: .infinity).position(x: x, y: geo.size.height * (timeBarHeightProportion/2)).foregroundColor(.black)
@@ -374,7 +359,7 @@ struct WeeksScheduledEvents: View {
         let startTime: [Substring] = timeDateHelper.getTimeOfDayHrsMins(event.getStartTime()).split(separator: ":")
         var duration: CGFloat
         var hr: CGFloat = CGFloat(Int(startTime[0])!)
-        hr = (hr == 12) ? 0 : hr
+        hr = (hr == 12 && timeDateHelper.getAMPM(event.getStartTime()) == "AM") ? 0 : hr
         hr = (timeDateHelper.getAMPM(event.getStartTime()) == "PM") ? hr+12 : hr
         let min: CGFloat = CGFloat(Int(startTime[1])!)/60
         if !overNighter{
@@ -427,13 +412,13 @@ struct CurrentDayTimeBar: View {
         let time: [Substring] = timeDateHelper.getTimeOfDayHrsMins(Date()).split(separator: ":")
         var hr: CGFloat = CGFloat(Int(time[0])!)
         let min: CGFloat = CGFloat(Int(time[1])!)
-        hr = (hr == 12) ? 0: hr
+        hr = (hr == 12 && timeDateHelper.getAMPM(Date()) == "AM") ? 0: hr
         hr = (timeDateHelper.getAMPM(Date()) == "PM") ? hr+12 : hr
         let x: CGFloat = (geo.size.width / 24) * (hr + (min/60))
         let y: CGFloat = ((geo.size.height / 7) * (CGFloat(idx)+0.5))
         return AnyView(
             TimeRNBar()
-                .frame(maxWidth: 15, maxHeight: ((geo.size.height / 7)*1.01))
+                .frame(maxWidth: 10, maxHeight: ((geo.size.height / 7)*1.01))
                 .position(x: x, y: y)
                 .foregroundColor(.black)
                 .opacity(0.9)
@@ -448,12 +433,16 @@ struct TimeRNBar: Shape {
         
         path.move(to: CGPoint(x: rect.minX, y: rect.minY))
         path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + (rect.height * 0.075)))
         path.addLine(to: CGPoint(x: rect.midX * 1.1, y: rect.minY + (rect.height * 0.15)))
         path.addLine(to: CGPoint(x: rect.midX * 1.1, y: rect.minY + (rect.height * 0.85)))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + (rect.height * 0.925)))
         path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
         path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + (rect.height * 0.925)))
         path.addLine(to: CGPoint(x: rect.midX * 0.9, y: rect.minY + (rect.height * 0.85)))
         path.addLine(to: CGPoint(x: rect.midX * 0.9, y: rect.minY + (rect.height * 0.15)))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + (rect.height * 0.075)))
         path.addLine(to: CGPoint(x: rect.minX, y: rect.minY))
         
         return path

@@ -17,15 +17,9 @@ import SwiftUI
 struct ConflictView: View {
     @EnvironmentObject var timeDateHelper: TimeDateHelper
     @EnvironmentObject var viewModel: CALvm
-    @State private var conflicts : [[CALm.Event]]
-    @State private var selection : Bool
-    @State private var dayInView : [CALm.Event]
-    
-    init(){
-        self.conflicts = []
-        self.selection = false
-        self.dayInView = []
-    }
+    @State private var conflicts : [[CALm.Event]] = []
+    @State private var selection : Bool = false
+    @State private var dayInView : [CALm.Event] = []
     
     var body: some View {
         VStack {
@@ -52,7 +46,7 @@ struct ConflictView: View {
                 Spacer()
             }
         }.onAppear{
-            self.conflicts = viewModel.getConflicts()
+            conflicts = viewModel.getConflicts()
             if conflicts.count == 1 {
                 dayInView = conflicts.first!
                 selection = true
@@ -126,35 +120,52 @@ struct ConflictResolutionView: View {
         VStack{
             ConflictResolutionDateNavigator()
             Divider()
-            ScrollView{
-                HStack(spacing: 0){
-                    VStack{
-                        ForEach(hoursOfDay, id: \.self){ hour in
-                            Text("\(hour):00").padding().id(hour)
+            ScrollViewReader{ proxy in
+                ScrollView{
+                    HStack(spacing: 0){
+                        VStack{
+                            ForEach(hoursOfDay, id: \.self){ hour in
+                                Text("\(hour):00").padding().id(hour)
+                            }
                         }
-                    }
-                    VStack(spacing:0){
-                        ForEach(hoursOfDay, id: \.self){hr in
-                            VStack(spacing:0){
-                                threeSideRect(width: 1, openEdge: .bottom)
-                                if hr != "23"{
+                        VStack(spacing:0){
+                            ForEach(hoursOfDay, id: \.self){hr in
+                                VStack(spacing:0){
                                     threeSideRect(width: 1, openEdge: .bottom)
-                                } else {
-                                    Rectangle().strokeBorder(style: StrokeStyle(lineWidth: 1))
-                                }
-                            }.foregroundColor(Color.gray)
-                        }
-                    }.overlay(
-                        GeometryReader { geo in
-                            ConflictScheduledEventsView(geo: geo, conflicts: $conflicts)
-                        }
-                    )
+                                    if hr != "23"{
+                                        threeSideRect(width: 1, openEdge: .bottom)
+                                    } else {
+                                        Rectangle().strokeBorder(style: StrokeStyle(lineWidth: 1))
+                                    }
+                                }.foregroundColor(Color.gray)
+                            }
+                        }.overlay(
+                            GeometryReader { geo in
+                                ConflictScheduledEventsView(geo: geo, conflicts: $conflicts)
+                            }
+                        )
+                    }
+                }.task{
+                    let startTime = conflicts.first!.getStartTime()
+                    timeDateHelper.setDateInView(startTime)
+                    let hour = hourToScrollTo(startTime)
+                    proxy.scrollTo(hour, anchor: .top)
+                    print("Conflict starttime: \(timeDateHelper.getTimeOfDayHrsMins(startTime) + " " + timeDateHelper.getAMPM(startTime))\nScroll Hour: \(hour)")
                 }
             }
         }
-        .onAppear {
-            timeDateHelper.setDateInView(conflicts.first!.getStartTime())
-        }
+        
+    }
+    
+    func hourToScrollTo(_ time: Date) -> String {
+        let timeStr = timeDateHelper.getTimeOfDayHrsMins(time)
+        let hrSeg = timeStr.split(separator: ":")[0]
+        var hr = Int(hrSeg)!
+        hr = (hr == 12 && timeDateHelper.getAMPM(time) == "AM") ? 0: hr
+        hr = (timeDateHelper.getAMPM(time) == "PM") ? hr+12 : hr
+        hr = (hr != 0) ? hr-2 : hr
+        hr = (hr > 13) ? 13 : hr
+        return (String(hr).count == 1) ? "0"+String(hr): String(hr)
     }
 }
 
@@ -264,7 +275,7 @@ struct ConflictScheduledEventsView: View {
     
     func pmHourAdjustment(event: CALm.Event, hour: CGFloat) -> CGFloat {
         var hr = hour
-        if (hr == 12){hr = 0}
+        if (hr == 12 && timeDateHelper.getAMPM(event.getStartTime()) == "AM"){hr = 0}
         if (timeDateHelper.getAMPM(event.getStartTime()) == "PM"){hr += 12}
         return hr
     }

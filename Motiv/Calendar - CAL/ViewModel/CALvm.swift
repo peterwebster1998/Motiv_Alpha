@@ -161,24 +161,24 @@ class CALvm: ObservableObject {
     func editEvent(event: CALm.Event, name: String, description: String, duration: Int, repetition: CALm.Repeat, time: Date) -> Bool{
         // Conflict Check
         let tdh = TimeDateHelper()
-        let newEvent = CALm.Event(dateKey: tdh.dateString(time), startTime: time, durationMins: duration, eventName: name, description: description, repetition: repetition, id: event.getID())
-        if !eventConflict {
-            let conflict = checkForConflict(day: tdh.dateString(time), event: newEvent)
-            if !conflict {
-                model.editEvent(event: event, name: name, description: description, duration: duration, repetition: repetition, time: time)
-                autosave()
-                return true
-            } else {
-                setViewContext("e")
-                eventConflict = true
-                model.deleteEvent(event)
-                return false
-            }
-        } else {
+        let newEvent = CALm.Event(startTime: time, durationMins: duration, eventName: name, description: description, repetition: repetition, id: event.getID())
+//        if !eventConflict {
+        let conflict = checkForConflict(day: tdh.dateString(time), event: newEvent)
+        if !conflict {
             model.editEvent(event: event, name: name, description: description, duration: duration, repetition: repetition, time: time)
             autosave()
             return true
+        } else {
+            setViewContext("e")
+            eventConflict = true
+            model.deleteEvent(event)
+            return false
         }
+//        } else {
+//            model.editEvent(event: event, name: name, description: description, duration: duration, repetition: repetition, time: time)
+//            autosave()
+//            return true
+//        }
     }
     
     func addEventSeries(_ eventSeries: CALm.EventSeries){
@@ -189,7 +189,7 @@ class CALvm: ObservableObject {
     func editEventSeries(event: CALm.Event, name: String, description: String, duration: Int, repetition: CALm.Repeat, time: Date) -> Bool{
         // Conflict Check
         let tdh = TimeDateHelper()
-        let newEvent = CALm.Event(dateKey: tdh.dateString(time), startTime: time, durationMins: duration, eventName: name, description: description, repetition: repetition, id: event.getID(),/* eventTasks: getTasks(event),*/ seriesID: event.getSeriesID())
+        let newEvent = CALm.Event(startTime: time, durationMins: duration, eventName: name, description: description, repetition: repetition, id: event.getID(),/* eventTasks: getTasks(event),*/ seriesID: event.getSeriesID())
         let conflict = checkForConflict(day: tdh.dateString(time), event: newEvent)
         if !conflict {
             model.editEventSeries(oldEvent: event, newEvent: newEvent)

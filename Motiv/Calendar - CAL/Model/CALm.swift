@@ -231,18 +231,32 @@ struct CALm : Codable{
     mutating func editEvent(event: Event, name: String, description: String, duration: Int, repetition: Repeat, time: Date){
         let tdh = TimeDateHelper()
         let newDateKey = tdh.dateString(time)
-        if isEvent(event){
-            if(event.getDateKey() == newDateKey){
+        if(event.getDateKey() == newDateKey){
+            if isEvent(event){
                 let eventIdx = eventsDict[event.getDateKey()]!.firstIndex(where: {$0.id == event.id})!
                 eventsDict[event.getDateKey()]![eventIdx].editEvent(name: name, description: description, duration: duration, repetition: repetition, time: time)
-            }
-        } else if isConflict(event){
-            if(event.getDateKey() == newDateKey){
+            } else if isConflict(event){
                 let eventIdx = conflicts[event.getDateKey()]!.firstIndex(where: {$0.id == event.id})!
                 conflicts[event.getDateKey()]![eventIdx].editEvent(name: name, description: description, duration: duration, repetition: repetition, time: time)
+            } else {
+                print("Error: Edit Request Cannot Find Event")
             }
         } else {
-            print("Error: Edit Request Cannot Find Event")
+            var localEvent = event
+            localEvent.editEvent(name: name, description: description, duration: duration, repetition: repetition, time: time)
+            if isEvent(event){
+                let eventIdx = eventsDict[event.getDateKey()]!.firstIndex(where: {$0 == event})!
+                eventsDict[event.getDateKey()]!.remove(at: eventIdx)
+                if eventsDict[newDateKey] == nil { eventsDict[newDateKey] = [] }
+                eventsDict[newDateKey]!.append(localEvent)
+            } else if isConflict(event){
+                let eventIdx = conflicts[event.getDateKey()]!.firstIndex(where: {$0 == event})!
+                conflicts[event.getDateKey()]!.remove(at: eventIdx)
+                if conflicts[newDateKey] == nil { conflicts[newDateKey] = [] }
+                conflicts[newDateKey]!.append(localEvent)
+            } else {
+                print("Error: Edit Request Cannot Find Event")
+            }
         }
     }
     
@@ -440,7 +454,7 @@ struct CALm : Codable{
                     break
                 }
                 
-                nextEvent = Event(dateKey: tdh.dateString(startTime), startTime: startTime, durationMins: event.getDuration(), eventName: event.getName(), description: event.getDescription(), repetition: Repeat(rawValue: event.getRepetition())!, seriesID: seriesID)
+                nextEvent = Event(startTime: startTime, durationMins: event.getDuration(), eventName: event.getName(), description: event.getDescription(), repetition: Repeat(rawValue: event.getRepetition())!, seriesID: seriesID)
                 series.append(nextEvent)
             }
         }
@@ -518,8 +532,7 @@ struct CALm : Codable{
         private var seriesID: UUID?
         
         //MARK: - Init
-        init(dateKey: String, startTime: Date, durationMins: Int, eventName: String, description: String, repetition: Repeat, id: UUID? = nil, eventTasks: [TDLm.Task]? = nil, seriesID: UUID? = nil){
-            self.dateKey = dateKey
+        init(startTime: Date, durationMins: Int, eventName: String, description: String, repetition: Repeat, id: UUID? = nil, eventTasks: [TDLm.Task]? = nil, seriesID: UUID? = nil){
             self.startTime = startTime
             self.durationMins = durationMins
             self.eventName = eventName
@@ -530,6 +543,7 @@ struct CALm : Codable{
             self.seriesID = seriesID
             
             let tdh = TimeDateHelper()
+            self.dateKey = tdh.dateString(startTime)
             if !tdh.calendar.isDate(startTime, inSameDayAs: tdh.calendar.date(byAdding: .minute, value: durationMins, to: startTime)!){
                 self.overNighter = true
             } else {
@@ -598,6 +612,9 @@ struct CALm : Codable{
             self.durationMins = duration
             self.repetition = repetition
             self.startTime = time
+            
+            let tdh = TimeDateHelper()
+            self.dateKey = tdh.dateString(time)
         }
         
         mutating func setSeriesID(_ id: UUID){

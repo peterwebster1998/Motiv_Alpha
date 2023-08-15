@@ -154,13 +154,15 @@ struct HABBanner: View {
                 Text("Undo Complete")
             }.foregroundColor(.black)
         }
-        Button{
-            viewModel.deleteMode = true
-        } label: {
-            HStack{
-                Image(systemName: "trash")
-                Text("Delete Habit")
-            }.foregroundColor(.black)
+        if viewModel.selectedHabit!.getName() != "Plan"{
+            Button{
+                viewModel.deleteMode = true
+            } label: {
+                HStack{
+                    Image(systemName: "trash")
+                    Text("Delete Habit")
+                }.foregroundColor(.black)
+            }
         }
     }
 }
