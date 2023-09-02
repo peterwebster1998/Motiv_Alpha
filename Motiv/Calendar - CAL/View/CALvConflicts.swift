@@ -162,7 +162,7 @@ struct ConflictResolutionView: View {
         let hrSeg = timeStr.split(separator: ":")[0]
         var hr = Int(hrSeg)!
         hr = (hr == 12 && timeDateHelper.getAMPM(time) == "AM") ? 0: hr
-        hr = (timeDateHelper.getAMPM(time) == "PM") ? hr+12 : hr
+        hr = (timeDateHelper.getAMPM(time) == "PM" && !timeDateHelper.is24hour()) ? hr+12 : hr
         hr = (hr != 0) ? hr-2 : hr
         hr = (hr > 13) ? 13 : hr
         return (String(hr).count == 1) ? "0"+String(hr): String(hr)
@@ -276,7 +276,7 @@ struct ConflictScheduledEventsView: View {
     func pmHourAdjustment(event: CALm.Event, hour: CGFloat) -> CGFloat {
         var hr = hour
         if (hr == 12 && timeDateHelper.getAMPM(event.getStartTime()) == "AM"){hr = 0}
-        if (timeDateHelper.getAMPM(event.getStartTime()) == "PM"){hr += 12}
+        if (timeDateHelper.getAMPM(event.getStartTime()) == "PM" && !timeDateHelper.is24hour()){hr += 12}
         return hr
     }
     

@@ -145,7 +145,7 @@ struct CalendarComponentView: View {
                         let time: [Substring] = tdh.getTimeOfDayHrsMins(Date()).split(separator: ":")
                         var hour: Int = Int(time[0])!
                         hour = (hour == 12 && tdh.getAMPM(Date()) == "AM") ? 0 : hour
-                        hour = (tdh.getAMPM(Date()) == "PM") ? hour+12: hour
+                        hour = (tdh.getAMPM(Date()) == "PM" && !tdh.is24hour()) ? hour+12: hour
                         hour = (hour > 2) ? hour-2 : hour
                         let currentTime: String = (hour < 10) ? ("0"+String(hour)) : String(hour)
 //                        print("Scrolling to \(currentTime)")

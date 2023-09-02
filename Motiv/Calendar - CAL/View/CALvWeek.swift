@@ -187,7 +187,7 @@ struct SevenDayScheduleView: View {
         var hr = Int(newStr)!
         hr = (hr == 12 && timeDateHelper.getAMPM(Date()) == "AM") ? 0: hr
         if newStr == str || Int(newStr)! <= Int(String(timeDateHelper.getTimeOfDayHrsMins(Date()).split(separator: ":").first!))!{
-            hr = (timeDateHelper.getAMPM(Date()) == "PM") ? hr+12 : hr
+            hr = (timeDateHelper.getAMPM(Date()) == "PM"  && !timeDateHelper.is24hour()) ? hr+12 : hr
         }
         hr = (hr != 0) ? hr-1 : hr
         newStr = (String(hr).count == 1) ? "0"+String(hr) : String(hr)
@@ -271,7 +271,7 @@ struct TimeBarCursor: View {
         var hr: CGFloat = CGFloat(Int(time[0])!)
         let min: CGFloat = CGFloat(Int(time[1])!)
         hr = (hr == 12 && timeDateHelper.getAMPM(Date()) == "AM") ? 0: hr
-        hr = (timeDateHelper.getAMPM(Date()) == "PM") ? hr+12 : hr
+        hr = (timeDateHelper.getAMPM(Date()) == "PM" && !timeDateHelper.is24hour()) ? hr+12 : hr
         let x: CGFloat = (day/24)*(hr+(min/60))
         return timeCursorArrow().frame(maxWidth: 10, maxHeight: .infinity).position(x: x, y: geo.size.height * (timeBarHeightProportion/2)).foregroundColor(.black)
     }
@@ -360,7 +360,7 @@ struct WeeksScheduledEvents: View {
         var duration: CGFloat
         var hr: CGFloat = CGFloat(Int(startTime[0])!)
         hr = (hr == 12 && timeDateHelper.getAMPM(event.getStartTime()) == "AM") ? 0 : hr
-        hr = (timeDateHelper.getAMPM(event.getStartTime()) == "PM") ? hr+12 : hr
+        hr = (timeDateHelper.getAMPM(event.getStartTime()) == "PM"  && !timeDateHelper.is24hour()) ? hr+12 : hr
         let min: CGFloat = CGFloat(Int(startTime[1])!)/60
         if !overNighter{
             duration = (CGFloat(event.getDuration())/60) * (geo.size.width / 24)
@@ -413,7 +413,7 @@ struct CurrentDayTimeBar: View {
         var hr: CGFloat = CGFloat(Int(time[0])!)
         let min: CGFloat = CGFloat(Int(time[1])!)
         hr = (hr == 12 && timeDateHelper.getAMPM(Date()) == "AM") ? 0: hr
-        hr = (timeDateHelper.getAMPM(Date()) == "PM") ? hr+12 : hr
+        hr = (timeDateHelper.getAMPM(Date()) == "PM"  && !timeDateHelper.is24hour()) ? hr+12 : hr
         let x: CGFloat = (geo.size.width / 24) * (hr + (min/60))
         let y: CGFloat = ((geo.size.height / 7) * (CGFloat(idx)+0.5))
         return AnyView(

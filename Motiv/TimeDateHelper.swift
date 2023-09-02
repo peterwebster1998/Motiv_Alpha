@@ -60,6 +60,11 @@ class TimeDateHelper: ObservableObject {
         return dateFormatter.string(from: date)
     }
     
+    func is24hour() -> Bool {
+        let dateFormat = DateFormatter.dateFormat(fromTemplate: "j", options: 0, locale: Locale.current)!
+        return dateFormat.firstIndex(of: "a") == nil
+    }
+    
     func getAMPM(_ date: Date) -> String {
         dateFormatter.dateFormat = "a"
         return dateFormatter.string(from: date)

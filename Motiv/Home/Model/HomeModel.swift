@@ -38,12 +38,12 @@ struct HomeModel : Codable{
     //MARK: - HomeModel Methods
     init(){
         self.apps = []
-        apps.append(Module(name: "ToDo's", appImage: "checklist", view: AnyView(TDLv())))
-        apps.append(Module(name: "Calendar", appImage: "calendar", view: AnyView(CALv())))
-        apps.append(Module(name: "Habits", appImage: "person.fill.checkmark", view: AnyView(HABv())))
-        apps.append(Module(name: "FlashCards", appImage: "rectangle.stack", view: AnyView(FLCv())))
-        apps.append(Module(name: "Recipe Box", appImage: "list.bullet.rectangle", view: AnyView(RBXv())))
+        apps.append(Module(name: "ToDo's", appImage: "checklist", view: .TDL))
+        apps.append(Module(name: "Calendar", appImage: "calendar", view: .CAL))
+        apps.append(Module(name: "Habits", appImage: "person.fill.checkmark", view: .HAB))
         self.navBubbleAppShortcuts = apps
+        apps.append(Module(name: "FlashCards", appImage: "rectangle.stack", view: .FLC))
+        apps.append(Module(name: "Recipe Box", appImage: "list.bullet.rectangle", view: .RBX))
         self.dailyPlan = ([],[])
         self.completedPlanItems = ([],[])
     }
@@ -107,7 +107,7 @@ struct HomeModel : Codable{
         plan.0 = plan.0.sorted(by: {$0.getName() < $1.getName()})
         plan.1 = plan.1.sorted(by: {$0.getName() < $1.getName()})
         plan.0 = plan.0.filter { task in
-            let idx = plan.0.firstIndex(where: {$0 == task})!
+            let idx = plan.0.firstIndex(where: {$0.getID() == task.getID()})!
             if idx < plan.0.count - 1{
                 if plan.0[idx].getID() == plan.0[idx+1].getID(){
                     return false
@@ -119,7 +119,7 @@ struct HomeModel : Codable{
             }
         }
         plan.1 = plan.1.filter { habit in
-            let idx = plan.1.firstIndex(where: {$0 == habit})!
+            let idx = plan.1.firstIndex(where: {$0.getID() == habit.getID()})!
             if idx < plan.1.count - 1{
                 if plan.1[idx].getID() == plan.1[idx+1].getID(){
                     return false
@@ -135,7 +135,7 @@ struct HomeModel : Codable{
         complete.0 = complete.0.sorted(by: {$0.getName() < $1.getName()})
         complete.1 = complete.1.sorted(by: {$0.getName() < $1.getName()})
         complete.0 = complete.0.filter { task in
-            let idx = complete.0.firstIndex(where: {$0 == task})!
+            let idx = complete.0.firstIndex(where: {$0.getID() == task.getID()})!
             if idx < complete.0.count - 1{
                 if complete.0[idx].getID() == complete.0[idx+1].getID(){
                     return false
@@ -147,7 +147,7 @@ struct HomeModel : Codable{
             }
         }
         complete.1 = complete.1.filter { habit in
-            let idx = complete.1.firstIndex(where: {$0 == habit})!
+            let idx = complete.1.firstIndex(where: {$0.getID() == habit.getID()})!
             if idx < complete.1.count - 1{
                 if complete.1[idx].getID() == complete.1[idx+1].getID(){
                     return false
@@ -192,12 +192,18 @@ struct HomeModel : Codable{
     
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(apps, forKey: .apps)
-        try container.encode(navBubbleAppShortcuts, forKey: .navBubbleAppShortcuts)
-        try container.encode(dailyPlan.0, forKey: .dailyPlanTasks)
-        try container.encode(dailyPlan.1, forKey: .dailyPlanHabits)
-        try container.encode(completedPlanItems.0, forKey: .completedPlanItemsTasks)
-        try container.encode(completedPlanItems.1, forKey: .completedPlanItemsHabits)
+        let dailyPlanTasks: [TDLm.Task] = dailyPlan.0
+        let dailyPlanHabits: [HABm.Habit] = dailyPlan.1
+        let completedPlanTasks: [TDLm.Task] = completedPlanItems.0
+        let completedPlanHabits: [HABm.Habit] = completedPlanItems.1
+        let appArr: [Module] = apps
+        let navApps: [Module] = navBubbleAppShortcuts
+        try container.encode(dailyPlanTasks, forKey: .dailyPlanTasks)
+        try container.encode(dailyPlanHabits, forKey: .dailyPlanHabits)
+        try container.encode(completedPlanTasks, forKey: .completedPlanItemsTasks)
+        try container.encode(completedPlanHabits, forKey: .completedPlanItemsHabits)
+        try container.encode(appArr, forKey: .apps)
+        try container.encode(navApps, forKey: .navBubbleAppShortcuts)
     }
     
     init(from decoder: Decoder) throws {
@@ -213,20 +219,24 @@ struct HomeModel : Codable{
     }
     
     //MARK: - HomeModel.Module
-    struct Module : View, Hashable, Codable{
+    struct Module: Hashable, Codable{
+        
+        enum ModuleType: Codable{
+            case TDL
+            case CAL
+            case HAB
+            case RBX
+            case FLC
+        }
         
         private let name: String
         private let appImage: String
-        private let viewStruct: AnyView
+        private let appView: ModuleType
         
-        init(name: String, appImage: String, view: AnyView){
+        init(name: String, appImage: String, view: ModuleType){
             self.name = name
             self.appImage = appImage
-            self.viewStruct = view
-        }
-        
-        var body: some View {
-            return viewStruct
+            self.appView = view
         }
         
         func getName() -> String{
@@ -238,41 +248,49 @@ struct HomeModel : Codable{
         }
         
         func getView() -> AnyView{
-            return viewStruct
+            switch appView {
+            case .TDL:
+               return AnyView(TDLv())
+            case .CAL:
+                return AnyView(CALv())
+            case .HAB:
+                return AnyView(HABv())
+            case .RBX:
+                return AnyView(RBXv())
+            case .FLC:
+                return AnyView(FLCv())
+            }
         }
         
         static func == (lhs: HomeModel.Module, rhs: HomeModel.Module) -> Bool {
-            return (lhs.name == rhs.name) && (lhs.appImage == rhs.appImage) && (type(of: rhs.viewStruct) == type(of: lhs.viewStruct))
+            return (lhs.name == rhs.name) && (lhs.appImage == rhs.appImage) && (rhs.appView == lhs.appView)
         }
         
         func hash(into hasher: inout Hasher){
             hasher.combine(name)
             hasher.combine(appImage)
-            hasher.combine(ObjectIdentifier(type(of: viewStruct)))
+            hasher.combine(appView)
         }
         
         //Mark: - Persistence
         enum CodingKeys: CodingKey {
-            case name, appImage, viewStruct
+            case name, appImage, appView
         }
         
         func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
-            try container.encode(name, forKey: .name)
-            try container.encode(appImage, forKey: .appImage)
-            let data = try NSKeyedArchiver.archivedData(withRootObject: viewStruct, requiringSecureCoding: false)
-            try container.encode(data, forKey: .viewStruct)
+            let nameStr: String = name
+            let appImgStr: String = appImage
+            try container.encode(nameStr, forKey: .name)
+            try container.encode(appImgStr, forKey: .appImage)
+            try container.encode(appView, forKey: .appView)
         }
         
         init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             name = try container.decode(String.self, forKey: .name)
             appImage = try container.decode(String.self, forKey: .appImage)
-            let data = try container.decode(Data.self, forKey: .viewStruct)
-            guard let view = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? AnyView else {
-                throw DecodingError.dataCorruptedError(forKey: .viewStruct, in: container, debugDescription: "View data is corrupted")
-            }
-            viewStruct = view
+            appView = try container.decode(ModuleType.self, forKey: .appView)
         }
     }
 }

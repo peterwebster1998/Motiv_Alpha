@@ -50,7 +50,7 @@ class HomeViewModel : ObservableObject {
         return model.getCompletedPlanItems()
     }
     // MARK: - Intents
-    func addModule(name: String, appImage: String, view: AnyView){
+    func addModule(name: String, appImage: String, view: HomeModel.Module.ModuleType){
         model.addModule(HomeModel.Module(name: name, appImage: appImage, view: view))
         autosave()
     }
@@ -95,7 +95,7 @@ class HomeViewModel : ObservableObject {
             try data.write(to: url)
             print("\(thisfunc) successful!")
         } catch {
-            print("Home viewModel \(thisfunc) error = \(error)")
+            print("Home viewModel: \(thisfunc) \nError = \(error)")
         }
     }
     
